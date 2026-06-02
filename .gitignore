@@ -1,0 +1,16 @@
+# Sisteme de operare
+.DS_Store
+Thumbs.db
+
+# Editoare
+.vscode/
+.idea/
+*.swp
+
+# Backup-uri locale exportate din aplicație
+mi-dia-backup-*.json
+
+# Dependențe / build (doar dacă adaugi mai târziu Node/Vite)
+node_modules/
+dist/
+.cache/
