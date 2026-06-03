@@ -11,31 +11,31 @@
 
 <style>
   :root{
-    --sand:        #FBF4E6;
-    --sand-deep:   #F3E7CF;
-    --cream:       #FFFBF3;
-    --ink:         #4A3B2F;
-    --ink-soft:    #8A7560;
-    --line:        #E7D9BE;
+    --sand:        #F6EFDF;
+    --sand-deep:   #EADEC6;
+    --cream:       #FFFCF7;
+    --ink:         #3A2D21;
+    --ink-soft:    #897662;
+    --line:        #E6DBC4;
 
-    --terracotta:  #E08B6E;
-    --terracotta-l:#F6DDD2;
-    --olive:       #9DB084;
-    --olive-l:     #E5EBDA;
-    --sea:         #7FB3AC;
-    --sea-l:       #DCEDEA;
-    --sky:         #A9C8DE;
-    --sky-l:       #E2EEF5;
-    --citrus:      #F2A65A;
-    --citrus-l:    #FBE6CE;
-    --lavender:    #BFA8D4;
-    --lavender-l:  #ECE3F4;
-    --rose:        #E8A0A8;
-    --rose-l:      #F8E0E2;
-    --honey:       #E6B655;
-    --honey-l:     #F7EBCF;
-    --fresh:       #8FC36A;
-    --fresh-l:     #E6F0D4;
+    --terracotta:  #C16B4C;
+    --terracotta-l:#EBCBBA;
+    --olive:       #8B9A6C;
+    --olive-l:     #E2E7D4;
+    --sea:         #6E9D96;
+    --sea-l:       #D5E5E1;
+    --sky:         #9CB9CE;
+    --sky-l:       #DDE9F0;
+    --citrus:      #CE8A45;
+    --citrus-l:    #F1E1C6;
+    --lavender:    #A893BD;
+    --lavender-l:  #E6DDEE;
+    --rose:        #CB8188;
+    --rose-l:      #EFD5D8;
+    --honey:       #B08A4A;
+    --honey-l:     #EEE1C1;
+    --fresh:       #7BA85B;
+    --fresh-l:     #E0EBCD;
 
     --radius:      20px;
     --shadow:      0 10px 30px -12px rgba(120,90,60,.28);
@@ -48,9 +48,8 @@
     font-family:'Nunito', system-ui, -apple-system, sans-serif;
     color:var(--ink);
     background:
-      radial-gradient(900px 500px at 85% -10%, var(--sky-l), transparent 60%),
-      radial-gradient(700px 500px at -5% 5%, var(--terracotta-l), transparent 55%),
-      linear-gradient(180deg, var(--cream), var(--sand) 40%, var(--sand-deep));
+      radial-gradient(820px 520px at 88% -12%, var(--terracotta-l), transparent 58%),
+      linear-gradient(180deg, var(--cream), var(--sand) 45%, var(--sand-deep));
     background-attachment:fixed;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
@@ -64,7 +63,7 @@
     box-shadow:var(--shadow);padding:30px 28px 26px;margin-bottom:22px;}
   .scene svg.waves{position:absolute;left:0;right:0;bottom:-2px;width:100%;height:60px;display:block;}
   .scene .sun{position:absolute;top:18px;right:34px;width:78px;height:78px;border-radius:50%;
-    background:radial-gradient(circle at 40% 40%, #FFF1C9, #FBC56B 70%);
+    background:radial-gradient(circle at 40% 40%, #FBF1D8, #E6C275 72%);
     box-shadow:0 0 0 12px rgba(251,197,107,.25), 0 0 40px rgba(251,197,107,.5);
     animation:floaty 6s ease-in-out infinite;}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -98,12 +97,12 @@
   .progress-top span{font-size:.85rem;color:var(--ink-soft);}
   .bar{height:14px;background:var(--sand-deep);border-radius:30px;overflow:hidden;}
   .bar > i{display:block;height:100%;width:0;border-radius:30px;
-    background:linear-gradient(90deg,var(--olive),var(--sea),var(--citrus));
+    background:linear-gradient(90deg,var(--terracotta),var(--honey));
     transition:width .5s cubic-bezier(.4,1.3,.5,1);}
 
   /* ---------- layout ---------- */
   .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;}
-  @media(max-width:820px){.grid{grid-template-columns:1fr;}}
+  @media(max-width:820px){.grid{grid-template-columns:minmax(0,1fr);}.grid>*{min-width:0;}}
 
   .panel{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);
     padding:18px;box-shadow:var(--shadow-sm);}
@@ -426,8 +425,10 @@
   .moodlegend .mlc{width:13px;height:13px;border-radius:4px;}
 
   /* year in pixels */
-  .pixgrid{display:grid;grid-template-columns:24px repeat(12,1fr);gap:2px;}
-  .pixhead{font-size:.62rem;font-weight:800;color:var(--ink-soft);text-align:center;padding-bottom:2px;}
+  .pixgrid{display:grid;grid-template-columns:20px repeat(12,minmax(0,1fr));gap:2px;min-width:0;}
+  .pixhead{font-size:.62rem;font-weight:800;color:var(--ink-soft);text-align:center;padding-bottom:2px;min-width:0;overflow:hidden;}
+  .pixcell{min-width:0;}
+  #cal-year{overflow-x:auto;}
   .pixdaylabel{font-size:.58rem;color:var(--ink-soft);text-align:right;padding-right:3px;display:flex;align-items:center;justify-content:flex-end;}
   .pixcell{aspect-ratio:1/1;min-height:11px;border-radius:3px;background:var(--sand-deep);cursor:pointer;transition:.12s;}
   .pixcell.empty{background:transparent;cursor:default;}
@@ -567,7 +568,85 @@
   .calm-summary .cs-cc{font-size:.92rem;font-weight:800;color:var(--sea);min-height:1.15em;}
   .calm-summary .cs-mood{font-size:1.05rem;min-height:1.25em;}
   .cp-done{background:var(--olive);color:#fff;border:none;border-radius:14px;padding:10px 18px;font-family:inherit;font-weight:800;cursor:pointer;}
-</style>
+
+  @media(max-width:560px){
+    .wrap{padding:18px 14px 72px;}
+    .pixhead{font-size:.5rem;}.pixgrid{gap:1px;}
+    .scene{padding:22px 18px 24px;border-radius:22px;}
+    .scene .sun{width:56px;height:56px;top:16px;right:16px;}
+    .brand{flex-direction:column;align-items:flex-start;gap:2px;padding-right:62px;}
+    .brand h1{font-size:2rem;line-height:1.05;white-space:nowrap;}
+    .brand .tag{font-size:.9rem;}
+    .phrase{margin-top:10px;padding-right:8px;}
+    .phrase .es{font-size:1.05rem;}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .tab{justify-content:center;padding:9px 6px;font-size:.8rem;gap:6px;}
+    .tab .ticon{width:16px;height:16px;}
+    .addrow input[type=text]{min-width:0;flex:1 1 100%;}
+    .addrow input[type=time]{flex:1 1 auto;}
+    input,select,textarea{max-width:100%;}
+    .panel,.progress-card,.datebar{min-width:0;}
+  }
+
+  
+  body.calm-mode{
+    --cream:#1F2B25; --sand:#1A251F; --sand-deep:#16201B;
+    --ink:#ECE3D2; --ink-soft:#A6B0A1; --line:#33423B;
+    --terracotta:#D98A63; --terracotta-l:#3A2C24;
+    --sea:#7FB8AE; --sea-l:#2C4842; --honey:#CBA05A;
+    --shadow:0 14px 36px -16px rgba(0,0,0,.62); --shadow-sm:0 6px 18px -10px rgba(0,0,0,.5);
+    background:
+      radial-gradient(760px 460px at 88% -12%, #243A30, transparent 60%),
+      radial-gradient(620px 420px at 0% 8%, #20312A, transparent 58%),
+      linear-gradient(180deg,#1C2721,#141D18 58%,#101813) !important;
+  }
+  body.calm-mode .scene::after{content:"";position:absolute;inset:0;background:rgba(15,22,18,.64);z-index:1;pointer-events:none;}
+  body.calm-mode .brand h1,
+  body.calm-mode .phrase .es{color:#F2E9D8 !important;}
+  body.calm-mode .brand .tag,
+  body.calm-mode .phrase .ro{color:#CFC3AE !important;}
+  body.calm-mode .segmented button.sel{background:#33453C;color:var(--ink);box-shadow:none;}
+  body.calm-mode .breath-label{color:#CFE6DF;}
+  body.calm-mode .calmcard{border-left-color:var(--honey);}
+  body.calm-mode .calm-summary .cs-cc,
+  body.calm-mode .calmcard .cc-dur{color:var(--honey);}
+  body.calm-mode .langbar button.sel{background:var(--honey);border-color:var(--honey);color:#16201B;}
+
+  
+  body{font-size:16px;line-height:1.55;}
+  .brand h1,.phrase .es,.datebar .day .d1,.progress-top b,.panel h2,.projhead h2,
+  .calmcard .cc-title,.cp-title,.breath-label,.cp-timer,.caltitle,.scard .big,.ole{
+    font-optical-sizing:auto;letter-spacing:-.015em;line-height:1.16;}
+  .brand h1,.caltitle,.scard .big,.ole{letter-spacing:-.022em;line-height:1.08;}
+  .phrase .es{line-height:1.32;letter-spacing:-.008em;}
+  .panel h2{margin:0 0 16px;font-size:1.2rem;}
+  .cc-desc,.cp-desc,.set-help,.somatic-steps li{line-height:1.6;}
+  .cc-desc,.cp-desc{max-width:62ch;}
+  .panel{margin-bottom:22px;}
+  .grid{gap:22px;}
+  .phrase{margin-top:16px;}
+  .tabs{margin-bottom:22px;}
+  button,input,select,textarea{line-height:1.3;}
+
+  
+  .yearwheel{width:100%;max-width:340px;margin:8px auto 2px;display:block;}
+  .yearwheel .track{fill:var(--sand-deep);}
+  .yearwheel .seg{cursor:pointer;transition:opacity .15s, transform .15s;transform-origin:center;}
+  .yearwheel .seg:hover{opacity:.82;}
+  .yearwheel .seg.cur{stroke:var(--terracotta);stroke-width:1.6;}
+  .yearwheel .wlabel{font-size:11px;font-weight:700;fill:var(--ink-soft);font-family:'Nunito',sans-serif;}
+  .yearwheel .wyear{font-family:'Fraunces',serif;font-weight:600;font-size:30px;fill:var(--ink);letter-spacing:-.01em;}
+  .yearwheel .wsum{font-size:10.5px;fill:var(--ink-soft);font-family:'Nunito',sans-serif;}
+
+  
+  .moodspectrum{display:flex;gap:4px;height:20px;margin:2px 0 14px;}
+  .moodspectrum .msg{border-radius:10px;min-width:12px;transition:flex .45s cubic-bezier(.4,1,.5,1);}
+  .moodleg{display:flex;flex-wrap:wrap;gap:9px 16px;}
+  .moodleg .mlegitem{display:inline-flex;align-items:center;gap:7px;font-size:.86rem;color:var(--ink-soft);font-weight:600;}
+  .moodleg .mlegdot{width:11px;height:11px;border-radius:50%;flex:none;}
+  .moodcount{margin-top:12px;font-size:.78rem;color:var(--ink-soft);font-style:italic;}
+
+  </style>
 
 <div class="wrap">
 
@@ -817,7 +896,7 @@
       <div class="set-help" style="margin-top:10px;" data-i18n="cal_help_month">Fundalul = starea din jurnal.</div>
     </div>
     <div class="panel" id="cal-year" style="display:none;">
-      <div class="pixgrid" id="yearGrid"></div>
+      <div id="yearGrid"></div>
       <div class="moodlegend" id="moodLegendY"></div>
       <div class="set-help" style="margin-top:10px;" data-i18n="cal_help_year">Fiecare căsuță = o zi.</div>
     </div>
@@ -849,12 +928,12 @@
       <h2 id="statBarsTitle" data-i18n="hours_cat">Ore investite pe categorie</h2>
       <div id="statBars"></div>
     </div>
+    <div class="set-help" style="margin-top:10px;text-align:center;" data-i18n="stats_note">Se numără sloturile bifate ca făcute.</div>
     <div class="panel" id="moodPanel">
       <h2 data-i18n="mood_h">Stare ↔ productivitate</h2>
       <div id="moodInsight" class="set-help" style="margin-bottom:12px;"></div>
       <div id="moodBars"></div>
     </div>
-    <div class="set-help" style="margin-top:12px;text-align:center;" data-i18n="stats_note">Se numără sloturile bifate ca făcute.</div>
   </div><!-- /view-stats -->
 
   <div id="view-calm" class="view">
@@ -996,10 +1075,11 @@
     done_empty:{ro:"Nimic finalizat încă. Bifează lucruri și apar aici. 🌱",es:"Nada completado aún. Marca cosas y aparecerán aquí. 🌱",en:"Nothing completed yet. Check things off and they'll show here. 🌱"},
     seg_month:{ro:"Lună",es:"Mes",en:"Month"},
     seg_year:{ro:"An",es:"Año",en:"Year"},
+    days_tracked:{ro:"zile însemnate",es:"días registrados",en:"days tracked"},
     dow_mon:{ro:"Lun",es:"Lun",en:"Mon"},dow_tue:{ro:"Mar",es:"Mar",en:"Tue"},dow_wed:{ro:"Mie",es:"Mié",en:"Wed"},
     dow_thu:{ro:"Joi",es:"Jue",en:"Thu"},dow_fri:{ro:"Vin",es:"Vie",en:"Fri"},dow_sat:{ro:"Sâm",es:"Sáb",en:"Sat"},dow_sun:{ro:"Dum",es:"Dom",en:"Sun"},
     cal_help_month:{ro:"Fundalul = starea din jurnal · bulinele = categoriile · numărul = sloturi făcute / total. Click pe o zi.",es:"Fondo = ánimo del diario · puntos = categorías · número = bloques hechos / total. Pulsa un día.",en:"Background = journal mood · dots = categories · number = slots done / total. Tap a day."},
-    cal_help_year:{ro:"Fiecare căsuță = o zi, colorată după starea din jurnal. Click pe o zi ca să o deschizi.",es:"Cada casilla = un día, coloreada según el ánimo del diario. Pulsa un día para abrirlo.",en:"Each cell = a day, colored by journal mood. Tap a day to open it."},
+    cal_help_year:{ro:"Fiecare inel = o lună, colorat după starea ta dominantă; cât de plin = câte zile ai însemnat. Atinge o lună ca să o deschizi.",es:"Cada anillo = un mes, coloreado por tu ánimo dominante; cuán lleno = días registrados. Pulsa un mes para abrirlo.",en:"Each ring = a month, colored by your dominant mood; how full = days tracked. Tap a month to open it."},
     year_label:{ro:"Anul",es:"Año",en:"Year"},
     prog_h:{ro:"Progres & goaluri",es:"Progreso y metas",en:"Progress & goals"},
     goal_daily:{ro:"Goal zilnic",es:"Meta diaria",en:"Daily goal"},
@@ -1023,7 +1103,10 @@
     card_streak:{ro:"streak (zile)",es:"racha (días)",en:"streak (days)"},
     card_best:{ro:"record streak",es:"mejor racha",en:"best streak"},
     stat_empty:{ro:"Niciun slot bifat în această perioadă încă. Bifează sloturile făcute ca să apară aici. 🌱",es:"Ningún bloque marcado en este periodo aún. Marca bloques y aparecerán aquí. 🌱",en:"No slots checked in this period yet. Check off slots and they'll show here. 🌱"},
-    mood_h:{ro:"Stare ↔ productivitate",es:"Ánimo ↔ productividad",en:"Mood ↔ productivity"},
+    mood_h:{ro:"Echilibrul stării",es:"Equilibrio del ánimo",en:"Mood balance"},
+    mood_balance_lead:{ro:"O imagine blândă a felului în care te-ai simțit. Privește-o cu compasiune, fără să te judeci.",es:"Una imagen suave de cómo te has sentido. Mírala con compasión, sin juzgarte.",en:"A gentle picture of how you've been feeling. Notice it with kindness, not judgment."},
+    mood_balance_few:{ro:"Notează-ți starea câteva zile (în Jurnal) și aici va înflori imaginea stărilor tale.",es:"Anota tu ánimo unos días (en Diario) y aquí florecerá tu paisaje emocional.",en:"Log your mood a few days (in Journal) and your emotional landscape will bloom here."},
+    days_logged:{ro:"zile notate",es:"días anotados",en:"days logged"},
     mood_few:{ro:"Prea puține zile cu stare notată în jurnal pentru o corelație de încredere. Notează-ți starea zilnic (în tab-ul Jurnal) și revino aici. 🌱",es:"Muy pocos días con ánimo anotado para una correlación fiable. Anota tu ánimo a diario (pestaña Diario) y vuelve. 🌱",en:"Too few days with a logged mood for a reliable correlation. Log your mood daily (Journal tab) and come back. 🌱"},
     mood_state:{ro:"stare",es:"ánimo",en:"mood"},
     mood_explain:{ro:"Numerele arată media sloturilor făcute pentru fiecare stare. Notează stări variate ca să pot compara zilele bune cu cele grele.",es:"Los números muestran la media de bloques hechos por cada ánimo. Anota ánimos variados para comparar días buenos y difíciles.",en:"The numbers show the average slots done per mood. Log varied moods so I can compare good vs hard days."},
@@ -2050,25 +2133,47 @@
     renderMoodLegend($("#moodLegendY"));
     const grid=$("#yearGrid"); grid.innerHTML="";
     const MON3L=MON3[lang];
-    const todayStr=keyFor(new Date(new Date().setHours(0,0,0,0)));
-    // header
-    const corner=document.createElement("div"); corner.className="pixhead"; grid.appendChild(corner);
-    MON3L.forEach(m=>{ const h=document.createElement("div"); h.className="pixhead"; h.textContent=m; grid.appendChild(h); });
-    for(let d=1; d<=31; d++){
-      const lab=document.createElement("div"); lab.className="pixdaylabel"; lab.textContent=d; grid.appendChild(lab);
-      for(let mo=0; mo<12; mo++){
-        const dim=new Date(y,mo+1,0).getDate();
-        const cell=document.createElement("div");
-        if(d>dim){ cell.className="pixcell empty"; grid.appendChild(cell); continue; }
+    const today=new Date(); today.setHours(0,0,0,0);
+    const curY=today.getFullYear(), curMo=today.getMonth();
+    const cx=160, cy=160, rI=66, rO=132, gap=2.6;
+    const polar=(r,deg)=>{const a=(deg-90)*Math.PI/180; return [cx+r*Math.cos(a), cy+r*Math.sin(a)];};
+    const seg=(ri,ro,a0,a1)=>{const A=polar(ro,a0),B=polar(ro,a1),C=polar(ri,a1),D=polar(ri,a0);
+      return `M${A[0].toFixed(2)} ${A[1].toFixed(2)} A${ro} ${ro} 0 0 1 ${B[0].toFixed(2)} ${B[1].toFixed(2)} L${C[0].toFixed(2)} ${C[1].toFixed(2)} A${ri} ${ri} 0 0 0 ${D[0].toFixed(2)} ${D[1].toFixed(2)} Z`;};
+    const esc=s=>(""+s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    let parts=[], labels=[], totalTracked=0;
+    for(let mo=0; mo<12; mo++){
+      const dim=new Date(y,mo+1,0).getDate();
+      const counts=[0,0,0,0,0,0]; let entries=0;
+      for(let d=1; d<=dim; d++){
         const ds=keyFor(new Date(y,mo,d));
-        const arr=map[ds]||[]; const j=jmap[ds]; const mood=j&&j.mood||0;
-        cell.className="pixcell"+(ds===todayStr?" today":"")+(!mood&&arr.length?" act":"");
-        if(mood) cell.style.background=MOOD_COLORS[mood];
-        cell.title=ds+(mood?" · "+MOODS[mood-1]:"")+(arr.length?" · "+arr.filter(b=>b.done).length+"/"+arr.length+t("slots_short"):"");
-        cell.onclick=()=>{ cur=new Date(y,mo,d); cur.setHours(0,0,0,0); setView("day"); load(); };
-        grid.appendChild(cell);
+        const arr=map[ds]||[]; const j=jmap[ds]; const mood=(j&&j.mood)||0;
+        let has=false; if(mood){ counts[mood]++; has=true; } if(arr.length){ has=true; }
+        if(has) entries++;
       }
+      totalTracked+=entries;
+      let dom=0,best=0; for(let m=1;m<=5;m++){ if(counts[m]>best){best=counts[m];dom=m;} }
+      const cons=Math.min(1, dim?entries/dim:0);
+      const a0=mo*30+gap/2, a1=(mo+1)*30-gap/2, amid=(a0+a1)/2;
+      parts.push(`<path class="track" d="${seg(rI,rO,a0,a1)}"/>`);
+      if(cons>0){
+        const rF=rI+(rO-rI)*cons, color=dom?MOOD_COLORS[dom]:"#B7C2A8";
+        const curCls=(y===curY&&mo===curMo)?" cur":"";
+        const tip=esc(MON3L[mo]+" — "+entries+"/"+dim+(dom?(" · "+MOODS[dom-1]):""));
+        parts.push(`<path class="seg${curCls}" data-mo="${mo}" d="${seg(rI,rF,a0,a1)}" fill="${color}"><title>${tip}</title></path>`);
+      } else {
+        parts.push(`<path class="seg" data-mo="${mo}" d="${seg(rI,rO,a0,a1)}" fill="transparent"><title>${esc(MON3L[mo])}</title></path>`);
+      }
+      const L=polar(rO+13, amid);
+      labels.push(`<text class="wlabel" x="${L[0].toFixed(1)}" y="${L[1].toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${esc(MON3L[mo])}</text>`);
     }
+    grid.innerHTML='<svg class="yearwheel" viewBox="0 0 320 320" role="img" aria-label="'+esc(t("year_lbl")+y)+'">'
+      +parts.join("")+labels.join("")
+      +'<text class="wyear" x="160" y="157" text-anchor="middle">'+y+'</text>'
+      +'<text class="wsum" x="160" y="178" text-anchor="middle">'+totalTracked+' '+esc(t("days_tracked"))+'</text>'
+      +'</svg>';
+    const svg=grid.querySelector("svg");
+    svg.addEventListener("click",e=>{ const p=e.target.closest("[data-mo]"); if(!p) return;
+      calMode="month"; calMonth=new Date(y, +p.getAttribute("data-mo"), 1); renderCalendarView(); });
   }
 
   /* ---------- statistics ---------- */
@@ -2172,37 +2277,25 @@
 
   /* ---------- mood <-> productivity correlation (computed, not AI) ---------- */
   async function renderMoodCorrelation(){
-    const days=await getAllDays();
     const jmap=await getJournalMap();
-    const per={};
-    Object.keys(jmap).forEach(ds=>{ const m=jmap[ds].mood||0; if(!m) return;
-      const done=(days[ds]||[]).filter(b=>b.done).length;
-      if(!per[m]) per[m]={sum:0,n:0}; per[m].sum+=done; per[m].n++; });
-    const present=Object.keys(per).map(Number);
-    const totalDays=present.reduce((s,m)=>s+per[m].n,0);
+    const today=new Date(); today.setHours(0,0,0,0);
+    let from=null;
+    if(statRange==="week"){ from=new Date(today); from.setDate(today.getDate()-((today.getDay()+6)%7)); }
+    else if(statRange==="month"){ from=new Date(today.getFullYear(),today.getMonth(),1); }
+    const counts=[0,0,0,0,0,0]; let total=0;
+    Object.keys(jmap).forEach(ds=>{ const dt=parseDate(ds); if(dt>today) return; if(from && dt<from) return; const m=(jmap[ds]&&jmap[ds].mood)||0; if(m>=1&&m<=5){ counts[m]++; total++; } });
     const bars=$("#moodBars"); bars.innerHTML="";
     const insight=$("#moodInsight");
-    if(totalDays<3){ insight.textContent=t("mood_few"); return; }
-    const maxAvg=Math.max(1, ...present.map(m=>per[m].sum/per[m].n));
-    for(let m=5;m>=1;m--){ if(!per[m]) continue; const avg=per[m].sum/per[m].n;
-      const row=document.createElement("div"); row.className="statrow";
-      const lab=document.createElement("div"); lab.className="slab"; lab.textContent=MOODS[m-1]+" "+t("mood_state")+" "+m;
-      const track=document.createElement("div"); track.className="strack";
-      const fill=document.createElement("div"); fill.className="sfill"; fill.style.width=(avg/maxAvg*100)+"%"; fill.style.background=MOOD_COLORS[m];
-      track.appendChild(fill);
-      const val=document.createElement("div"); val.className="sval"; val.textContent=avg.toFixed(1);
-      val.title=avg.toFixed(1)+t("slots_per_day")+per[m].n+t("days_word");
-      row.appendChild(lab); row.appendChild(track); row.appendChild(val);
-      bars.appendChild(row);
-    }
-    let gS=0,gN=0,lS=0,lN=0;
-    [4,5].forEach(m=>{ if(per[m]){gS+=per[m].sum;gN+=per[m].n;} });
-    [1,2].forEach(m=>{ if(per[m]){lS+=per[m].sum;lN+=per[m].n;} });
-    if(gN&&lN){ const g=gS/gN, l=lS/lN;
-      insight.textContent=t("mgl_a")+g.toFixed(1)+t("mgl_b")+l.toFixed(1)+t("mgl_c")+((gN<3||lN<3)?t("mgl_tend"):".");
-    } else {
-      insight.textContent=t("mood_explain");
-    }
+    if(total<3){ insight.textContent=t("mood_balance_few"); return; }
+    insight.textContent=t("mood_balance_lead");
+    const order=[5,4,3,2,1];
+    let segs="", leg="";
+    order.forEach(m=>{ if(!counts[m]) return;
+      segs+='<div class="msg" style="flex:'+counts[m]+';background:'+MOOD_COLORS[m]+'" title="'+MOODS[m-1]+' · '+counts[m]+'"></div>';
+      leg+='<span class="mlegitem"><span class="mlegdot" style="background:'+MOOD_COLORS[m]+'"></span>'+MOODS[m-1]+' '+counts[m]+'</span>';
+    });
+    const rk = statRange==="week"?"range_week":statRange==="month"?"range_month":"range_all";
+    bars.innerHTML='<div class="moodspectrum">'+segs+'</div><div class="moodleg">'+leg+'</div><div class="moodcount">'+total+' '+t("days_logged")+' · '+t(rk)+'</div>';
   }
 
   /* ---------- journal ---------- */
@@ -2772,6 +2865,7 @@ Objective description, "just the facts".
     flushJ(); curView=v;
     ["day","journal","proj","cal","stats","calm"].forEach(name=>{ const el=document.getElementById("view-"+name); if(el) el.classList.toggle("active", name===v); });
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.getAttribute("data-v")===v));
+    document.body.classList.toggle("calm-mode", v==="calm");
     if(v==="day"){ load(); }
     if(v==="journal"){ loadJournal(); }
     if(v==="proj"){ daysCache=null; renderProjView(); }
@@ -2855,7 +2949,7 @@ Objective description, "just the facts".
   $("#rangeBtns").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{
     statRange=b.getAttribute("data-r");
     $("#rangeBtns").querySelectorAll("button").forEach(x=>x.classList.toggle("sel", x===b));
-    renderStats();
+    renderStats(); renderMoodCorrelation();
   };});
   // stats mode (category vs tag)
   $("#statMode").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{
