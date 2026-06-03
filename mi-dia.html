@@ -549,6 +549,20 @@
   .sc-form #scDur{width:60px;}
   .sc-form button{border:none;border-radius:12px;padding:8px 14px;font-family:inherit;font-weight:800;cursor:pointer;background:var(--terracotta);color:#fff;}
   .sc-form .sc-cancel{background:var(--sand);color:var(--ink);}
+
+  /* ----- calm log summary ----- */
+  .calm-summary{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+  .calm-summary .cs-head{font-size:1rem;color:var(--ink);}
+  .calm-summary .cs-break{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .calm-summary .cs-pill{background:var(--sand);border-radius:20px;padding:4px 11px;font-size:.8rem;font-weight:700;color:var(--ink);}
+  .calm-summary .cs-empty{font-size:.86rem;color:var(--ink-soft);margin-top:6px;}
+  .calm-summary .cs-corr-lbl{font-size:.78rem;color:var(--ink-soft);margin:13px 0 6px;font-weight:700;}
+  .calm-summary .cs-strip{display:flex;gap:5px;justify-content:space-between;}
+  .calm-summary .cs-day{flex:1;text-align:center;background:var(--sand);border-radius:10px;padding:6px 2px;}
+  .calm-summary .cs-dn{font-size:.66rem;color:var(--ink-soft);}
+  .calm-summary .cs-cc{font-size:.92rem;font-weight:800;color:var(--sea);min-height:1.15em;}
+  .calm-summary .cs-mood{font-size:1.05rem;min-height:1.25em;}
+  .cp-done{background:var(--olive);color:#fff;border:none;border-radius:14px;padding:10px 18px;font-family:inherit;font-weight:800;cursor:pointer;}
 </style>
 
 <div class="wrap">
@@ -841,6 +855,7 @@
 
   <div id="view-calm" class="view">
     <div class="set-help" style="margin-bottom:14px;" data-i18n="calm_disclaimer">Practici blânde de relaxare — nu sfat medical.</div>
+    <div class="calm-summary" id="calmSummary"></div>
     <div class="segmented" id="calmMode">
       <button data-m="breath" class="sel" data-i18n="seg_breath">🫁 Respirație</button>
       <button data-m="somatic" data-i18n="seg_somatic">🌿 Somatic / nerv vag</button>
@@ -872,6 +887,7 @@
     </div>
     <div class="cp-controls">
       <button class="cp-start" id="cpStart" data-i18n="cp_start">▶ Start</button>
+      <button class="cp-done" id="cpDone" data-i18n="cp_done" style="display:none;">✓ Am terminat</button>
       <button class="cp-stop" id="cpStop" data-i18n="cp_stop">■ Stop</button>
     </div>
   </div>
@@ -1080,6 +1096,13 @@
     sc_add:{ro:"Adaugă scurtătură",es:"Añadir atajo",en:"Add shortcut"},
     sc_edit:{ro:"Editează scurtăturile",es:"Editar atajos",en:"Edit shortcuts"},
     sc_done:{ro:"Gata",es:"Listo",en:"Done"},
+    calm_logged:{ro:"Notat ✓",es:"Anotado ✓",en:"Logged ✓"},
+    calm_today:{ro:"Azi",es:"Hoy",en:"Today"},
+    calm_ex_one:{ro:"exercițiu",es:"ejercicio",en:"exercise"},
+    calm_ex_many:{ro:"exerciții",es:"ejercicios",en:"exercises"},
+    calm_none:{ro:"Niciun exercițiu încă azi — alege unul mai jos 🌿",es:"Ningún ejercicio aún hoy — elige uno abajo 🌿",en:"No exercises yet today — pick one below 🌿"},
+    calm_corr:{ro:"Ultimele 7 zile (exerciții & starea ta):",es:"Últimos 7 días (ejercicios y tu ánimo):",en:"Last 7 days (exercises & your mood):"},
+    cp_done:{ro:"✓ Am terminat",es:"✓ Terminé",en:"✓ Done"},
     emcc_full_label:{ro:"Aria de competențe acoperite (EMCC)",es:"Área de competencias cubiertas (EMCC)",en:"Areas of competence covered (EMCC)"},
     add_tag_dot:{ro:"Adaugă etichetă",es:"Añadir etiqueta",en:"Add tag"},
     other_day:{ro:"Altă zi",es:"Otro día",en:"Another day"},
@@ -2635,6 +2658,41 @@ Objective description, "just the facts".
       steps:[{ro:"5 lucruri pe care le vezi.",es:"5 cosas que ves.",en:"5 things you can see."},{ro:"4 lucruri pe care le auzi.",es:"4 cosas que oyes.",en:"4 things you can hear."},{ro:"3 lucruri pe care le poți atinge.",es:"3 cosas que puedes tocar.",en:"3 things you can touch."},{ro:"2 lucruri pe care le miroși.",es:"2 cosas que hueles.",en:"2 things you can smell."},{ro:"1 lucru pe care îl guști — sau o respirație adâncă.",es:"1 cosa que saboreas — o una respiración profunda.",en:"1 thing you can taste — or one deep breath."}]}
   ];
   let calmMode="breath";
+  function calmById(id){ return BREATH.concat(SOMATIC).find(p=>p.id===id); }
+  function calmLogKey(d){ return "calmlog:"+keyFor(d); }
+  async function logCalm(id){
+    try{
+      const k=calmLogKey(new Date());
+      let arr=[]; const raw=await Store.get(k); if(raw){ try{ arr=JSON.parse(raw)||[]; }catch(e){} }
+      arr.push({id, ts:Date.now()});
+      await Store.set(k, JSON.stringify(arr));
+      toast(t("calm_logged"));
+      renderCalmSummary();
+    }catch(e){}
+  }
+  async function renderCalmSummary(){
+    const box=$("#calmSummary"); if(!box) return;
+    const today=new Date();
+    let arr=[]; const raw=await Store.get(calmLogKey(today)); if(raw){ try{ arr=JSON.parse(raw)||[]; }catch(e){} }
+    const counts={}; arr.forEach(e=>{ counts[e.id]=(counts[e.id]||0)+1; });
+    const n=arr.length;
+    let html="<div class='cs-head'>"+t("calm_today")+": <b>"+n+"</b> "+(n===1?t("calm_ex_one"):t("calm_ex_many"))+"</div>";
+    if(n){
+      html+="<div class='cs-break'>";
+      Object.keys(counts).forEach(id=>{ const p=calmById(id); if(p) html+="<span class='cs-pill'>"+p.emoji+" "+LL(p.title)+" ×"+counts[id]+"</span>"; });
+      html+="</div>";
+    } else { html+="<div class='cs-empty'>"+t("calm_none")+"</div>"; }
+    const days=[]; for(let i=6;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); days.push(d); }
+    let strip="<div class='cs-strip'>";
+    for(const d of days){
+      let c=0; const r=await Store.get(calmLogKey(d)); if(r){ try{ c=(JSON.parse(r)||[]).length; }catch(e){} }
+      let mood=0; const jr=await Store.get("journal:"+keyFor(d)); if(jr){ try{ mood=(JSON.parse(jr).mood)||0; }catch(e){} }
+      strip+="<div class='cs-day'><div class='cs-dn'>"+d.getDate()+"</div><div class='cs-cc'>"+(c||"·")+"</div><div class='cs-mood'>"+(mood?MOODS[mood-1]:"·")+"</div></div>";
+    }
+    strip+="</div>";
+    html+="<div class='cs-corr-lbl'>"+t("calm_corr")+"</div>"+strip;
+    box.innerHTML=html;
+  }
   function renderCalm(){
     $("#calmMode").querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-m")===calmMode));
     const list = calmMode==="breath"? BREATH : SOMATIC;
@@ -2652,6 +2710,7 @@ Objective description, "just the facts".
       c.onclick=()=>openCalm(p);
       g.appendChild(c);
     });
+    renderCalmSummary();
   }
 
   let curPractice=null, breathStop=true, breathPhaseTimer=null, breathSecTimer=null, somaticTimer=null;
@@ -2666,7 +2725,9 @@ Objective description, "just the facts".
       const cir=$("#breathCircle"); cir.style.transition="none"; cir.style.transform="scale(0.45)"; }
     else { const ol=$("#somaticSteps"); ol.innerHTML=""; p.steps.forEach(s=>{ const li=document.createElement("li"); li.textContent=LL(s); ol.appendChild(li); });
       $("#somaticTimer").textContent = p.dur? fmt(p.dur) : ""; }
-    $("#cpStart").style.display = (!isBreath && !p.dur)? "none" : "inline-block";
+    const manual=(!isBreath && !p.dur);
+    $("#cpStart").style.display = manual? "none" : "inline-block";
+    $("#cpDone").style.display = manual? "inline-block" : "none";
     $("#calmPlayer").classList.add("show");
   }
   function closeCalm(){ stopCalm(); $("#calmPlayer").classList.remove("show"); }
@@ -2695,10 +2756,11 @@ Objective description, "just the facts".
   }
   function finishBreath(){ breathStop=true; clearInterval(breathSecTimer);
     $("#breathLabel").textContent=t("done_leaf"); $("#breathCount").textContent="";
-    const cir=$("#breathCircle"); cir.style.transition="transform 1s ease"; cir.style.transform="scale(0.6)"; chime("end"); }
+    const cir=$("#breathCircle"); cir.style.transition="transform 1s ease"; cir.style.transform="scale(0.6)"; chime("end");
+    if(curPractice) logCalm(curPractice.id); }
   function startSomatic(p){ stopCalm(); if(!p.dur) return;
     let rem=p.dur; $("#somaticTimer").textContent=fmt(rem);
-    somaticTimer=setInterval(()=>{ rem--; if(rem<=0){ clearInterval(somaticTimer); somaticTimer=null; $("#somaticTimer").textContent=t("done_leaf"); chime("end"); return; } $("#somaticTimer").textContent=fmt(rem); },1000);
+    somaticTimer=setInterval(()=>{ rem--; if(rem<=0){ clearInterval(somaticTimer); somaticTimer=null; $("#somaticTimer").textContent=t("done_leaf"); chime("end"); logCalm(p.id); return; } $("#somaticTimer").textContent=fmt(rem); },1000);
   }
 
   /* ---------- view switching ---------- */
@@ -2717,7 +2779,7 @@ Objective description, "just the facts".
   /* ---------- backup: export / import ---------- */
   async function exportData(){
     const dump={ app:"mi-dia", version:1, exportedAt:new Date().toISOString(), data:{} };
-    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("proj:"), ["areas","shortcuts","tags","projects","settings"]);
+    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("calmlog:"), await Store.list("proj:"), ["areas","shortcuts","tags","projects","settings"]);
     for(const k of keys){ const v=await Store.get(k); if(v!=null && v!=="") dump.data[k]=v; }
     try{
       const blob=new Blob([JSON.stringify(dump,null,2)],{type:"application/json"});
@@ -2840,6 +2902,7 @@ Objective description, "just the facts".
   $("#cpStart").onclick=startCalm;
   $("#cpStop").onclick=stopCalm;
   $("#cpClose").onclick=closeCalm;
+  $("#cpDone").onclick=()=>{ if(curPractice) logCalm(curPractice.id); };
   $("#calmPlayer").onclick=(e)=>{ if(e.target.id==="calmPlayer") closeCalm(); };
 
   // language switcher
