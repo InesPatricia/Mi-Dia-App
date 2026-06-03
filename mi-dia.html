@@ -126,9 +126,13 @@
     font-weight:800;cursor:pointer;font-size:.95rem;transition:.16s;}
   .addrow .add:hover{filter:brightness(.96);transform:translateY(-1px);}
   .catpick{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;}
-  .catpick .cp{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s;position:relative;}
-  .catpick .cp.sel{border-color:var(--ink);transform:scale(1.12);}
-  .catpick .cp:hover{transform:scale(1.12);}
+  .catpick .cp{--ac:var(--sand-deep);display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);
+    background:var(--cream);color:var(--ink);border-radius:30px;padding:6px 12px;font-family:inherit;font-weight:700;
+    font-size:.82rem;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease;line-height:1;}
+  .catpick .cp .cpdot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;}
+  .catpick .cp:hover{transform:translateY(-1px);}
+  .catpick .cp.sel{border-color:var(--ac);background:var(--ac);color:#fff;}
+  .catpick .cp.sel .cpdot{background:#fff;}
 
   /* blocks */
   .group-label{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
@@ -512,6 +516,39 @@
   .tagdots{display:inline-flex;gap:2px;align-items:center;cursor:pointer;min-width:14px;}
   .tagdots.empty::after{content:"🏷";opacity:.35;font-size:.78rem;}
   .tdotmini{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* ----- 4F reflection button ----- */
+  .j4f-btn{display:block;width:100%;margin:8px 0 4px;border:1.5px dashed var(--lavender);
+    background:var(--lavender-l);color:var(--ink);border-radius:14px;padding:10px 12px;
+    font-family:inherit;font-weight:800;font-size:.9rem;cursor:pointer;transition:transform .12s ease,background .12s ease,color .12s ease;}
+  .j4f-btn:hover{transform:translateY(-1px);background:var(--lavender);color:#fff;}
+
+  /* ----- EMCC competencies in journal ----- */
+  .emcc-box{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;}
+  .emcc-label{font-size:.82rem;font-weight:800;color:var(--ink-soft);margin-bottom:7px;}
+
+  /* ----- reflection export buttons ----- */
+  .exp-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .exp-label{font-size:.82rem;font-weight:700;color:var(--ink-soft);}
+  .exp-btn{border:1.5px solid var(--line);background:var(--cream);color:var(--ink);border-radius:12px;
+    padding:7px 12px;font-family:inherit;font-weight:700;font-size:.82rem;cursor:pointer;transition:.12s;}
+  .exp-btn:hover{transform:translateY(-1px);background:var(--sand);}
+
+  /* ----- journal event field ----- */
+  .jevent{width:100%;box-sizing:border-box;border:1.5px solid var(--line);background:var(--cream);color:var(--ink);
+    border-radius:12px;padding:9px 12px;font-family:inherit;font-size:.9rem;margin-bottom:8px;}
+  .jevent:focus{outline:none;border-color:var(--terracotta);}
+
+  /* ----- editable shortcuts ----- */
+  .chip-add, .chip-edit{background:var(--sand) !important;border:1.5px dashed var(--line);font-weight:800;}
+  .chip-x{margin-left:7px;color:var(--rose);font-weight:800;cursor:pointer;}
+  .sc-form{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px;}
+  .sc-form.show{display:flex;}
+  .sc-form input,.sc-form select{border:1.5px solid var(--line);background:var(--cream);border-radius:12px;padding:8px 10px;font-family:inherit;font-size:.85rem;color:var(--ink);}
+  .sc-form #scName{flex:1;min-width:130px;}
+  .sc-form #scDur{width:60px;}
+  .sc-form button{border:none;border-radius:12px;padding:8px 14px;font-family:inherit;font-weight:800;cursor:pointer;background:var(--terracotta);color:#fff;}
+  .sc-form .sc-cancel{background:var(--sand);color:var(--ink);}
 </style>
 
 <div class="wrap">
@@ -568,6 +605,13 @@
       <h2 data-i18n="day_plan">🗓️ Planul zilei</h2>
 
       <div class="chips" id="chips"></div>
+      <div class="sc-form" id="scForm">
+        <input type="text" id="scName" data-i18n-ph="sc_name_ph" placeholder="Nume scurtătură…" autocomplete="off">
+        <select id="scArea"></select>
+        <input type="number" id="scDur" min="1" max="600" data-i18n-ph="ph_min" placeholder="min">
+        <button id="scAdd" data-i18n="add_short">Adaugă</button>
+        <button id="scCancel" class="sc-cancel">✕</button>
+      </div>
 
       <div class="addrow">
         <span id="inTimeWrap"></span>
@@ -680,12 +724,23 @@
     <div class="panel">
       <div class="jmood-label" data-i18n="sky_today">Cum e cerul tău azi?</div>
       <div class="mood" id="mood"></div>
+      <input type="text" class="jevent" id="jEvent" data-i18n-ph="ph_event" placeholder="Eveniment (opțional): ex. ședință cu un client…" autocomplete="off">
       <div class="jprompt-row">
         <button class="jprompt" id="jPrompt" data-i18n-title="jprompt_title" title="Apasă ca să adaugi întrebarea în jurnal"></button>
         <button class="jshuffle" id="jShuffle" data-i18n-title="shuffle_title" title="Altă idee">🔄</button>
       </div>
+      <button class="j4f-btn" id="j4f" data-i18n="btn_4f">🌱 Reflecție 4F</button>
       <textarea id="jText" class="jtext" data-i18n-ph="ph_journal" placeholder="Scrie liber…"></textarea>
       <div class="jfoot"><span id="jCount">0 cuvinte</span><span id="jSaved"></span></div>
+      <div class="emcc-box">
+        <div class="emcc-label" data-i18n="emcc_h">🎓 Competențe EMCC acoperite</div>
+        <div class="tagchips" id="jComp"></div>
+      </div>
+      <div class="exp-row">
+        <span class="exp-label" data-i18n="exp_label">Exportă reflecția:</span>
+        <button class="exp-btn" id="expWord" data-i18n="exp_word">📄 Word</button>
+        <button class="exp-btn" id="expPdf" data-i18n="exp_pdf">📑 PDF</button>
+      </div>
     </div>
   </div><!-- /view-journal -->
 
@@ -1012,6 +1067,20 @@
     saved_ok:{ro:"Salvat ✓",es:"Guardado ✓",en:"Saved ✓"},
     new_proj_chip:{ro:"＋ proiect",es:"＋ proyecto",en:"＋ project"},
     done_group:{ro:"Finalizate",es:"Completadas",en:"Completed"},
+    btn_4f:{ro:"🌱 Reflecție 4F",es:"🌱 Reflexión 4F",en:"🌱 4F Reflection"},
+    emcc_h:{ro:"🎓 Competențe EMCC acoperite",es:"🎓 Competencias EMCC cubiertas",en:"🎓 EMCC competences covered"},
+    exp_label:{ro:"Exportă reflecția:",es:"Exportar la reflexión:",en:"Export the reflection:"},
+    exp_word:{ro:"📄 Word",es:"📄 Word",en:"📄 Word"},
+    exp_pdf:{ro:"📑 PDF",es:"📑 PDF",en:"📑 PDF"},
+    refl_note:{ro:"Notă de reflecție",es:"Nota de reflexión",en:"Reflection note"},
+    refl_empty:{ro:"Scrie ceva în jurnal înainte de export.",es:"Escribe algo en el diario antes de exportar.",en:"Write something in the journal before exporting."},
+    ph_event:{ro:"Eveniment (opțional): ex. ședință cu un client…",es:"Evento (opcional): ej. sesión con un cliente…",en:"Event (optional): e.g. session with a client…"},
+    ev_label:{ro:"Eveniment",es:"Evento",en:"Event"},
+    sc_name_ph:{ro:"Nume scurtătură…",es:"Nombre del atajo…",en:"Shortcut name…"},
+    sc_add:{ro:"Adaugă scurtătură",es:"Añadir atajo",en:"Add shortcut"},
+    sc_edit:{ro:"Editează scurtăturile",es:"Editar atajos",en:"Edit shortcuts"},
+    sc_done:{ro:"Gata",es:"Listo",en:"Done"},
+    emcc_full_label:{ro:"Aria de competențe acoperite (EMCC)",es:"Área de competencias cubiertas (EMCC)",en:"Areas of competence covered (EMCC)"},
     add_tag_dot:{ro:"Adaugă etichetă",es:"Añadir etiqueta",en:"Add tag"},
     other_day:{ro:"Altă zi",es:"Otro día",en:"Another day"},
     toast_tag_exists:{ro:"Eticheta există deja: ",es:"La etiqueta ya existe: ",en:"Tag already exists: "},
@@ -1285,15 +1354,54 @@
   let goalWeekly = 25;           // target completed slots per week
 
   /* quick-add presets the user mentioned */
-  const PRESETS = [
-    {cat:"coaching",  text:{ro:"Sesiune de coaching",es:"Sesión de coaching",en:"Coaching session"}},
-    {cat:"reflectie", text:{ro:"Reflecție 4F",es:"Reflexión 4F",en:"4F reflection"}},
-    {cat:"reflectie", text:{ro:"Jurnal liber",es:"Diario libre",en:"Free journaling"}},
-    {cat:"invatare",  text:{ro:"Citit / curs",es:"Lectura / curso",en:"Reading / course"}},
-    {cat:"corpcalm",  emoji:"🌬️", text:{ro:"Respirație / nerv vag",es:"Respiración / nervio vago",en:"Breathing / vagus nerve"}},
-    {cat:"corpcalm",  emoji:"🚶", text:{ro:"Mișcare / plimbare",es:"Movimiento / paseo",en:"Movement / walk"}},
-    {cat:"relatii",   text:{ro:"Timp cu cei dragi",es:"Tiempo con seres queridos",en:"Time with loved ones"}}
+  // shortcut buttons (quick-add). Defaults are translatable (key); user-added ones store plain text.
+  const SHORTCUT_LABELS = {
+    sc_coaching:{ro:"Sesiune de coaching",es:"Sesión de coaching",en:"Coaching session"},
+    sc_4f:{ro:"Reflecție 4F",es:"Reflexión 4F",en:"4F reflection"},
+    sc_journal:{ro:"Jurnal liber",es:"Diario libre",en:"Free journaling"},
+    sc_read:{ro:"Citit / curs",es:"Lectura / curso",en:"Reading / course"},
+    sc_breath:{ro:"Respirație / nerv vag",es:"Respiración / nervio vago",en:"Breathing / vagus nerve"},
+    sc_move:{ro:"Mișcare / plimbare",es:"Movimiento / paseo",en:"Movement / walk"},
+    sc_loved:{ro:"Timp cu cei dragi",es:"Tiempo con seres queridos",en:"Time with loved ones"}
+  };
+  const DEFAULT_SHORTCUTS = [
+    {key:"sc_coaching", cat:"coaching", dur:60},
+    {key:"sc_4f",       cat:"reflectie", dur:20},
+    {key:"sc_journal",  cat:"reflectie", dur:0},
+    {key:"sc_read",     cat:"invatare", dur:45},
+    {key:"sc_breath", emoji:"🌬️", cat:"corpcalm", dur:10},
+    {key:"sc_move",   emoji:"🚶", cat:"corpcalm", dur:30},
+    {key:"sc_loved",    cat:"relatii", dur:30}
   ];
+  let shortcuts = [];
+  let scEdit = false;
+  const scUid = sc => sc.id || sc.key;
+  function shortcutLabel(sc){
+    if(sc.key){ const m=SHORTCUT_LABELS[sc.key]; return m? (m[lang]!==undefined?m[lang]:m.en) : sc.key; }
+    return sc.label||"";
+  }
+  function shortcutEmoji(sc){ return sc.emoji || (CATS[sc.cat]? CATS[sc.cat].emoji : "🔖"); }
+  async function loadShortcuts(){
+    const raw=await Store.get("shortcuts");
+    if(raw){ try{ const arr=JSON.parse(raw); if(Array.isArray(arr)) shortcuts=arr; }catch(e){} }
+    if(!shortcuts.length){ shortcuts=DEFAULT_SHORTCUTS.map(x=>Object.assign({},x)); await saveShortcuts(); }
+  }
+  async function saveShortcuts(){ await Store.set("shortcuts", JSON.stringify(shortcuts)); }
+  function addShortcut(label, cat, dur){
+    label=(label||"").trim(); if(!label) return false;
+    if(!CATS[cat]) cat=CAT_KEYS[0];
+    shortcuts.push({id:"s"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), label, cat, dur:(dur>0?dur:0)});
+    saveShortcuts(); renderChips(); return true;
+  }
+  function deleteShortcut(uid){ shortcuts=shortcuts.filter(sc=>scUid(sc)!==uid); saveShortcuts(); renderChips(); }
+  function openScForm(){
+    const f=$("#scForm"); if(!f) return;
+    const sel=$("#scArea"); sel.innerHTML="";
+    CAT_KEYS.forEach(k=>{ const o=document.createElement("option"); o.value=k; o.textContent=CATS[k].emoji+" "+catLabel(k); sel.appendChild(o); });
+    sel.value = CATS[selCat]? selCat : CAT_KEYS[0];
+    $("#scName").value=""; $("#scDur").value="";
+    f.classList.add("show"); $("#scName").focus();
+  }
   function presetText(p){ return typeof p.text==="object" ? (p.text[lang]||p.text.en) : p.text; }
 
   /* ---------- spanish phrases (deterministic per day) ---------- */
@@ -1333,23 +1441,40 @@
   const tagIdByName = name => { const t=tags.find(x=>x.name.toLowerCase()===(name||"").toLowerCase()); return t? t.id : ""; };
 
   function renderChips(){
-    const c = $("#chips"); c.innerHTML="";
-    PRESETS.forEach(p=>{
-      const cat = CATS[p.cat];
+    const c = $("#chips"); if(!c) return; c.innerHTML="";
+    shortcuts.forEach(sc=>{
+      const cat = CATS[sc.cat] || CATS[CAT_KEYS[0]];
       const b = document.createElement("button");
-      b.className="chip"; b.style.background=cat.soft;
-      const txt=presetText(p);
-      b.innerHTML = (p.emoji||cat.emoji)+" "+txt;
-      b.onclick = ()=>{ addBlock({title:txt, cat:p.cat, time:addTime, tags:[]}); buildAddTime(); };
+      b.className="chip"; b.style.background = cat? cat.soft : "var(--sand)";
+      b.appendChild(document.createTextNode(shortcutEmoji(sc)+" "+shortcutLabel(sc)));
+      if(scEdit){
+        const x=document.createElement("span"); x.className="chip-x"; x.textContent="✕";
+        x.addEventListener("click", e=>e.stopPropagation());
+        twoTap(x, ()=>deleteShortcut(scUid(sc)), "✕?");
+        b.appendChild(x);
+      } else {
+        b.onclick = ()=>{ const cc=CATS[sc.cat]?sc.cat:CAT_KEYS[0]; addBlock({title:shortcutLabel(sc), cat:cc, time:addTime, dur:sc.dur||0, tags:[]}); buildAddTime(); };
+      }
       c.appendChild(b);
     });
+    const edit=document.createElement("button"); edit.className="chip chip-edit"; edit.textContent = scEdit? "✓" : "✎";
+    edit.title = t(scEdit? "sc_done":"sc_edit");
+    edit.onclick=()=>{ scEdit=!scEdit; renderChips(); };
+    c.appendChild(edit);
+    const add=document.createElement("button"); add.className="chip chip-add"; add.textContent="＋";
+    add.title=t("sc_add"); add.onclick=openScForm;
+    c.appendChild(add);
   }
 
   function renderCatPick(){
-    const c = $("#catpick"); c.innerHTML="";
+    const c = $("#catpick"); if(!c) return; c.innerHTML="";
     CAT_KEYS.forEach(k=>{
-      const d=document.createElement("div");
-      d.className="cp"+(k===selCat?" sel":""); d.style.background=CATS[k].color;
+      const d=document.createElement("button"); d.type="button";
+      d.className="cp"+(k===selCat?" sel":"");
+      d.style.setProperty("--ac", CATS[k].color);
+      const dot=document.createElement("span"); dot.className="cpdot"; dot.style.background=CATS[k].color;
+      d.appendChild(dot);
+      d.appendChild(document.createTextNode(" "+CATS[k].emoji+" "+catLabel(k)));
       d.title=catLabel(k);
       d.onclick=()=>{ selCat=k; renderCatPick(); };
       c.appendChild(d);
@@ -2065,6 +2190,130 @@
     {ro:"Ce aș face altfel dacă aș relua ziua",es:"Qué haría distinto si repitiera el día",en:"What I'd do differently if I replayed today"}
   ];
   function jpromptText(p){ return typeof p==="object" ? (p[lang]||p.en) : p; }
+  // 4F reflection scaffold (structure from the EMCC coaching manual: Facts / Feelings / Findings / Future)
+  const TEMPLATE_4F = {
+    ro: `🌱 Reflecție 4F
+
+1. FACTS — Fapte
+Descriere obiectivă, „doar fapte".
+• Ce s-a întâmplat de fapt? (unde, când, cine a fost implicat)
+• Ce am făcut / ce nu am făcut? Ce au făcut ceilalți?
+
+
+2. FEELINGS — Emoții și gânduri (ce am gândit, simțit, făcut)
+• Ce am simțit? Erau și alte emoții „dincolo" de acestea?
+• Ce am gândit despre mine / despre ceilalți / despre situație?
+• De unde vin aceste emoții și gânduri? Îmi sunt familiare?
+
+
+3. FINDINGS — Descoperiri
+• De ce am făcut ceea ce am făcut? Cum mi-au influențat emoțiile reacțiile?
+• Ce tipar de comportament observ? Ce „rol" am luat?
+• Ce am descoperit despre mine / despre ceilalți?
+
+
+4. FUTURE — Viitor
+• Ce voi face la fel / diferit data viitoare?
+• Cum îmi pot schimba tiparul / abordarea?
+• Plan concret (ce, când, unde, cu cine):
+`,
+    es: `🌱 Reflexión 4F
+
+1. FACTS — Hechos
+Descripción objetiva, „solo hechos".
+• ¿Qué pasó realmente? (dónde, cuándo, quién participó)
+• ¿Qué hice / qué no hice? ¿Qué hicieron los demás?
+
+
+2. FEELINGS — Emociones y pensamientos (qué pensé, sentí, hice)
+• ¿Qué sentí? ¿Había otras emociones „detrás" de estas?
+• ¿Qué pensé sobre mí / sobre los demás / sobre la situación?
+• ¿De dónde vienen estas emociones y pensamientos? ¿Me resultan familiares?
+
+
+3. FINDINGS — Descubrimientos
+• ¿Por qué hice lo que hice? ¿Cómo influyeron mis emociones en mis reacciones?
+• ¿Qué patrón de comportamiento observo? ¿Qué „rol" adopté?
+• ¿Qué descubrí sobre mí / sobre los demás?
+
+
+4. FUTURE — Futuro
+• ¿Qué haré igual / distinto la próxima vez?
+• ¿Cómo puedo cambiar mi patrón / enfoque?
+• Plan concreto (qué, cuándo, dónde, con quién):
+`,
+    en: `🌱 4F Reflection
+
+1. FACTS
+Objective description, "just the facts".
+• What actually happened? (where, when, who was involved)
+• What did I do / not do? What did others do?
+
+
+2. FEELINGS — emotions & thoughts (what I thought, felt, did)
+• What did I feel? Were there other emotions "beneath" these?
+• What did I think about myself / others / the situation?
+• Where do these emotions and thoughts come from? Are they familiar?
+
+
+3. FINDINGS
+• Why did I do what I did? How did my emotions shape my reactions?
+• What behaviour pattern do I notice? What "role" did I take?
+• What did I discover about myself / others?
+
+
+4. FUTURE
+• What will I do the same / differently next time?
+• How can I change my pattern / approach?
+• Concrete plan (what, when, where, with whom):
+`
+  };
+  function template4F(){ return TEMPLATE_4F[lang] || TEMPLATE_4F.en; }
+  // lines from the older 4F templates, used only to detect & clear untouched templates
+  const OLD_4F_LINES = [
+    "✍️ Reflecție 4F","1. FACTS — Fapte","Ce s-a întâmplat, obiectiv? (unde, când, cine, ce am făcut / ce nu am făcut)","2. FEELINGS — Emoții și gânduri (ce am gândit, simțit, făcut)","Ce am simțit? Ce gânduri mi-au trecut prin minte? De unde vin?","3. FINDINGS — Descoperiri","Ce am învățat despre mine / ceilalți? Ce tipar observ?","4. FUTURE — Viitor","Ce voi face la fel / diferit data viitoare? Un pas concret:",
+    "✍️ Reflexión 4F","1. FACTS — Hechos","¿Qué pasó, objetivamente? (dónde, cuándo, quién, qué hice / qué no hice)","2. FEELINGS — Emociones y pensamientos (qué pensé, sentí, hice)","¿Qué sentí? ¿Qué pensamientos tuve? ¿De dónde vienen?","3. FINDINGS — Descubrimientos","¿Qué aprendí sobre mí / los demás? ¿Qué patrón observo?","4. FUTURE — Futuro","¿Qué haré igual / distinto la próxima vez? Un paso concreto:",
+    "✍️ 4F Reflection","1. FACTS","What happened, objectively? (where, when, who, what I did / didn't do)","2. FEELINGS — emotions & thoughts (what I thought, felt, did)","What did I feel? What thoughts came up? Where do they come from?","3. FINDINGS","What did I learn about myself / others? What pattern do I notice?","4. FUTURE","What will I do the same / differently next time? One concrete step:"
+  ];
+  async function clearUntouchedTemplates(){
+    try{
+      if(await Store.get("mig_clear_4f_v2")) return;
+      const tl=new Set();
+      Object.values(TEMPLATE_4F).forEach(tpl=>tpl.split("\n").forEach(l=>{ l=l.trim(); if(l) tl.add(l); }));
+      OLD_4F_LINES.forEach(l=>tl.add(l.trim()));
+      const keys=await Store.list("journal:");
+      for(const k of keys){
+        const raw=await Store.get(k); if(!raw) continue;
+        let o; try{ o=JSON.parse(raw); }catch(e){ continue; }
+        const txt=((o&&o.text)||"").trim(); if(!txt) continue;
+        const lines=txt.split("\n").map(l=>l.trim()).filter(Boolean);
+        if(lines.length && lines.every(l=>tl.has(l))){ o.text=""; await Store.set(k, JSON.stringify(o)); }
+      }
+      await Store.set("mig_clear_4f_v2","1");
+    }catch(e){}
+  }
+  // EMCC key-competency framework (8 competences) — for correlating reflections with the accreditation dossier
+  const EMCC_COMP = [
+    {id:"c1", ind:"1-4",   short:{ro:"Conștientizare de sine",es:"Autoconciencia",en:"Understanding self"}, full:{ro:"Competența 1: Conștientizare de sine",es:"Competencia 1: Autoconciencia",en:"Competence 1: Understanding self"}},
+    {id:"c2", ind:"5",     short:{ro:"Auto-dezvoltare",es:"Autodesarrollo",en:"Self-development"}, full:{ro:"Competența 2: Angajament pentru dezvoltarea personală",es:"Competencia 2: Compromiso con el autodesarrollo",en:"Competence 2: Commitment to self-development"}},
+    {id:"c3", ind:"6-9",   short:{ro:"Contract",es:"Contrato",en:"Contract"}, full:{ro:"Competența 3: Gestionarea contractului",es:"Competencia 3: Gestión del contrato",en:"Competence 3: Managing the contract"}},
+    {id:"c4", ind:"10-14", short:{ro:"Relație",es:"Relación",en:"Relationship"}, full:{ro:"Competența 4: Construirea relației",es:"Competencia 4: Construcción de la relación",en:"Competence 4: Building the relationship"}},
+    {id:"c5", ind:"15-20", short:{ro:"Descoperire & învățare",es:"Descubrimiento y aprendizaje",en:"Insight & learning"}, full:{ro:"Competența 5: Facilitarea descoperirilor și a învățării",es:"Competencia 5: Facilitar el descubrimiento y el aprendizaje",en:"Competence 5: Enabling insight and learning"}},
+    {id:"c6", ind:"21-26", short:{ro:"Rezultat & acțiune",es:"Resultado y acción",en:"Outcome & action"}, full:{ro:"Competența 6: Orientarea către rezultat și acțiune",es:"Competencia 6: Orientación a resultados y acción",en:"Competence 6: Outcome and action orientation"}},
+    {id:"c7", ind:"27",    short:{ro:"Modele & tehnici",es:"Modelos y técnicas",en:"Models & techniques"}, full:{ro:"Competența 7: Folosirea modelelor și a tehnicilor",es:"Competencia 7: Uso de modelos y técnicas",en:"Competence 7: Use of models and techniques"}},
+    {id:"c8", ind:"28-30", short:{ro:"Evaluare",es:"Evaluación",en:"Evaluation"}, full:{ro:"Competența 8: Evaluarea",es:"Competencia 8: Evaluación",en:"Competence 8: Evaluation"}}
+  ];
+  const jComp = new Set();
+  function renderComp(){
+    const w=$("#jComp"); if(!w) return; w.innerHTML="";
+    EMCC_COMP.forEach(c=>{
+      const b=document.createElement("button"); b.type="button";
+      b.className="tagchip"+(jComp.has(c.id)?" sel":""); b.style.setProperty("--tc","var(--lavender)");
+      b.textContent=(c.short[lang]||c.short.en)+" ("+c.ind+")"; b.title=c.full[lang]||c.full.en;
+      b.onclick=()=>{ if(jComp.has(c.id)) jComp.delete(c.id); else jComp.add(c.id); renderComp(); scheduleJSave(); };
+      w.appendChild(b);
+    });
+  }
   let jMood=0, jSaveTimer=null, jPromptIdx=0;
 
   function renderJournalHeader(){
@@ -2089,17 +2338,81 @@
     let o={text:"",mood:0};
     const raw=await Store.get("journal:"+keyFor(cur));
     if(raw){ try{ o=JSON.parse(raw)||o; }catch(e){} }
-    jMood=o.mood||0; $("#jText").value=o.text||"";
-    renderMood(); updateJCount();
+    jMood=o.mood||0; $("#jText").value=o.text||""; if($("#jEvent")) $("#jEvent").value=o.event||"";
+    jComp.clear(); (o.comp||[]).forEach(c=>jComp.add(c));
+    renderMood(); renderComp(); updateJCount();
     $("#jSaved").textContent=(o.text && o.text.trim())? t("saved"):"";
   }
   async function saveJournal(){
-    const o={text:$("#jText").value, mood:jMood};
+    const o={text:$("#jText").value, mood:jMood, comp:[...jComp], event:($("#jEvent")?$("#jEvent").value:"")};
     await Store.set("journal:"+keyFor(cur), JSON.stringify(o));
     $("#jSaved").textContent=t("saved_ok");
   }
   function scheduleJSave(){ $("#jSaved").textContent=t("saving"); clearTimeout(jSaveTimer); jSaveTimer=setTimeout(()=>{ jSaveTimer=null; saveJournal(); },600); }
   function flushJ(){ if(jSaveTimer){ clearTimeout(jSaveTimer); jSaveTimer=null; saveJournal(); } }
+  // build the reflection note as a body fragment only (no full-document wrapper,
+  // which would confuse the artifact preview parser)
+  function is4FHeader(line){
+    const l=line.trim().toUpperCase();
+    return (l.indexOf("1.")===0 && l.indexOf("FACTS")>=0) ||
+           (l.indexOf("2.")===0 && l.indexOf("FEELINGS")>=0) ||
+           (l.indexOf("3.")===0 && l.indexOf("FINDINGS")>=0) ||
+           (l.indexOf("4.")===0 && l.indexOf("FUTURE")>=0);
+  }
+  function renderReflBody(text, esc){
+    text=(text||"").trim(); if(!text) return "";
+    let lines=text.split("\n");
+    while(lines.length && lines[0].trim()==="") lines.shift();
+    if(lines.length && /4F/i.test(lines[0]) && /(reflec|reflection)/i.test(lines[0])) lines.shift();
+    if(!lines.some(is4FHeader)){
+      return "<pre style='white-space:pre-wrap;font-family:Georgia,serif;font-size:13px;line-height:1.55;margin:6px 0;'>"+esc(lines.join("\n").trim())+"</pre>";
+    }
+    let html="", buf=[], head=null;
+    const flush=()=>{
+      if(head!==null) html+="<h3 style='font-family:Georgia,serif;font-size:15px;color:#c96f4a;margin:16px 0 4px;'>"+esc(head)+"</h3>";
+      const body=buf.join("\n").trim();
+      if(body) html+="<pre style='white-space:pre-wrap;font-family:Georgia,serif;font-size:13px;line-height:1.55;margin:0 0 6px;'>"+esc(body)+"</pre>";
+      buf=[];
+    };
+    lines.forEach(l=>{ if(is4FHeader(l)){ flush(); head=l.trim(); } else buf.push(l); });
+    flush();
+    return html;
+  }
+  function reflectionFragment(){
+    const esc = x => (x||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const dateStr = cur.getDate()+" "+MON[lang][cur.getMonth()]+" "+cur.getFullYear();
+    const ev = ($("#jEvent") ? $("#jEvent").value : "").trim();
+    const comps = EMCC_COMP.filter(c=>jComp.has(c.id)).map(c=>(c.full[lang]||c.full.en)+" ("+c.ind+")");
+    const text = ($("#jText").value||"").trim();
+    const head = "<h1 style='font-family:Georgia,serif;font-size:20px;color:#222;border-bottom:2px solid #c96f4a;padding-bottom:6px;margin:0 0 6px;'>"+esc(t("refl_note"))+" — "+esc(dateStr)+"</h1>";
+    const evHTML = ev ? "<p style='font-family:Georgia,serif;font-size:13px;color:#555;margin:0 0 4px;'><b>"+esc(t("ev_label"))+":</b> "+esc(ev)+"</p>" : "";
+    const compHTML = comps.length ? "<h3 style='font-family:Georgia,serif;font-size:14px;color:#7a6f63;margin:16px 0 6px;'>"+esc(t("emcc_full_label"))+"</h3><ul style='font-family:Georgia,serif;font-size:13px;margin:0 0 6px;'>"+comps.map(c=>"<li>"+esc(c)+"</li>").join("")+"</ul>" : "";
+    const bodyHTML = renderReflBody(text, esc);
+    return { title: t("refl_note")+" — "+dateStr, body: head+evHTML+compHTML+bodyHTML };
+  }
+  function exportReflectionWord(){
+    if(!($("#jText").value||"").trim()){ toast(t("refl_empty")); return; }
+    try{
+      const r=reflectionFragment();
+      const doc = "\ufeff" + "<meta charset='utf-8'>" + "<div style='font-family:Georgia,serif;max-width:680px;margin:0 auto;color:#222;line-height:1.5;'>" + r.body + "</div>";
+      const blob=new Blob([doc],{type:"application/msword"});
+      const url=URL.createObjectURL(blob); const a=document.createElement("a");
+      a.href=url; a.download="reflectie-"+keyFor(cur)+".doc"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    }catch(e){ toast(t("dl_blocked")); }
+  }
+  function exportReflectionPDF(){
+    if(!($("#jText").value||"").trim()){ toast(t("refl_empty")); return; }
+    const win=window.open("","_blank");
+    if(!win){ toast(t("dl_blocked")); return; }
+    const r=reflectionFragment();
+    try{ win.document.title=r.title; }catch(e){}
+    const wrap=win.document.createElement("div");
+    wrap.style.cssText="font-family:Georgia,serif;max-width:680px;margin:24px auto;color:#222;line-height:1.5;padding:0 16px;";
+    wrap.innerHTML=r.body;
+    win.document.body.appendChild(wrap);
+    setTimeout(()=>{ try{ win.print(); }catch(e){} }, 350);
+  }
 
   /* ---------- projects, items, search, completed ---------- */
   let projects=[], activeProj=null, projMode="list", projDelArmed=false;
@@ -2390,7 +2703,7 @@
 
   /* ---------- view switching ---------- */
   function setView(v){
-    flushJ();
+    flushJ(); curView=v;
     ["day","journal","proj","cal","stats","calm"].forEach(name=>{ const el=document.getElementById("view-"+name); if(el) el.classList.toggle("active", name===v); });
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.getAttribute("data-v")===v));
     if(v==="day"){ load(); }
@@ -2404,7 +2717,7 @@
   /* ---------- backup: export / import ---------- */
   async function exportData(){
     const dump={ app:"mi-dia", version:1, exportedAt:new Date().toISOString(), data:{} };
-    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("proj:"), ["areas","tags","projects","settings"]);
+    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("proj:"), ["areas","shortcuts","tags","projects","settings"]);
     for(const k of keys){ const v=await Store.get(k); if(v!=null && v!=="") dump.data[k]=v; }
     try{
       const blob=new Blob([JSON.stringify(dump,null,2)],{type:"application/json"});
@@ -2425,7 +2738,7 @@
         for(const k of Object.keys(data)){ if(typeof data[k]==="string"){ await Store.set(k, data[k]); n++; } }
         daysCache=null;
         for(const k of Object.keys(itemsByProj)) delete itemsByProj[k];
-        await loadAreas(); await loadTags(); await loadSettings();
+        await loadAreas(); await loadShortcuts(); await loadTags(); await loadSettings();
         projects=[]; activeProj=null; await loadProjects();
         await load(); loadJournal();
         toast(t("import_ok_a")+n+t("entries"));
@@ -2453,10 +2766,17 @@
   document.querySelectorAll(".tab").forEach(t=>{ t.onclick=()=>setView(t.getAttribute("data-v")); });
   // journal
   $("#jText").addEventListener("input",()=>{ updateJCount(); scheduleJSave(); });
+  $("#jEvent").addEventListener("input", scheduleJSave);
   $("#jPrompt").onclick=()=>{ const t=$("#jText"); const p=JPROMPTS[jPromptIdx];
-    const pre=t.value.trim().length? t.value.replace(/\s*$/,"")+"\n\n":""; t.value=pre+p+"\n"; t.focus();
+    const pre=t.value.trim().length? t.value.replace(/\s*$/,"")+"\n\n":""; t.value=pre+jpromptText(p)+"\n"; t.focus();
     t.selectionStart=t.selectionEnd=t.value.length; updateJCount(); scheduleJSave(); };
   $("#jShuffle").onclick=()=>{ jPromptIdx=(jPromptIdx+1)%JPROMPTS.length; showPrompt(); };
+  $("#j4f").onclick=()=>{ const ta=$("#jText"); const pre=ta.value.trim().length? ta.value.replace(/\s*$/,"")+"\n\n":""; ta.value=pre+template4F(); ta.focus(); ta.selectionStart=ta.selectionEnd=ta.value.length; updateJCount(); scheduleJSave(); };
+  $("#expWord").onclick=exportReflectionWord;
+  $("#expPdf").onclick=exportReflectionPDF;
+  $("#scAdd").onclick=()=>{ if(addShortcut($("#scName").value, $("#scArea").value, parseInt($("#scDur").value,10)||0)){ $("#scForm").classList.remove("show"); } };
+  $("#scCancel").onclick=()=>{ $("#scForm").classList.remove("show"); };
+  $("#scName").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("#scAdd").click(); } });
   $("#jPrev").onclick=()=>{ flushJ(); cur.setDate(cur.getDate()-1); load(); loadJournal(); };
   $("#jNext").onclick=()=>{ flushJ(); cur.setDate(cur.getDate()+1); load(); loadJournal(); };
   $("#jToday").onclick=()=>{ flushJ(); cur=new Date(); cur.setHours(0,0,0,0); load(); loadJournal(); };
@@ -2528,9 +2848,11 @@
 
   (async function init(){
     await loadAreas();
+    await loadShortcuts();
     renderChips(); renderCatPick(); renderLegend(); renderTPresets(); renderTimer(); buildAddTime();
     await loadSettings();
     await Promise.all([loadTags(), loadProjects()]);
+    await clearUntouchedTemplates();
     renderLangBar();
     applyI18n();          // translate all static text + re-render current view in chosen language
     setView("day"); resumeActive();
