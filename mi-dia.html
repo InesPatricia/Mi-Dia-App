@@ -652,17 +652,17 @@
   /* =============  MI DÍA · REDESIGN OVERRIDE  ============== */
   /* ========================================================= */
   :root{
-    --page:#E7DDEE; --page-2:#EFE7F3;
+    --page:#EBE1EA; --page-2:#F2EAF1;
     --petal:#FCF7EC; --petal-edge:#F3E8D4;
-    --center-rose:#D6928E; --gold:#B8893F; --gold-deep:#9E7430;
+    --center-rose:#DD9E90; --gold:#B8893F; --gold-deep:#9E7430;
     --petal-icon:#C19A57; --petal-label:#86693D;
     --maxw:452px;
     --shadow-soft:0 6px 18px -10px rgba(150,120,90,.30);
   }
   body{
     background:
-      radial-gradient(900px 600px at 85% -10%, #F0E3D2, transparent 60%),
-      radial-gradient(700px 700px at -10% 110%, #E3D6EC, transparent 60%),
+      radial-gradient(900px 600px at 85% -10%, #EFE4ED, transparent 60%),
+      radial-gradient(700px 700px at -10% 110%, #E9DEE9, transparent 60%),
       linear-gradient(165deg, var(--page-2), var(--page)) !important;
     background-attachment:fixed !important;
     -webkit-tap-highlight-color:transparent;
@@ -719,7 +719,7 @@
     border:none;background:transparent;cursor:pointer;padding:0;-webkit-appearance:none;font-family:inherit;}
   .petal .petal-shape{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible;
     filter:drop-shadow(0 5px 9px rgba(120,95,60,.20));transition:filter .18s ease, transform .18s ease;}
-  .petal .petal-shape path{fill:#F4EBDD;stroke:#EADDCA;stroke-width:1.1;transition:fill .18s ease, stroke .18s ease;}
+  .petal .petal-shape path{fill:#F8EDE1;stroke:#EFE0CB;stroke-width:1.1;transition:fill .18s ease, stroke .18s ease;}
   .petal:hover .petal-shape{filter:drop-shadow(0 9px 14px rgba(120,95,60,.30));}
   .petal:active .petal-shape{transform:scale(.97);transform-origin:50% 50%;}
   .petal.active .petal-shape path{fill:#FCF2DE;stroke:#EAD3A0;stroke-width:1.2;}
@@ -730,7 +730,7 @@
   .petal.active .petal-inner svg{stroke:var(--terracotta);}
   .flower-center{position:absolute;left:50%;top:150px;transform:translate(-50%,-50%);
     width:78px;height:78px;border-radius:50%;border:none;cursor:pointer;padding:0;z-index:3;
-    background:radial-gradient(circle at 44% 38%,#E2A99F,var(--center-rose) 74%);
+    background:radial-gradient(circle at 44% 38%,#ECBFB2,var(--center-rose) 74%);
     box-shadow:0 8px 16px -10px rgba(150,90,85,.5), 0 0 0 5px #FBF4E8;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:transform .18s ease;}
   .flower-center svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
@@ -762,34 +762,44 @@
   .grid{display:flex !important;flex-direction:column;gap:16px;align-items:stretch;}
   .grid > div[style]{display:flex;flex-direction:column;gap:16px;}
   .panel{border-radius:var(--radius);box-shadow:var(--shadow-soft);margin-bottom:0;}
-  .panel h2{font-size:1.42rem;margin:0 0 16px;}
-  .panel h2:before{content:"";width:21px;height:21px;flex:none;border-radius:50%;
-    background:radial-gradient(circle at 40% 35%,#F4D8B0,var(--citrus));box-shadow:0 0 0 3px var(--citrus-l);display:inline-block;}
+  .panel h2{font-size:1.14rem;margin:0 0 16px;}
+  .panel h2:before{content:"";width:23px;height:23px;flex:none;display:inline-block;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E2922E' stroke-width='1.3' stroke-linejoin='round'%3E%3Cg transform='translate(12 12)'%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(30)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(90)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(150)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(210)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(270)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(330)'/%3E%3Ccircle r='1.4' fill='%23E2922E' stroke='none'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;}
 
   /* ---- QUICK ACTIVITY CARDS (.chip) ---- */
   .chips{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:18px;}
-  .chip{border:none;border-radius:16px;padding:10px 7px;font-weight:700;font-size:.7rem;min-width:0;
-    display:flex;align-items:center;gap:7px;text-align:left;line-height:1.16;min-height:62px;box-shadow:0 4px 12px -8px rgba(120,95,60,.4);
+  .chip{border:none;border-radius:16px;padding:10px 8px;font-weight:600;font-size:.72rem;min-width:0;
+    display:flex;align-items:center;gap:7px;text-align:left;line-height:1.18;min-height:50px;box-shadow:0 4px 12px -8px rgba(120,95,60,.4);
     transition:.16s;color:#5C5040;}
-  .chip .chip-ic{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
-    background:rgba(255,255,255,.74);box-shadow:0 2px 7px -4px rgba(120,95,60,.45);}
-  .chip .chip-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .chip .chip-ic{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;
+    background:transparent;box-shadow:none;}
+  .chip .chip-ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
   .chip .chip-lbl{flex:1;min-width:0;}
   .chip:hover{transform:translateY(-2px);box-shadow:0 8px 16px -8px rgba(120,95,60,.45);}
   .chip:active{transform:translateY(0);}
-  .chip-edit,.chip-add{justify-content:center;font-size:1.3rem;min-height:54px;font-weight:800;color:var(--gold);
-    background:transparent !important;border:1.5px dashed #E2D3BC;}
-  .chip-add{grid-column:span 2;}
+  .chip-add{grid-column:span 2;justify-content:center;gap:8px;font-size:.82rem;min-height:50px;font-weight:700;color:#937149;
+    background:transparent !important;border:1.5px solid #EADFCB;}
+  .chip-add .add-plus{color:#BB8547;font-size:1.2rem;font-weight:800;line-height:1;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;}
+  .panel-head h2{margin:0;}
+  .sc-edit-btn{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--sand);
+    color:var(--gold);font-size:1rem;cursor:pointer;display:grid;place-items:center;transition:.16s;line-height:1;font-family:inherit;}
+  .sc-edit-btn:hover{transform:translateY(-1px);border-color:var(--gold);}
   .chip .chip-x{margin-left:auto;}
 
   /* ---- ADD FORM ---- */
-  .addrow input[type=text]{border-radius:15px;padding:15px 17px;font-size:1rem;}
-  .addrow .add{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#fff;border-radius:15px;
-    padding:15px 26px;font-size:1.05rem;box-shadow:0 9px 20px -8px rgba(160,116,48,.7);}
+  .addrow input[type=text]{border-radius:13px;padding:10px 12px;font-size:.86rem;}
+  .addrow .add{background:linear-gradient(180deg,var(--gold),var(--gold-deep));color:#fff;border-radius:13px;
+    padding:10px 15px;font-size:.88rem;box-shadow:0 7px 15px -8px rgba(160,116,48,.6);white-space:nowrap;flex:0 0 auto;}
   .addrow .add:hover{filter:brightness(1.04);transform:translateY(-1px);}
-  #inTimeWrap .tpick{background:var(--sand);border:1px solid var(--line);border-radius:15px;padding:9px 11px;gap:7px;flex-wrap:wrap;}
-  #inTimeWrap .tsel{background:#fff;border-radius:12px;padding:11px 13px;font-size:1.05rem;}
-  #inTimeWrap .apb{padding:10px 17px;font-size:1rem;}
+  #inTimeWrap{flex:1 1 100%;display:block;width:100%;box-sizing:border-box;}
+  #inTimeWrap .tpick{display:flex;background:transparent;border:none;padding:0;gap:6px;flex-wrap:nowrap;width:100%;box-sizing:border-box;}
+  #inTimeWrap .tman{flex:1 1 0;min-width:0;width:auto;height:36px;box-sizing:border-box;padding:0 10px;}
+  #inTimeWrap .tsel{background:#fff;border-radius:10px;padding:0 8px;font-size:.85rem;height:36px;box-sizing:border-box;}
+  #inTimeWrap .ampm{height:36px;box-sizing:border-box;}
+  #inTimeWrap .apb{padding:0 12px;font-size:.84rem;display:grid;place-items:center;}
+  .addrow #inTitle{flex:1 1 0;min-width:0;}
+  .addrow #inDur{width:46px !important;min-width:0;flex:0 0 auto;}
 
   /* ---- spliced views get side padding (day view pads its own blocks) ---- */
   #view-journal,#view-proj,#view-cal,#view-stats,#view-calm,#view-profil{padding:16px 18px 0;}
@@ -812,7 +822,7 @@
   .bnav .blbl{font-size:.72rem;font-weight:700;}
   .bnav.active{color:var(--honey);}
   .bnav:hover{color:var(--ink);}
-  .bfab{flex:0 0 auto;width:62px;}
+  .bfab{flex:0 0 auto;width:62px;border:none;background:transparent;}
   .bfab .fab-circle{width:58px;height:58px;border-radius:50%;margin:-26px auto 0;
     background:radial-gradient(circle at 42% 36%,#FBF3E4,#F1E2C2 70%);border:1.5px solid var(--petal-edge);
     box-shadow:0 12px 26px -10px rgba(160,116,48,.6), 0 0 0 1px rgba(255,255,255,.7) inset;
@@ -831,11 +841,11 @@
   body.calm-mode .petal-inner svg{stroke:var(--honey);}
   body.calm-mode .bottombar{background:linear-gradient(180deg,rgba(26,37,31,.86),var(--cream));}
   body.calm-mode .bfab .fab-circle{background:radial-gradient(circle at 42% 36%,#2A3A32,#1E2A24 70%);border-color:#33423B;}
-  body.calm-mode .panel h2:before{box-shadow:0 0 0 3px rgba(203,160,90,.25);}
+  body.calm-mode .panel h2:before{box-shadow:none;}
 
   /* neutralize base .tab.active paint on flower + bottom nav (they share class "tab") */
   .petal.tab.active{background:transparent !important;color:inherit !important;}
-  .flower-center.tab.active{background:radial-gradient(circle at 42% 36%,#E3A6A8,var(--center-rose) 70%) !important;color:#fff !important;}
+  .flower-center.tab.active{background:radial-gradient(circle at 42% 36%,#ECBFB2,var(--center-rose) 70%) !important;color:#fff !important;}
   .bnav.tab.active,.bfab.tab.active{background:transparent !important;}
   .bnav.tab.active{color:var(--honey) !important;}
   .bfab.tab,.bnav.tab{box-shadow:none;}
@@ -962,7 +972,10 @@
 
       <div class="grid">
         <div class="panel">
-          <h2 data-i18n="day_plan">Planul zilei</h2>
+          <div class="panel-head">
+            <h2 data-i18n="day_plan">Planul zilei</h2>
+            <button id="scEditBtn" class="sc-edit-btn" type="button" data-i18n-title="sc_edit" title="Editează scurtăturile">✎</button>
+          </div>
 
           <div class="chips" id="chips"></div>
           <div class="sc-form" id="scForm">
@@ -1222,7 +1235,7 @@
   </button>
   <button class="tab bfab" data-v="day" id="fabHome" aria-label="Adaugă activitate">
     <span class="fab-circle">
-      <svg viewBox="0 0 24 24"><path d="M12 3c1.7 1.1 2.6 3 2.2 5 1.9-1 4-.5 5.1 1.2-1.1 1.9-3 2.8-5.1 2.3.9 1.9.5 4-1.2 5.2-1.7-1.1-2.6-3-2.2-5-1.9 1-4 .5-5.1-1.2 1.1-1.9 3-2.8 5.1-2.3-.9-1.9-.5-4 1.2-5.2z"/><circle cx="12" cy="11" r="2"/></svg>
+      <svg viewBox="0 0 24 24"><g transform="translate(12 12)"><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(60)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(120)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(180)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(240)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(300)"/><circle cx="0" cy="0" r="1.7"/></g></svg>
     </span>
     <span class="blbl">&#8203;</span>
   </button>
@@ -1467,6 +1480,7 @@
     sc_add:{ro:"Adaugă scurtătură",es:"Añadir atajo",en:"Add shortcut"},
     sc_edit:{ro:"Editează scurtăturile",es:"Editar atajos",en:"Edit shortcuts"},
     sc_done:{ro:"Gata",es:"Listo",en:"Done"},
+    sc_add_long:{ro:"Adaugă o activitate",es:"Añade una actividad",en:"Add an activity"},
     calm_logged:{ro:"Notat ✓",es:"Anotado ✓",en:"Logged ✓"},
     calm_today:{ro:"Azi",es:"Hoy",en:"Today"},
     calm_ex_one:{ro:"exercițiu",es:"ejercicio",en:"exercise"},
@@ -1558,9 +1572,9 @@
   const DEFAULT_AREAS = [
     {id:"coaching",  emoji:"🎯", color:"var(--terracotta)", soft:"var(--terracotta-l)", defMin:60},
     {id:"reflectie", emoji:"✍️", color:"var(--lavender)",   soft:"var(--lavender-l)",   defMin:20},
+    {id:"relatii",   emoji:"💚", color:"var(--fresh)",      soft:"var(--fresh-l)",      defMin:30},
     {id:"invatare",  emoji:"📚", color:"var(--sea)",        soft:"var(--sea-l)",        defMin:45},
-    {id:"corpcalm",  emoji:"🌿", color:"var(--olive)",      soft:"var(--olive-l)",      defMin:20},
-    {id:"relatii",   emoji:"💚", color:"var(--fresh)",      soft:"var(--fresh-l)",      defMin:30}
+    {id:"corpcalm",  emoji:"🌿", color:"var(--olive)",      soft:"var(--olive-l)",      defMin:20}
   ];
   const AREA_LABELS = {
     coaching: {ro:"Coaching",es:"Coaching",en:"Coaching"},
@@ -1786,13 +1800,13 @@
     sc_loved:'<svg viewBox="0 0 24 24"><path d="M12 20S4 14.5 4 9.2A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 8 2.2C20 14.5 12 20 12 20z"/></svg>'
   };
   const CHIP_TINTS = {
-    sc_coaching:{bg:'#F4DED9',ic:'#CB5E50'},
-    sc_4f:{bg:'#E9E3F0',ic:'#9079B5'},
-    sc_journal:{bg:'#F2EDE2',ic:'#6E6553'},
-    sc_read:{bg:'#DEE9DD',ic:'#5F8A63'},
-    sc_breath:{bg:'#E6E8DD',ic:'#888A5E'},
-    sc_move:{bg:'#F0EBE0',ic:'#9C7E57'},
-    sc_loved:{bg:'#DEEAD8',ic:'#5E9E72'}
+    sc_coaching:{bg:'#F8E8E3',ic:'#CB5E50'},
+    sc_4f:{bg:'#F0E9EF',ic:'#9079B5'},
+    sc_journal:{bg:'#F7EEE2',ic:'#6E6553'},
+    sc_read:{bg:'#E6EBE7',ic:'#5F8A63'},
+    sc_breath:{bg:'#ECEFE7',ic:'#888A5E'},
+    sc_move:{bg:'#F2EEE3',ic:'#9C7E57'},
+    sc_loved:{bg:'#ECEFE2',ic:'#5E9E72'}
   };
   const CHIP_ICON_DEFAULT='<svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13l-6-3-6 3V4z"/></svg>';
   async function loadShortcuts(){
@@ -1877,11 +1891,8 @@
       }
       c.appendChild(b);
     });
-    const edit=document.createElement("button"); edit.className="chip chip-edit"; edit.textContent = scEdit? "✓" : "✎";
-    edit.title = t(scEdit? "sc_done":"sc_edit");
-    edit.onclick=()=>{ scEdit=!scEdit; renderChips(); };
-    c.appendChild(edit);
-    const add=document.createElement("button"); add.className="chip chip-add"; add.textContent="＋";
+    const eb=$("#scEditBtn"); if(eb){ eb.textContent = scEdit? "✓":"✎"; eb.title=t(scEdit? "sc_done":"sc_edit"); }
+    const add=document.createElement("button"); add.className="chip chip-add"; add.innerHTML='<span class="add-plus">＋</span> '+t("sc_add_long");
     add.title=t("sc_add"); add.onclick=openScForm;
     c.appendChild(add);
   }
@@ -3247,6 +3258,7 @@ Objective description, "just the facts".
   $("#expPdf").onclick=exportReflectionPDF;
   $("#scAdd").onclick=()=>{ if(addShortcut($("#scName").value, $("#scArea").value, parseInt($("#scDur").value,10)||0)){ $("#scForm").classList.remove("show"); } };
   $("#scCancel").onclick=()=>{ $("#scForm").classList.remove("show"); };
+  { const eb=$("#scEditBtn"); if(eb) eb.onclick=()=>{ scEdit=!scEdit; renderChips(); }; }
   $("#scName").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $("#scAdd").click(); } });
   $("#jPrev").onclick=()=>{ flushJ(); cur.setDate(cur.getDate()-1); load(); loadJournal(); };
   $("#jNext").onclick=()=>{ flushJ(); cur.setDate(cur.getDate()+1); load(); loadJournal(); };
