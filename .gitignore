@@ -7,6 +7,9 @@ Thumbs.db
 .idea/
 *.swp
 
+# Tooling local Claude Code (setari + fisiere de referinta, nu fac parte din sursa)
+.claude/
+
 # Backup-uri locale exportate din aplicație
 mi-dia-backup-*.json
 
