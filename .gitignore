@@ -7,8 +7,11 @@ Thumbs.db
 .idea/
 *.swp
 
-# Tooling local Claude Code (setari + fisiere de referinta, nu fac parte din sursa)
-.claude/
+# Tooling local Claude Code: ignora tot ce e local (setari, loguri, fisiere de referinta)...
+.claude/*
+# ...dar urmareste skill-urile si scripturile partajate (cu tot ce contin)
+!.claude/skills/
+!.claude/scripts/
 
 # Backup-uri locale exportate din aplicație
 mi-dia-backup-*.json
