@@ -16,6 +16,9 @@ Thumbs.db
 # Backup-uri locale exportate din aplicație
 mi-dia-backup-*.json
 
+# Snapshot-uri versionate locale (sursa unica in git ramane mi-dia.html)
+mi-dia-v*.html
+
 # Dependențe / build (doar dacă adaugi mai târziu Node/Vite)
 node_modules/
 dist/
