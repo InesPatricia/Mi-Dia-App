@@ -147,14 +147,6 @@
   .block.done{background:linear-gradient(180deg,#FBF6EE,#F6EEDF);border-left-color:rgba(184,137,63,.3);}
   @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
   .brow{display:flex;align-items:center;gap:8px;}
-  /* time on its own line above the task — long ranges never crowd the title */
-  .block .btime{margin:0 0 2px 30px;line-height:1;}
-  /* overlapping slots shown side by side, like calendar columns — all fit, widths split evenly */
-  .cluster{display:flex;gap:6px;align-items:stretch;margin-bottom:8px;}
-  .cluster>.block{flex:1 1 0;min-width:0;margin-bottom:0;overflow:hidden;}
-  .cluster>.block .btime{margin-left:4px;}
-  .cluster>.block .time{font-size:.68rem;padding:2px 6px;white-space:normal;line-height:1.18;}
-  .cluster>.block .brow{flex-wrap:wrap;gap:4px;}
   .drag{flex:none;cursor:grab;touch-action:none;user-select:none;color:rgba(154,106,74,.4);font-size:.95rem;padding:2px;border-radius:6px;line-height:1;}
   .drag:active{cursor:grabbing;}
   .drag:hover{background:var(--sand-deep);color:var(--ink-soft);}
@@ -165,9 +157,9 @@
   .block .tick:hover{opacity:1;}
   .block.done .tick{background:var(--cat-accent,var(--terracotta));border-color:var(--cat-accent,var(--terracotta));opacity:1;}
   .block.done .tick:after{content:"✓";color:#fff;font-weight:900;font-size:.8rem;}
-  .block .time{font-variant-numeric:tabular-nums;font-weight:700;font-size:.8rem;color:var(--ink);white-space:nowrap;
-    flex:none;cursor:pointer;background:var(--cat-pale,rgba(255,255,255,.55));border:1px solid var(--cat-accent,rgba(184,137,63,.22));border-radius:8px;padding:3px 8px;transition:.15s;}
-  .block .time:hover{border-color:var(--cat-accent);background:var(--cat-pale2,#fff);}
+  .block .time{font-variant-numeric:tabular-nums;font-weight:700;font-size:.8rem;color:var(--ink);
+    flex:none;cursor:pointer;background:rgba(255,255,255,.55);border:1px solid rgba(184,137,63,.22);border-radius:8px;padding:3px 8px;transition:.15s;}
+  .block .time:hover{border-color:var(--terracotta);background:#fff;}
   .block .time.empty{color:rgba(154,106,74,.55);font-weight:600;font-size:.72rem;border:1px dashed rgba(184,137,63,.3);background:transparent;padding:3px 6px;}
   .block .title{flex:1;font-weight:700;font-size:.92rem;line-height:1.3;outline:none;border-radius:6px;padding:2px 4px;min-width:0;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cat-ink,var(--ink));}
@@ -777,8 +769,8 @@
      Two layers: (1) the 5 petal SHAPES rotated 72deg apart around centre,
      (2) the upright icon+label content placed by trig — NOT counter-rotated.
      Flower box 340x340, centre (170,170). Palette sampled off the mockup. */
-  .bloom-wrap{display:flex;justify-content:center;padding:0 0 0;}
-  .flower{position:relative;width:340px;height:340px;margin:6px auto 34px;
+  .bloom-wrap{display:flex;justify-content:center;padding:14px 0 0;}
+  .flower{position:relative;width:340px;height:340px;margin:34px auto;
     transform:scale(1.2);transform-origin:50% 50%;
     --pink-center:var(--rose-2); --pink-center-dark:var(--rose-3);
     --petal-cream:#FBF4E8; --petal-edge:#FFFDF8; --petal-active:#FFF6E6; --petal-line:#E7D6B8;
@@ -878,7 +870,6 @@
 
   /* ---- QUICK ACTIVITY CARDS (.chip) ---- */
   .chips{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:18px;}
-  .chiphint{font-size:.72rem;line-height:1.35;color:var(--ink-soft);opacity:.9;margin:-11px 2px 16px;}
   .chip{border:1px solid rgba(184,137,63,.16);border-radius:16px;padding:10px 9px;font-weight:600;font-size:.72rem;min-width:0;
     display:flex;align-items:center;gap:8px;text-align:left;line-height:1.18;min-height:50px;
     background:linear-gradient(180deg,#FFFBF4,#FCF5E9);box-shadow:0 4px 12px -9px rgba(120,95,60,.35);
@@ -904,24 +895,6 @@
   .addrow .add{background:linear-gradient(180deg,var(--rose-2),var(--rose-4));color:#fff;border-radius:13px;
     padding:10px 15px;font-size:.88rem;box-shadow:0 7px 15px -8px rgba(165,97,126,.55);white-space:nowrap;flex:0 0 auto;}
   .addrow .add:hover{filter:brightness(1.04);transform:translateY(-1px);}
-  /* standalone commit button: the final, full-width step after time/title/area/tags */
-  .add-commit{display:block;width:100%;margin:14px 0 2px;text-align:center;white-space:nowrap;
-    background:linear-gradient(180deg,var(--rose-2),var(--rose-4));color:#fff;border:none;border-radius:14px;
-    padding:13px 18px;font-family:inherit;font-weight:800;font-size:.95rem;letter-spacing:.01em;cursor:pointer;
-    box-shadow:0 9px 20px -9px rgba(165,97,126,.6);transition:.16s;}
-  .add-commit:hover{filter:brightness(1.04);transform:translateY(-1px);}
-  .add-commit:active{transform:translateY(0);}
-  /* live time-range preview: shows "start – end" once a time (and duration) are set */
-  .time-preview{display:none;align-items:center;gap:6px;margin:2px 2px 0;padding:7px 12px;
-    font-family:'Nunito',system-ui,sans-serif;font-weight:700;font-size:.86rem;color:var(--rose-4);
-    background:rgba(229,134,153,.10);border:1px solid rgba(209,94,120,.22);border-radius:12px;width:fit-content;}
-  .time-preview.show{display:inline-flex;}
-  .time-preview svg{width:15px;height:15px;flex:none;stroke:var(--rose-4);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-  .time-preview .nx{margin-left:5px;font-size:.72rem;font-weight:800;color:var(--ink-soft);
-    background:rgba(184,137,63,.16);border-radius:7px;padding:1px 6px;}
-  /* gentle field-group micro-labels (Oră / Arie / Etichete) — signal that these fields make one slot */
-  .minilabel{font-family:'Nunito',system-ui,sans-serif;font-weight:800;font-size:.7rem;
-    letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:14px 2px 7px;}
   #inTimeWrap{flex:1 1 100%;display:block;width:100%;box-sizing:border-box;}
   #inTimeWrap .tpick{display:flex;background:transparent;border:none;padding:0;gap:6px;flex-wrap:nowrap;width:100%;box-sizing:border-box;}
   #inTimeWrap .tman{flex:1 1 0;min-width:0;width:auto;height:36px;box-sizing:border-box;padding:0 10px;}
@@ -1104,7 +1077,6 @@
           </div>
 
           <div class="chips" id="chips"></div>
-          <div class="chiphint" data-i18n="preset_hint">apasă: pre-completează · ține apăsat: adaugă direct</div>
           <div class="sc-form" id="scForm">
             <input type="text" id="scName" data-i18n-ph="sc_name_ph" placeholder="Nume scurtătură…" autocomplete="off">
             <select id="scArea"></select>
@@ -1113,26 +1085,23 @@
             <button id="scCancel" class="sc-cancel">✕</button>
           </div>
 
-          <div class="minilabel" data-i18n="lbl_time">Oră</div>
-          <span id="inTimeWrap"></span>
           <div class="addrow">
+            <span id="inTimeWrap"></span>
             <input type="text" id="inTitle" data-i18n-ph="ph_title" placeholder="Ce vrei să faci? ex: Yoga de dimineață…" autocomplete="off">
             <input type="number" id="inDur" min="1" max="600" data-i18n-ph="ph_min" placeholder="min" data-i18n-title="dur_title" title="Durată în minute (opțional)" style="width:64px;border:1px solid rgba(184,137,63,.22);background:transparent;border-radius:13px;padding:11px 8px;font-family:inherit;color:var(--ink);">
+            <button class="add" id="addBtn" data-i18n="add">+ Adaugă</button>
           </div>
-          <div class="time-preview" id="timePreview" aria-live="polite"></div>
-
-          <div class="minilabel" data-i18n="lbl_area">Arie</div>
           <div class="catpick" id="catpick"></div>
 
-          <div class="minilabel" data-i18n="lbl_tags">Etichete</div>
-          <div class="tagchips" id="inTagChips"></div>
+          <div class="tagrow">
+            <span class="lbl" data-i18n="tag_label">Etichete:</span>
+            <div class="tagchips" id="inTagChips"></div>
+          </div>
           <div class="newtag" id="newTagWrap">
             <input type="text" id="newTagIn" data-i18n-ph="ph_newtag" placeholder="Nume etichetă nouă… ex: Învățat AI" autocomplete="off">
             <button class="ok" id="newTagOk" data-i18n="add_short">Adaugă</button>
             <button class="no" id="newTagNo">✕</button>
           </div>
-
-          <button class="add add-commit" id="addBtn" data-i18n="add">+ Adaugă</button>
 
           <div class="filterbar">
             <button class="filtertoggle" id="filterToggle" data-i18n="filters">Filtre</button>
@@ -1443,11 +1412,6 @@
     add:{ro:"+ Adaugă",es:"+ Añadir",en:"+ Add"},
     add_short:{ro:"Adaugă",es:"Añadir",en:"Add"},
     tag_label:{ro:"Etichete:",es:"Etiquetas:",en:"Tags:"},
-    lbl_time:{ro:"Oră",es:"Hora",en:"Time"},
-    lbl_area:{ro:"Arie",es:"Área",en:"Area"},
-    lbl_tags:{ro:"Etichete",es:"Etiquetas",en:"Tags"},
-    preset_hint:{ro:"apasă: pre-completează · ține apăsat: adaugă direct",es:"toca: rellena · mantén: añade directo",en:"tap: prefill · hold: add instantly"},
-    preset_added:{ro:"Adăugat fără oră",es:"Añadido sin hora",en:"Added without time"},
     tag_none:{ro:"— fără etichetă",es:"— sin etiqueta",en:"— no tag"},
     tag_new_opt:{ro:"Etichetă nouă…",es:"Nueva etiqueta…",en:"New tag…"},
     ph_newtag:{ro:"Nume etichetă nouă… ex: Învățat AI",es:"Nombre de etiqueta… ej: Aprender IA",en:"New tag name… e.g. Learning AI"},
@@ -2029,25 +1993,7 @@
         twoTap(x, ()=>deleteShortcut(scUid(sc)), "✕?");
         b.appendChild(x);
       } else {
-        b.title = shortcutLabel(sc)+" — "+t("preset_hint");
-        const scCat = CATS[sc.cat]?sc.cat:CAT_KEYS[0];
-        // long-press = instant add (no time); tap = prefill the form (review time, then Adaugă)
-        let lpFired=false, lpTimer=null;
-        const lpStart=()=>{ lpFired=false; lpTimer=setTimeout(()=>{ lpFired=true;
-          addBlock({title:shortcutLabel(sc), cat:scCat, time:"", dur:sc.dur||0, tags:[]}); toast(t("preset_added")); }, 450); };
-        const lpCancel=()=>{ if(lpTimer){ clearTimeout(lpTimer); lpTimer=null; } };
-        b.addEventListener("touchstart", lpStart, {passive:true});
-        b.addEventListener("touchend", lpCancel);
-        b.addEventListener("touchmove", lpCancel, {passive:true});
-        b.addEventListener("mousedown", lpStart);
-        b.addEventListener("mouseup", lpCancel);
-        b.addEventListener("mouseleave", lpCancel);
-        b.onclick = ()=>{ if(lpFired){ lpFired=false; return; }
-          $("#inTitle").value = shortcutLabel(sc);
-          selCat = scCat; renderCatPick();
-          $("#inDur").value = (sc.dur && sc.dur>0) ? sc.dur : "";
-          timeRangeLabel();
-        };
+        b.onclick = ()=>{ const cc=CATS[sc.cat]?sc.cat:CAT_KEYS[0]; addBlock({title:shortcutLabel(sc), cat:cc, time:addTime, dur:sc.dur||0, tags:[]}); buildAddTime(); };
       }
       c.appendChild(b);
     });
@@ -2122,26 +2068,6 @@
     const hd=$("#fHideDone"); if(hd) hd.checked=hideDone;
     const tg=$("#filterToggle"); if(tg) tg.classList.toggle("active", filtersActive());
   }
-  /* overlap awareness: two timed slots clash if same start OR their intervals intersect */
-  function blockInterval(b){
-    if(!b.time || !/^\d{1,2}:\d{2}$/.test(b.time)) return null;
-    const p=b.time.split(":"); const s=(+p[0])*60+(+p[1]);
-    const d=(b.dur&&b.dur>0)?b.dur:0;
-    return {s, e:s+d};
-  }
-  /* group timed slots into clusters: connected by same start OR intersecting intervals */
-  function overlapClusters(list){
-    const iv=list.map(b=>({b, i:blockInterval(b)}));
-    const n=iv.length, parent=iv.map((_,k)=>k);
-    const find=x=>{ while(parent[x]!==x){ parent[x]=parent[parent[x]]; x=parent[x]; } return x; };
-    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
-      const a=iv[i].i, c=iv[j].i; if(!a||!c) continue;
-      if(a.s===c.s || (a.s < c.e && c.s < a.e)) parent[find(i)]=find(j);
-    }
-    const groups={};
-    for(let k=0;k<n;k++){ const r=find(k); (groups[r]=groups[r]||[]).push(iv[k].b); }
-    return Object.values(groups);
-  }
   function renderList(){
     const wrap=$("#list"); wrap.innerHTML="";
     let shown=blocks.slice();
@@ -2159,16 +2085,7 @@
       wrap.innerHTML='<div class="empty"><span class="o">🔍</span>'+t("empty_filter")+'</div>';
       updateProgress(); return;
     }
-    if(timed.length){ addGroup(wrap,t("grp_timed"));
-      const clusters=overlapClusters(timed);
-      clusters.forEach(cl=>cl.sort((a,b)=>a.time.localeCompare(b.time)));
-      clusters.sort((A,B)=>A[0].time.localeCompare(B[0].time));
-      clusters.forEach(cl=>{
-        if(cl.length===1){ wrap.appendChild(blockEl(cl[0],false)); }
-        else { const row=document.createElement("div"); row.className="cluster";
-          cl.forEach(b=>row.appendChild(blockEl(b,false))); wrap.appendChild(row); }
-      });
-    }
+    if(timed.length){ addGroup(wrap,t("grp_timed")); timed.forEach(b=>wrap.appendChild(blockEl(b,false))); }
     if(anytime.length){
       addGroup(wrap,t("grp_anytime"));
       const dz=document.createElement("div"); dz.className="dragzone";
@@ -2227,15 +2144,6 @@
   function to24(h12, ampm){ let h=h12%12; if(ampm==="PM") h+=12; return String(h).padStart(2,"0"); }
   function parse12(v){ const p=v.split(":"); const H=+p[0]; const M=p[1]; const ampm=H>=12?"PM":"AM"; let h12=H%12; if(h12===0) h12=12; return {h12, mm:M, ampm}; }
   function format12(v){ if(!v||!/^\d{1,2}:\d{2}$/.test(v)) return v||""; const d=parse12(v); return d.h12+":"+d.mm+" "+d.ampm; }
-  /* slot time label: "start – end" when a duration exists, otherwise just the start */
-  function blockTimeLabel(b){
-    if(!b.time || !/^\d{1,2}:\d{2}$/.test(b.time)) return t("add_hour");
-    if(!b.dur || b.dur<=0) return format12(b.time);
-    const end=addMinTo24(b.time, b.dur);
-    const sFull=format12(b.time), eFull=format12(end.t);
-    if(meridiem24(b.time)===meridiem24(end.t) && !end.wrapped) return sFull.replace(" "+meridiem24(b.time),"")+" – "+eFull;
-    return sFull+" – "+eFull+(end.wrapped? " +1":"");
-  }
   function parseManualTime(s){ s=(s||"").trim(); if(!s) return null;
     const m=s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i); if(!m) return null;
     let H=+m[1]; const M=m[2]; let ap=m[3];
@@ -2245,7 +2153,7 @@
   }
 
   /* reusable time picker: 1–12 hour + 15-min + AM/PM (default 7:00 AM), optional manual entry */
-  function makeTimePicker(value, withManual, onChange, fireInit){
+  function makeTimePicker(value, withManual, onChange){
     const wrap=document.createElement("div"); wrap.className="tpick";
     const hh=document.createElement("select"); hh.className="tsel";
     const none=document.createElement("option"); none.value=""; none.textContent=t("tp_none"); hh.appendChild(none);
@@ -2279,7 +2187,6 @@
       man.oninput=()=>{ onChange(val()); };
       wrap.appendChild(man);
     }
-    if(fireInit) onChange(val());
     return wrap;
   }
 
@@ -2291,8 +2198,6 @@
     el.style.background = "";
     el.style.setProperty("--cat-accent", cat.color);
     el.style.setProperty("--cat-ink", cat.ink || cat.color);
-    el.style.setProperty("--cat-pale", paleTint(cat.color, .42));
-    el.style.setProperty("--cat-pale2", paleTint(cat.color, .62));
     const isRun = active && active.blockId===b.id;
     if(isRun) el.classList.add("running");
 
@@ -2306,10 +2211,9 @@
 
     // time pill (tap to edit)
     const timeEl=document.createElement("span"); timeEl.className="time"+(b.time?"":" empty");
-    timeEl.textContent=blockTimeLabel(b);
+    timeEl.textContent=b.time? format12(b.time) : t("add_hour");
     timeEl.title=t("edit_time");
-    if(b.time){ const btime=document.createElement("div"); btime.className="btime"; btime.appendChild(timeEl); el.appendChild(btime); }
-    else { brow.appendChild(timeEl); }
+    brow.appendChild(timeEl);
 
     const title=document.createElement("div"); title.className="title"; title.textContent=b.title;
     title.contentEditable="true"; title.spellcheck=false;
@@ -2347,11 +2251,11 @@
     // inline editor (time + duration + tag), toggled by time pill or tag dot
     const ed=document.createElement("div"); ed.className="beditor";
     const r1=document.createElement("div"); r1.className="bedit-row"; r1.appendChild(document.createTextNode(t("ed_hour")));
-    r1.appendChild(makeTimePicker(b.time||"", true, (v)=>{ b.time=v; save(); timeEl.className="time"+(v?"":" empty"); timeEl.textContent=blockTimeLabel(b); }));
+    r1.appendChild(makeTimePicker(b.time||"", true, (v)=>{ b.time=v; save(); timeEl.className="time"+(v?"":" empty"); timeEl.textContent=v? format12(v) : t("add_hour"); }));
     const r2=document.createElement("div"); r2.className="bedit-row"; r2.appendChild(document.createTextNode(t("ed_dur")));
     const di=document.createElement("input"); di.className="bedit-dur"; di.type="number"; di.min="1"; di.max="600";
     di.value=(b.dur&&b.dur>0)? b.dur : defMinFor(catKeyOf(b));
-    di.onchange=()=>{ const n=parseInt(di.value,10); if(n>0&&n<=600){ b.dur=n; save(); timeEl.textContent=blockTimeLabel(b); timeEl.className="time"+(b.time?"":" empty"); } else { di.value=(b.dur&&b.dur>0)?b.dur:defMinFor(catKeyOf(b)); } };
+    di.onchange=()=>{ const n=parseInt(di.value,10); if(n>0&&n<=600){ b.dur=n; save(); } else { di.value=(b.dur&&b.dur>0)?b.dur:defMinFor(catKeyOf(b)); } };
     r2.appendChild(di); r2.appendChild(document.createTextNode("min"));
     const r3=document.createElement("div"); r3.className="bedit-row bedit-tags"; r3.appendChild(document.createTextNode(t("ed_tag")));
     const tcw=document.createElement("div"); tcw.className="tagchips";
@@ -2373,7 +2277,7 @@
     dpick.onchange=()=>{ if(dpick.value){ const p=dpick.value.split("-"); moveBlockToDate(b, new Date(+p[0],+p[1]-1,+p[2])); } };
     r4.appendChild(dpick);
     const done=document.createElement("button"); done.className="bedit-done"; done.textContent=t("ed_done");
-    done.onclick=()=>{ ed.classList.remove("show"); renderList(); };
+    done.onclick=()=>{ ed.classList.remove("show"); };
     ed.appendChild(r1); ed.appendChild(r2); ed.appendChild(r3); ed.appendChild(r4); ed.appendChild(done);
     el.appendChild(ed);
 
@@ -2392,31 +2296,7 @@
 
   /* ---------- actions ---------- */
   let addTime="";
-  function buildAddTime(){ const w=$("#inTimeWrap"); if(!w) return; w.innerHTML=""; addTime=""; w.appendChild(makeTimePicker("", true, v=>{ addTime=v; timeRangeLabel(); }, true)); timeRangeLabel(); }
-  /* live "start – end" preview from addTime (24h "HH:MM") + duration minutes */
-  function addMinTo24(hhmm, mins){
-    const p=hhmm.split(":"); let total=(+p[0])*60+(+p[1])+mins;
-    const wrapped = total>=1440 || total<0;
-    total=((total%1440)+1440)%1440;
-    return { t:String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0"), wrapped };
-  }
-  function meridiem24(hhmm){ return (+hhmm.split(":")[0])>=12 ? "PM" : "AM"; }
-  function timeRangeLabel(){
-    const el=$("#timePreview"); if(!el) return;
-    const clock='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
-    const dur=parseInt(($("#inDur")||{}).value,10)||0;
-    if(!addTime || !/^\d{1,2}:\d{2}$/.test(addTime)){ el.classList.remove("show"); el.innerHTML=""; return; }
-    if(dur<=0){ el.innerHTML=clock+format12(addTime); el.classList.add("show"); return; }
-    const end=addMinTo24(addTime, dur);
-    const sFull=format12(addTime), eFull=format12(end.t);
-    let range;
-    if(meridiem24(addTime)===meridiem24(end.t) && !end.wrapped){
-      range=sFull.replace(" "+meridiem24(addTime),"")+" – "+eFull;
-    } else {
-      range=sFull+" – "+eFull+(end.wrapped?'<span class="nx">+1</span>':'');
-    }
-    el.innerHTML=clock+range; el.classList.add("show");
-  }
+  function buildAddTime(){ const w=$("#inTimeWrap"); if(!w) return; w.innerHTML=""; addTime=""; w.appendChild(makeTimePicker("", true, v=>{ addTime=v; })); }
   function addBlock({title,cat,time,dur,tags}){
     title=(title||"").trim(); if(!title) return;
     const tg = Array.isArray(tags) ? tags.slice() : (tags? [tags] : []);
@@ -3472,7 +3352,6 @@ Objective description, "just the facts".
   $("#addBtn").onclick=addFromForm;
   $("#inTitle").addEventListener("keydown",e=>{ if(e.key==="Enter") addFromForm(); });
   $("#inDur").addEventListener("keydown",e=>{ if(e.key==="Enter") addFromForm(); });
-  $("#inDur").addEventListener("input", timeRangeLabel);
   $("#prev").onclick=()=>{ cur.setDate(cur.getDate()-1); load(); };
   $("#next").onclick=()=>{ cur.setDate(cur.getDate()+1); load(); };
   $("#todayBtn").onclick=()=>{ cur=new Date(); cur.setHours(0,0,0,0); load(); };
