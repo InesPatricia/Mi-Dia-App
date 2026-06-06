@@ -4,7 +4,10 @@
 > Last updated: June 2026 · Current latest build: **`mi-dia-v47.html`**
 
 ## Language
-Always respond in **Romanian**. Code comments can be in English.
+Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
+`ă î ș ț`). Ines's terminal does not render Romanian diacritics — they show up blank/garbled,
+making replies unreadable. This applies to ALL chat responses, every session, no exceptions.
+Code comments can be in English.
 
 ---
 
