@@ -1,12 +1,10 @@
-# Mi Día — Project Context for Claude Code
+# Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v33.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v47.html`**
 
 ## Language
 Always respond in **Romanian**. Code comments can be in English.
-- **Chat replies: no diacritics** (plain ASCII — e.g. "romana", "zilei").
-- **App/UI strings (i18n): keep proper Romanian diacritics.**
 
 ---
 
@@ -23,14 +21,11 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v33.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v47.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
-- **Git:** the versioned files `mi-dia-vNN.html` are **committed to git** as rollback history
-  (no longer git-ignored). `mi-dia.html` is kept as the **deployable mirror of the latest
-  version** — what README / PWA / Netlify and the daily-update task reference. When promoting a
-  new version, copy the latest `vNN` into `mi-dia.html`, validate, then commit both.
-- This spec file is `CLAUDE.md` (the living doc, updated in place — not versioned).
+- The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
+- This spec file is `CLAUDE_v2.md` (the living doc, updated in place — not versioned).
 
 ---
 
@@ -53,9 +48,6 @@ print(f"DIV balance: {opens}/{closes} -> {'OK' if opens==closes else 'MISMATCH!'
 
 Then `node --check _tmp_c0.js` for each script block. Delete temp files after.
 If any check fails — fix before saving. Then render a screenshot to verify visually.
-
-> NOTE: Python is **not installed** on this machine — run the same checks in Node
-> (extract `<script>` blocks to temp `.js` → `node --check`; count `<div>`/`</div>`).
 
 ---
 
@@ -88,8 +80,25 @@ If any check fails — fix before saving. Then render a screenshot to verify vis
   (omogenitate, fluență, naturalețe, simplitate, feminitate, blândețe). Calm, not overwhelming.
 
 **Layout shell:** phone-frame; HERO (bougainvillea header photo, brand, daily phrase ES+local,
-date/progress band) → radial **flower navigation** (4 petals: Calendar, Proiecte, Progres, Calm
-+ centre circle = Jurnal) → day panel (`.daypad`). Persistent bottom bar also present.
+date/progress band) → radial **flower navigation** → day panel (`.daypad`). Bottom bar present.
+The HERO is a rounded panel (`.hero`) with the photo + a fade veil. The date/progress sit inside a
+**discreet card** (`.hero-day-card`, softened in v47): **no border**, light translucent fill
+(`rgba(255,251,243,.42)`), very soft shadow, blur — kept deliberately subtle so it blends into the
+header instead of looking like a panel "stuck on top". Do not re-add a hard border / heavy shadow.
+
+**Navigation architecture (redesigned in v38 — resolves the old dual-nav root cause):**
+The flower and the bottom bar used to overlap (Jurnal + Calm appeared in both; the centre FAB
+duplicated Acasă). Now there is ONE primary navigation:
+- **Flower = the single primary navigation**, with **5 petals at 72°**: Jurnal (top), Calm,
+  Calendar, Progres, Proiecte. Petals keep `data-v` and the `.tab` wiring (`setView`).
+- **Flower CENTRE = "Intenția zilei"** (an ACTION, not a view): `#intentionBtn` opens a modal
+  (`#intentModal`) with a text input + per-language suggestion chips + Salvează/Anulează. The
+  intention is stored per day and shown in the centre as italic Fraunces (`#intentionWord`).
+- **Bottom bar = 3 non-overlapping items**: Acasă (`data-v="day"`) · **`+` (`#addFab`)** · Profil.
+  The `+` is NOT a nav tab — it toggles a **"bloom" quick-add menu** (`#bloomMenu`) whose three
+  petal-buds route to existing flows: **Notă** → Jurnal (focus `#jText`), **Activitate** → Day
+  add form (focus `#inTitle`), **Stare** → Jurnal mood picker (`#mood`, gentle pulse). `+` rotates
+  to `×` while open. Echoes the flower motif (something "blooms" both top and bottom).
 
 > NOTE: there are two CSS layers in the file — a legacy block and a `REDESIGN OVERRIDE`
 > (≈ line 670+) that wins via `!important`. Some duplicate/conflicting rules remain
@@ -104,19 +113,22 @@ date/progress band) → radial **flower navigation** (4 petals: Calendar, Proiec
 
 ---
 
-## Day tab — add flow & slot rendering (current, v23–v33)
+## Day tab — add flow & slot rendering (current, v23–v47)
 
 **Add flow reads top-to-bottom (configure → commit):**
-1. **Shortcuts** (quick presets, 3-col grid) + a `+ Adaugă o activitate` card (opens shortcut editor).
+1. **Scurtături** (section label, v43) → quick presets (3-col grid) + a `+ Adaugă o scurtătură`
+   card (v42; opens the shortcut editor — NOT an activity add).
    - Hint line below: *"apasă: pre-completează · ține apăsat: adaugă direct"* (i18n).
-2. **ORĂ** (micro-label) → time picker. Hour/min selects + AM/PM toggle + manual entry +
+2. **Activitate nouă** (section label, v44) → **activity text field + duration (min)** — title-first
+   (v44). The title is the only required field.
+3. **ORĂ** (micro-label) → time picker. Hour/min selects + AM/PM toggle + manual entry +
    a `— fără oră` option. **Default 7:00 AM is real** (registered on build via `fireInit`).
-3. Activity text field + duration (min).
 4. **Live time-range preview** pill ("start – end", e.g. `7:00 – 7:30 AM`) — language-neutral,
    updates on time/duration change, handles noon and midnight (`+1` next-day badge).
 5. **ARIE** (micro-label) → category picker.
 6. **ETICHETE** (micro-label) → tag chips + new-tag form.
-7. **`+ Adaugă`** — full-width rose commit button (the final step).
+7. **`+ Adaugă`** — full-width rose commit button (the final step). On success: short toast +
+   pulse/scroll to the new slot (v41); no auto-refocus of the title.
 
 **Shortcut/preset gestures:**
 - **Tap = PRE-FILL the form** (title + area + duration); user reviews time, then presses Adaugă.
@@ -141,6 +153,16 @@ date/progress band) → radial **flower navigation** (4 petals: Calendar, Proiec
 - This replaced an earlier "se suprapune" awareness badge (removed).
 - Helpers: `blockInterval(b)`, `overlapClusters(list)`.
 
+**Inline slot editor (tap a slot's time/tag dot to expand `.beditor`):**
+- Rows (`.bedit-row`): **Oră** (hour/min/AM-PM dropdowns only — the manual free-text time input
+  was REMOVED here in v46 because native selects can't shrink enough to keep it inline on a narrow
+  card; the manual input lives only in the add form), **Durată**, **Etichetă**, **Mută în**.
+- **Mută în** = four consistent pill buttons: Mâine / Weekend / Săpt. viit. / **📅 Altă zi** (v46).
+  "Altă zi" is a `.movedate-btn` that opens a visually-hidden native `<input type=date>` via
+  `showPicker()` (click/focus fallback) — replaced the old bare date input that rendered blank on
+  Android. Edge case: editing an odd-minute slot (e.g. 7:10) snaps the minute dropdown to the
+  nearest value (00/15/30/45).
+
 ---
 
 ## i18n system (3 languages: EN / ES / RO)
@@ -163,8 +185,10 @@ date/progress band) → radial **flower navigation** (4 petals: Calendar, Proiec
 - **Progress tab:** mood-productivity correlation, plain-language insight (statistical, not AI).
 - **Calm tab:** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer.
 - **Journal, Projects.**
+- **Intenția zilei (v38):** per-day intention set from the flower centre; suggestion chips; RO/ES/EN.
+- **Quick-add "bloom" (v38):** the bottom `+` blooms into Notă / Activitate / Stare (route to existing flows).
 - **3-language i18n** (EN/ES/RO) across the whole app.
-- **PWA** + JSON export/import backup.
+- **PWA** + JSON export/import backup (now includes `intent:` keys).
 
 ---
 
@@ -185,8 +209,7 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 
 **B. Add-flow follow-ups (from this session's work)**
 - `[ ]` B6. Fix the duration field clipping its placeholder ("mi" instead of "min") — too narrow.
-- `[?]` B7. Default time decision: keep 7:00 AM as the real default, or change it?
-  (This is the behavior change made in v30 — your call.)
+- `[x]` B7. Default time: **KEPT** — 7:00 AM stays the real default (confirmed by Ines, through v47).
 - `[?]` B8. Long-press discoverability: after phone testing, decide whether long-press stays or
   we add a more visible affordance (e.g. a small "+" on the shortcut card).
 - `[ ]` B9. Optional: gentle progressive disclosure of tags/duration (the "hybrid" idea) if the
@@ -196,7 +219,12 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - `[?]` C10. Native time pickers, blur, fonts.
 - `[?]` C11. Overlap columns: readability of the wrapped time + tap targets (checkbox/play) in
   narrow 3–4 clusters; feel of the touch/scroll.
-- `[?]` C12. Flower spacing on ≤360px screens (it scales to 1.0).
+- `[?]` C12. Flower spacing on ≤360px screens (5 petals now; the flower scales down).
+- `[?]` C12b. v38 nav: tap targets of the 5 petals (denser); the centre "Intenția zilei" feeling
+  tappable (not just decorative); bloom-bud positions/labels above the bar; `backdrop-filter: blur`
+  support for the bloom + intention scrims.
+- `[?]` C12c. Decide if the `+` should stay rose in **calm-mode** (currently the calm dark override
+  tints the FAB green) — one-line change if you want rose everywhere.
 
 **D. Roadmap (larger, deferred)**
 - `[ ]` D13. **Menstrual cycle tracker** (Calendar tab): cycle start dates; phases (menstrual,
@@ -211,6 +239,7 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - `blocks` (per day): `{ id, title, cat, time, dur, tags[], done, date }`
   - `time` = 24h string `"HH:MM"` or `""` (untimed); `dur` = minutes (0 = none).
 - `cats` — categories/areas (≤8): `{ id, label, color }` (label = "Arie" in UI).
+- `intent:YYYY-MM-DD` — the daily intention string (v38; `""` = none). Included in backup export.
 - `tags`, `journal` `{date,mood,energy,text,prompt}`, `projects`, `settings` (incl. `lang`).
 
 ---
@@ -225,7 +254,7 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 
 ---
 
-## Changelog (v23 → v33) — this redesign of the day add-flow
+## Changelog (v23 → v47)
 
 - **v23** — Reordered add form: configure → commit; `+ Adaugă` became a full-width standalone button.
 - **v24** — Live "start – end" time-range preview (language-neutral; noon/midnight handled).
@@ -239,3 +268,54 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - **v32** — (superseded) gentle overlap "se suprapune" badge.
 - **v33** — Overlapping slots shown side-by-side in columns (Outlook-style), even split for any
   count; adjacent slots excluded; overlap badge removed.
+- **v34–v37** — CSS cleanup pass: single `:root`, removed dead variables + orphaned rules from
+  replaced features.
+- **v38** — **Navigation redesign** (resolves the old dual-nav overlap). Flower → single primary
+  navigation with **5 petals at 72°** (Jurnal, Calm, Calendar, Progres, Proiecte); its **centre
+  became the new "Intenția zilei" feature** (per-day intention, modal editor + suggestion chips,
+  RO/ES/EN, included in backup). Bottom bar reduced to **Acasă · `+` · Profil**; the `+` is no
+  longer a nav tab — it opens a **"bloom" quick-add** menu (Notă → Jurnal, Activitate → Day add,
+  Stare → Jurnal mood) and rotates to `×` while open.
+- **v39** — Bloom positioning fix (found on real Android): the quick-add buds floated too high,
+  detached from the `+`, on short webviews (caused by per-bud fixed `bottom` offsets that
+  double-counted `env(safe-area-inset-bottom)`). Rebuilt as a single flex `.bloom-cluster` anchored
+  just above the bottom bar (one safe-area-aware anchor), so the buds always hug the `+`.
+- **v40** — Flower↔Day-plan overlap fix (found on real Android): `.daypad` had `margin-top:-64px`,
+  a hack tuned for the OLD 4-petal flower's empty bottom; the new 5-petal flower's lower petals
+  (Progres, Calendar) extend into that zone, so the card overlapped them. Changed to
+  `margin-top:8px` (≈22px clear gap below the lowest petal, verified at 412px width / scale 1.2).
+- **v41** — Add-confirmation feedback. Adding an activity succeeded silently (form cleared, no cue,
+  new slot often below the fold) → read as "not working". Now `addFromForm` shows a short toast
+  ("Activitate adăugată 🌸", RO/ES/EN, ~2.2s), pulse-highlights the new slot (`.justadded`), and
+  scrolls it into view. Removed the success-path auto-refocus of `#inTitle` (it fought the
+  scroll-to-new-slot + keyboard on mobile); `addBlock` now returns the new id.
+- **v42** — Label fix: the chip under the shortcuts read "Adaugă o activitate" / "Add an activity",
+  but it actually opens the **add-shortcut** form (`openScForm`). Corrected `sc_add_long` to
+  "Adaugă o scurtătură" / "Añade un atajo" / "Add a shortcut" (the real activity-add is the form below).
+- **v43** — Added a "Scurtături" / "Atajos" / "Shortcuts" section label (`.minilabel`, i18n `sc_section`)
+  above the shortcut chips, so the shortcuts row is visually distinct from the add-activity form below.
+- **v44** — Add-form reordered to **title-first** (UX research + chosen variant A). The required field
+  (title) now leads; time is secondary. New order: Scurtături → **Activitate nouă** (new `new_activity`
+  label) → **Titlu** → Oră → Arie → Etichete → +Adaugă (was time-first: Oră → Titlu). Rationale:
+  task/calendar tools (Google Calendar, etc.) lead with the "what"; conversational order = ask what
+  before when; title is the only required field so it should come first.
+- **v45** — Slot-editor time-row overflow fix (found on real Android): in the inline slot editor the
+  manual time input ("sau 7:10 PM") spilled off the right edge of the card on narrow screens, because
+  the responsive time-picker rules were scoped only to `#inTimeWrap` (the add form). Added equivalent
+  constraints scoped to `.bedit-row` (row `flex-wrap`, `.tpick` wraps, `.tman` is `flex:1 1 90px;
+  min-width:0`), so the picker stays inside the card (fits one line at ~412px, wraps the manual input
+  at ~360px). The add-form picker is unchanged.
+- **v46** — Slot-editor polish (real Android). (1) The manual free-text time input ("sau 7:10 PM")
+  overflowed / wrapped awkwardly in the narrow editor card (native selects can't shrink enough to keep
+  it inline) → **removed it from the slot editor** (kept in the add form); the editor time row
+  (hour/min/AM-PM dropdowns) now fits cleanly on one line. Edge case: editing an odd-minute slot
+  (e.g. 7:10) shows the minute snapped to the nearest dropdown value. (2) The custom-date field
+  rendered as a blank box on Android → replaced with a clear **"📅 Altă zi"** pill button (matching
+  Mâine/Weekend/Săpt. viit.) that opens the native date picker via `showPicker()`.
+- **v47** — Home header polish. The days card (`.hero-day-card`) read as a panel "stuck on top of"
+  the header: its border + drop shadow sat just inside the hero panel's own bottom edge, creating a
+  tight double-line / banded seam. Softened to a **discreet card (chosen option B)**: removed the
+  border, lightened the fill (`rgba(255,251,243,.42)`), softened the shadow
+  (`0 3px 12px -9px`), and added bottom padding in `.hero-body` (22px→30px) so the card isn't crammed
+  against the header edge. (Option A — dissolving the card entirely so date/progress sit directly on
+  the hero — was also mocked up but not chosen.)
