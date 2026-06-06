@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v47.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v48.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,11 +24,22 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v47.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v48.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
 - This spec file is `CLAUDE_v2.md` (the living doc, updated in place — not versioned).
+
+**Deployment + infra files (do NOT delete as "single-file violations"):**
+- The app is deployed on **Netlify**, auto-deploying from GitHub `main` on every push.
+  Live site: **`mi-diaa.netlify.app`** (serves the promoted `mi-dia.html` at root).
+- Two infra files live in the repo root and are intentional (NOT part of the single-file app):
+  - **`netlify.toml`** — no build step; serves `mi-dia.html` at `/` (200 rewrite); redirects old
+    `/mi-dia-vNN.html` → `/` (301) so only the latest is publicly reachable.
+  - **`sw.js`** — the PWA service worker (offline). A service worker MUST be a separate same-origin
+    file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".
+    The app HTML itself stays one self-contained file; the manifest is inline (data URI).
+  - Bump the `CACHE` constant in `sw.js` on each new build so old caches clear on activate.
 
 ---
 
@@ -191,7 +202,9 @@ duplicated Acasă). Now there is ONE primary navigation:
 - **Intenția zilei (v38):** per-day intention set from the flower centre; suggestion chips; RO/ES/EN.
 - **Quick-add "bloom" (v38):** the bottom `+` blooms into Notă / Activitate / Stare (route to existing flows).
 - **3-language i18n** (EN/ES/RO) across the whole app.
-- **PWA** + JSON export/import backup (now includes `intent:` keys).
+- **PWA (real, v48):** installable web app manifest (inline data URI) + a service worker
+  (`sw.js`) for offline. Add-to-Home-Screen, standalone display, app icon. JSON export/import
+  backup (now includes `intent:` keys).
 
 ---
 
@@ -322,3 +335,11 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   (`0 3px 12px -9px`), and added bottom padding in `.hero-body` (22px→30px) so the card isn't crammed
   against the header edge. (Option A — dissolving the card entirely so date/progress sit directly on
   the hero — was also mocked up but not chosen.)
+- **v48** — **Real PWA + first deploy.** Added a web app **manifest** (inline data URI: name,
+  short_name, `start_url:"/"`, `scope:"/"`, `display:standalone`, theme/background colors, icons —
+  reuses the existing 192px PNG + a new scalable rose-flower SVG, incl. a maskable variant) and a
+  **service worker** (`sw.js`, network-first + cache fallback) registered via a small `<script>` at
+  EOF. The app is now installable (Add-to-Home-Screen, standalone) and works offline. Deployed on
+  **Netlify** (`mi-diaa.netlify.app`), auto-deploy from GitHub `main`; `netlify.toml` serves
+  `mi-dia.html` at root and hides old `vNN` files. The app HTML stays single-file; `sw.js` +
+  `netlify.toml` are deliberate infra files (see the Deployment note near the top).
