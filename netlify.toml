@@ -1,0 +1,14 @@
+# Mi Día — Netlify config
+# Single self-contained HTML app, no build step.
+# Serves the promoted build (mi-dia.html) at the site root.
+
+[build]
+  publish = "."
+  command = ""
+
+# Serve mi-dia.html at "/" without changing the URL (200 = rewrite, not redirect).
+# mi-dia.html is the promoted latest build, so the live site always tracks it.
+[[redirects]]
+  from = "/"
+  to = "/mi-dia.html"
+  status = 200

@@ -11,35 +11,29 @@
 
 <style>
   :root{
-    --sand:        #F6EFDF;
-    --sand-deep:   #EADEC6;
-    --cream:       #FFFCF7;
-    --ink:         #3A2D21;
-    --ink-soft:    #897662;
-    --line:        #E6DBC4;
-
-    --terracotta:  #C16B4C;
-    --terracotta-l:#EBCBBA;
-    --olive:       #8B9A6C;
-    --olive-l:     #E2E7D4;
-    --sea:         #6E9D96;
-    --sea-l:       #D5E5E1;
-    --sky:         #9CB9CE;
-    --sky-l:       #DDE9F0;
-    --citrus:      #CE8A45;
-    --citrus-l:    #F1E1C6;
-    --lavender:    #A893BD;
-    --lavender-l:  #E6DDEE;
-    --rose:        #CB8188;
-    --rose-l:      #EFD5D8;
-    --honey:       #B08A4A;
-    --honey-l:     #EEE1C1;
-    --fresh:       #7BA85B;
-    --fresh-l:     #E0EBCD;
-
-    --radius:      20px;
-    --shadow:      0 10px 30px -12px rgba(120,90,60,.28);
-    --shadow-sm:   0 4px 14px -6px rgba(120,90,60,.25);
+    /* base surfaces & ink */
+    --sand:#F6EFDF; --sand-deep:#EADEC6; --cream:#FFFCF7;
+    --ink:#3A2D21; --ink-soft:#897662; --line:#E6DBC4;
+    /* category / functional colors (+ light variants) */
+    --terracotta:#C16B4C; --terracotta-l:#EBCBBA;
+    --olive:#8B9A6C; --olive-l:#E2E7D4;
+    --sea:#6E9D96; --sea-l:#D5E5E1;
+    --sky:#9CB9CE; --sky-l:#DDE9F0;
+    --citrus:#CE8A45; --citrus-l:#F1E1C6;
+    --lavender:#A893BD; --lavender-l:#E6DDEE;
+    --rose:#CB8188; --rose-l:#EFD5D8;
+    --honey:#B08A4A;
+    --fresh:#7BA85B; --fresh-l:#E0EBCD;
+    /* unified rose brand family (light -> deep) — the single action/brand color */
+    --rose-1:#F4BFC4; --rose-2:#E58699; --rose-3:#D15E78; --rose-4:#B5495F;
+    /* redesign surfaces / accents */
+    --page:#EBE1EA; --page-2:#F2EAF1; --petal-edge:#F3E8D4; --gold:#B8893F;
+    /* shape & elevation tokens */
+    --radius:20px;
+    --shadow:0 10px 30px -12px rgba(120,90,60,.28);
+    --shadow-sm:0 4px 14px -6px rgba(120,90,60,.25);
+    --shadow-soft:0 6px 18px -10px rgba(150,120,90,.30);
+    --maxw:452px;
   }
 
   *{box-sizing:border-box;}
@@ -56,17 +50,6 @@
   }
 
   .wrap{max-width:1080px;margin:0 auto;padding:26px 20px 80px;}
-
-  /* ---------- decorative top scene ---------- */
-  .scene{position:relative;border-radius:26px;overflow:hidden;background:
-      linear-gradient(180deg,#FCE9C8 0%, #F8D7AE 45%, #EFC79A 100%);
-    box-shadow:var(--shadow);padding:30px 28px 26px;margin-bottom:22px;}
-  .scene svg.waves{position:absolute;left:0;right:0;bottom:-2px;width:100%;height:60px;display:block;}
-  .scene .sun{position:absolute;top:18px;right:34px;width:78px;height:78px;border-radius:50%;
-    background:radial-gradient(circle at 40% 40%, #FBF1D8, #E6C275 72%);
-    box-shadow:0 0 0 12px rgba(251,197,107,.25), 0 0 40px rgba(251,197,107,.5);
-    animation:floaty 6s ease-in-out infinite;}
-  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
   .brand{display:flex;align-items:baseline;gap:12px;position:relative;z-index:2;}
   .brand h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:2.5rem;margin:0;
@@ -189,7 +172,13 @@
     flex-wrap:wrap;gap:12px;align-items:center;}
   .beditor.show{display:flex;animation:beditin .26s cubic-bezier(.34,1.2,.5,1);}
   @keyframes beditin{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
-  .bedit-row{display:flex;align-items:center;gap:7px;font-size:.8rem;font-weight:700;color:var(--ink-soft);}
+  .bedit-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:.8rem;font-weight:700;color:var(--ink-soft);}
+  /* slot editor: keep the time picker on ONE line, shrinking the manual input */
+  .bedit-row .tpick{display:flex;flex-wrap:nowrap;gap:5px;flex:1 1 auto;min-width:0;max-width:100%;box-sizing:border-box;}
+  .bedit-row .tman{flex:1 1 0;min-width:0;width:auto;box-sizing:border-box;}
+  .bedit-row .tsel{min-width:0;padding:6px 4px;box-sizing:border-box;}
+  .bedit-row .ampm{box-sizing:border-box;}
+  .bedit-row .ampm .apb{padding:6px 9px;}
   .tpick{display:inline-flex;align-items:center;gap:4px;}
   .tsel{border:1px solid rgba(184,137,63,.22);background:transparent;border-radius:9px;padding:6px 7px;font-family:inherit;font-weight:700;font-size:.85rem;color:var(--ink);cursor:pointer;}
   .tsel:focus{outline:none;border-color:var(--terracotta);}
@@ -206,7 +195,9 @@
   .bedit-move{width:100%;flex-wrap:wrap;}
   .moveb{border:1px solid rgba(184,137,63,.22);background:transparent;border-radius:30px;padding:6px 12px;font-family:inherit;font-weight:700;font-size:.8rem;color:var(--ink);cursor:pointer;transition:.15s;}
   .moveb:hover{background:var(--terracotta-l);border-color:var(--terracotta);transform:translateY(-1px);}
-  .movedate{border:1px solid rgba(184,137,63,.22);background:transparent;border-radius:9px;padding:5px 8px;font-family:inherit;font-size:.8rem;color:var(--ink);}
+  .movedate-wrap{position:relative;display:inline-flex;}
+  .movedate-btn{display:inline-flex;align-items:center;gap:5px;}
+  .movedate{position:absolute;left:0;bottom:0;width:1px;height:1px;opacity:0;padding:0;border:0;pointer-events:none;}
 
   /* day filter bar */
   .filterbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 12px;}
@@ -268,11 +259,6 @@
   .cell{position:relative;}
 
   /* tags */
-  .tagrow{display:flex;align-items:center;gap:8px;margin:10px 0 2px;flex-wrap:wrap;}
-  .tagrow .lbl{font-size:.82rem;font-weight:800;color:var(--ink-soft);}
-  select.tagsel{border:1px solid var(--line);background:var(--sand);border-radius:11px;padding:9px 10px;
-    font-family:inherit;font-size:.85rem;font-weight:700;color:var(--ink);cursor:pointer;max-width:200px;}
-  select.tagsel:focus{outline:none;border-color:var(--rose-3);background:#fff;}
   .newtag{display:none;gap:6px;margin-top:8px;width:100%;align-items:center;}
   .newtag.show{display:flex;}
   .newtag input{flex:1;min-width:120px;border:1px solid var(--line);background:var(--sand);border-radius:11px;padding:9px 11px;font-family:inherit;color:var(--ink);}
@@ -281,10 +267,6 @@
   .newtag .ok{background:var(--rose-3);color:#fff;}
   .newtag .no{background:var(--sand-deep);color:var(--ink);}
 
-  .block .btag{font-size:.72rem;font-weight:800;border-radius:30px;padding:3px 9px;flex:none;color:#5a4632;white-space:nowrap;}
-  select.btagsel{border:1px dashed var(--line);background:#fff;border-radius:9px;padding:4px 6px;font-family:inherit;
-    font-size:.72rem;font-weight:700;color:var(--ink-soft);cursor:pointer;flex:none;max-width:120px;}
-  select.btagsel:focus{outline:none;border-color:var(--rose-3);}
 
   /* tag manager */
   .tagmgr{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
@@ -408,9 +390,6 @@
   .tab{border:1px solid var(--line);background:var(--cream);color:var(--ink-soft);border-radius:14px;
     padding:10px 16px;font-weight:700;font-size:.92rem;cursor:pointer;transition:.16s;font-family:inherit;
     display:inline-flex;align-items:center;gap:8px;}
-  .tab .ticon{width:18px;height:18px;flex:none;display:block;stroke:currentColor;fill:none;
-    stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-  .tab .tlabel{line-height:1;}
   .tab:not(.petal):not(.flower-center):hover{transform:translateY(-1px);border-color:var(--terracotta);}
   .tab.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta);box-shadow:var(--shadow-sm);}
   .view{display:none;}
@@ -445,17 +424,7 @@
   .moodlegend .ml{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--ink-soft);font-weight:700;}
   .moodlegend .mlc{width:13px;height:13px;border-radius:4px;}
 
-  /* year in pixels */
-  .pixgrid{display:grid;grid-template-columns:20px repeat(12,minmax(0,1fr));gap:2px;min-width:0;}
-  .pixhead{font-size:.62rem;font-weight:800;color:var(--ink-soft);text-align:center;padding-bottom:2px;min-width:0;overflow:hidden;}
-  .pixcell{min-width:0;}
   #cal-year{overflow-x:auto;}
-  .pixdaylabel{font-size:.58rem;color:var(--ink-soft);text-align:right;padding-right:3px;display:flex;align-items:center;justify-content:flex-end;}
-  .pixcell{aspect-ratio:1/1;min-height:11px;border-radius:3px;background:var(--sand-deep);cursor:pointer;transition:.12s;}
-  .pixcell.empty{background:transparent;cursor:default;}
-  .pixcell.act{background:var(--line);}
-  .pixcell.today{outline:2px solid var(--rose-3);outline-offset:-1px;}
-  .pixcell:not(.empty):hover{transform:scale(1.25);border-radius:3px;z-index:2;position:relative;}
 
   /* stats */
   .rangebtns{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
@@ -486,8 +455,6 @@
   /* per-slot timer controls */
   .block .dur{font-size:.72rem;font-weight:800;color:var(--ink-soft);background:rgba(255,255,255,.6);border:1px solid rgba(184,137,63,.22);
     border-radius:9px;padding:3px 7px;flex:none;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:2px;}
-  .block .dur .durn{outline:none;min-width:14px;text-align:center;border-radius:4px;}
-  .block .dur .durn:focus{background:rgba(190,120,150,.16);box-shadow:0 0 0 2px rgba(190,120,150,.4);}
   .block .rem{font-size:.82rem;font-weight:800;color:var(--terracotta);font-variant-numeric:tabular-nums;flex:none;}
   .block .play{border:1px solid var(--cat-accent,rgba(184,137,63,.25));background:rgba(255,255,255,.55);width:30px;height:30px;border-radius:9px;
     cursor:pointer;font-size:.78rem;color:var(--cat-ink,var(--terracotta));flex:none;display:grid;place-items:center;transition:.15s;}
@@ -566,7 +533,7 @@
   .jevent:focus{outline:none;border-color:var(--terracotta);}
 
   /* ----- editable shortcuts ----- */
-  .chip-add, .chip-edit{background:var(--sand) !important;border:1.5px dashed var(--line);font-weight:800;}
+  .chip-add{background:var(--sand) !important;border:1.5px dashed var(--line);font-weight:800;}
   .chip-x{margin-left:7px;color:var(--rose);font-weight:800;cursor:pointer;}
   .sc-form{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px;}
   .sc-form.show{display:flex;}
@@ -592,9 +559,6 @@
 
   @media(max-width:560px){
     .wrap{padding:18px 14px 72px;}
-    .pixhead{font-size:.5rem;}.pixgrid{gap:1px;}
-    .scene{padding:22px 18px 24px;border-radius:22px;}
-    .scene .sun{width:56px;height:56px;top:16px;right:16px;}
     .brand{flex-direction:column;align-items:flex-start;gap:2px;padding-right:62px;}
     .brand h1{font-size:2rem;line-height:1.05;white-space:nowrap;}
     .brand .tag{font-size:.9rem;}
@@ -602,7 +566,6 @@
     .phrase .es{font-size:1.05rem;}
     .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
     .tab{justify-content:center;padding:9px 6px;font-size:.8rem;gap:6px;}
-    .tab .ticon{width:16px;height:16px;}
     .addrow input[type=text]{min-width:0;flex:1 1 100%;}
     /* activity blocks: reclaim space for the title on narrow phones */
     .block .brow{gap:6px;}
@@ -627,7 +590,6 @@
       radial-gradient(620px 420px at 0% 8%, #20312A, transparent 58%),
       linear-gradient(180deg,#1C2721,#141D18 58%,#101813) !important;
   }
-  body.calm-mode .scene::after{content:"";position:absolute;inset:0;background:rgba(15,22,18,.64);z-index:1;pointer-events:none;}
   body.calm-mode .brand h1,
   body.calm-mode .phrase .es{color:#F2E9D8 !important;}
   body.calm-mode .brand .tag,
@@ -678,16 +640,7 @@
   /* ========================================================= */
   /* =============  MI DÍA · REDESIGN OVERRIDE  ============== */
   /* ========================================================= */
-  :root{
-    --page:#EBE1EA; --page-2:#F2EAF1;
-    --petal:#FCF7EC; --petal-edge:#F3E8D4;
-    --center-rose:#DD9E90; --gold:#B8893F; --gold-deep:#9E7430;
-    --petal-icon:#C19A57; --petal-label:#86693D;
-    /* ---- one unified rose family (light -> mid -> deep), dusty/mauve, premium ---- */
-    --rose-1:#F4BFC4; --rose-2:#E58699; --rose-3:#D15E78; --rose-4:#B5495F;
-    --maxw:452px;
-    --shadow-soft:0 6px 18px -10px rgba(150,120,90,.30);
-  }
+  
   body{
     background:
       radial-gradient(900px 600px at 85% -10%, #EFE4ED, transparent 60%),
@@ -723,7 +676,7 @@
     background:
       linear-gradient(180deg,rgba(250,243,237,0) 120px,#FAF3ED 200px),
       linear-gradient(100deg,#FAF3ED 0%,#FAF3ED 42%,rgba(250,243,237,.88) 54%,rgba(250,243,237,.4) 66%,rgba(250,243,237,0) 76%);}
-  .hero-body{position:relative;z-index:2;padding:24px 22px 22px;}
+  .hero-body{position:relative;z-index:2;padding:24px 22px 30px;}
   /* ---- persistent language switcher (top-right of hero, on every page) ---- */
   #langBar{position:absolute;top:13px;right:13px;z-index:6;margin:0;padding:4px 5px;gap:3px;
     display:flex;align-items:center;border-radius:999px;
@@ -747,9 +700,9 @@
   .hero-day{position:relative;z-index:2;margin-top:18px;
     --bloom-pink:var(--rose-2); --bloom-pink-dark:var(--rose-4); --bloom-pink-light:var(--rose-1);}
   body[data-view]:not([data-view="day"]) .hero-day{display:none;}
-  .hero-day-card{background:rgba(255,251,243,.62);
-    border:1px solid rgba(190,120,150,.18);border-radius:24px;overflow:hidden;
-    box-shadow:0 7px 18px -14px rgba(140,80,100,.38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+  .hero-day-card{background:rgba(255,251,243,.42);
+    border:none;border-radius:24px;overflow:hidden;
+    box-shadow:0 3px 12px -9px rgba(140,80,100,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
   .hero-day .datebar{margin:0;background:transparent;border:none;border-radius:0;
     box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:13px 16px 10px;}
   .hero-day .datebar .day .d1{font-family:'Nunito',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:#5B3A28;line-height:1.05;letter-spacing:-.01em;}
@@ -794,15 +747,16 @@
   /* nth-of-type (not nth-child): only the petal <button>s are counted, so the
      leading hidden <svg> defs element doesn't throw the rotation off by one */
   /* 4 petals, symmetric about the vertical axis, with the bottom slot left empty */
-  .petal:nth-of-type(1){transform:rotate(36deg);}   /* Proiecte – upper right */
-  .petal:nth-of-type(2){transform:rotate(108deg);}  /* Calm     – lower right */
-  .petal:nth-of-type(3){transform:rotate(252deg);}  /* Progres  – lower left  */
-  .petal:nth-of-type(4){transform:rotate(324deg);}  /* Calendar – upper left  */
+  .petal:nth-of-type(1){transform:rotate(0deg);}    /* Jurnal   – sus           */
+  .petal:nth-of-type(2){transform:rotate(72deg);}   /* Calm     – dreapta sus   */
+  .petal:nth-of-type(3){transform:rotate(144deg);}  /* Calendar – dreapta jos   */
+  .petal:nth-of-type(4){transform:rotate(216deg);}  /* Progres  – stânga jos    */
+  .petal:nth-of-type(5){transform:rotate(288deg);}  /* Proiecte – stânga sus    */
   /* no per-petal shadow: petals overlap, and stacked semi-transparent shadows would
      darken whichever petal sits lowest in z-order. Opaque same-colour fills overlap
      cleanly, so every petal renders identically. The soft depth lives on .flower. */
   .petal svg.shape{position:absolute;inset:0;width:100%;height:100%;filter:none;transition:filter .18s ease;
-    transform:scaleX(.9);transform-origin:50% 100%;}
+    transform:scaleX(.82);transform-origin:50% 100%;}
   /* hit-test only the painted petal, so overlapping rotated boxes don't steal clicks */
   .petal svg.shape use{pointer-events:auto;cursor:pointer;transition:fill .18s ease,stroke .18s ease;}
   .petal:hover svg.shape{filter:brightness(1.04) drop-shadow(0 3px 6px rgba(150,120,100,.18));}
@@ -818,20 +772,23 @@
     stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:color .18s,stroke .18s;}
   .labels .lbl .t{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--ptext);line-height:1.2;font-weight:700;}
   .labels .lbl.active .ico svg{color:var(--terracotta);stroke:var(--terracotta);}
-  .lbl.p2{left:224px;top:96px}   /* PROIECTE  – upper right (36°)  */
-  .lbl.p3{left:258px;top:198px}  /* CALM      – lower right (108°) */
-  .lbl.p4{left:82px;top:198px}   /* PROGRES   – lower left  (252°) */
-  .lbl.p5{left:116px;top:96px}   /* CALENDAR  – upper left  (324°) */
+  .lbl.l1{left:170px;top:70px}   /* JURNAL   – sus         */
+  .lbl.l2{left:262px;top:139px}  /* CALM     – dreapta sus */
+  .lbl.l3{left:227px;top:250px}  /* CALENDAR – dreapta jos */
+  .lbl.l4{left:113px;top:250px}  /* PROGRES  – stânga jos  */
+  .lbl.l5{left:78px;top:139px}   /* PROIECTE – stânga sus  */
 
   /* centre circle = Jurnal */
-  .flower-center{position:absolute;top:50%;left:50%;width:88px;height:88px;margin:-44px 0 0 -44px;
+  .flower-center{position:absolute;top:50%;left:50%;width:96px;height:96px;margin:-48px 0 0 -48px;
     border-radius:50%;border:none;cursor:pointer;padding:0;z-index:6;
     background:radial-gradient(circle at 38% 32%,var(--pink-center),var(--pink-center-dark));
     box-shadow:0 6px 18px rgba(180,120,110,.32),inset 0 2px 6px rgba(255,255,255,.25);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     color:#fff;transition:transform .18s ease;}
-  .flower-center svg{width:23px;height:23px;stroke:#fff;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
-  .flower-center .lbl-c{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;}
+  .flower-center .seed svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.92;}
+  .flower-center .k{font-size:7.5px;letter-spacing:1.6px;text-transform:uppercase;opacity:.85;margin-top:1px;}
+  .flower-center .word{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:1rem;line-height:1.05;margin-top:1px;padding:0 6px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .flower-center .word:empty:before{content:"…";opacity:.7;}
   .flower-center:hover{transform:scale(1.05);}
   .flower-center:active{transform:scale(.96);}
   .flower-center.active{box-shadow:0 6px 18px rgba(180,120,110,.45),inset 0 2px 6px rgba(255,255,255,.25),0 0 0 4px var(--petal-edge),0 0 0 6px var(--pink-center);}
@@ -840,7 +797,7 @@
   @media (max-width:360px){ .flower{transform:scale(1.0);transform-origin:50% 50%;} }
 
   /* ---- DATE BAR (pills) ---- */
-  .daypad{position:relative;margin-top:-64px;}
+  .daypad{position:relative;margin-top:8px;}
   .daypad > .datebar, .daypad > .progress-card, .daypad > .grid{position:relative;z-index:1;}
   .olive-sprig{position:absolute;right:-22px;top:26px;width:92px;height:200px;z-index:0;opacity:.97;
     pointer-events:none;filter:drop-shadow(0 6px 10px rgba(120,110,70,.16));}
@@ -929,7 +886,7 @@
   #inTimeWrap .ampm{height:36px;box-sizing:border-box;}
   #inTimeWrap .apb{padding:0 12px;font-size:.84rem;display:grid;place-items:center;}
   .addrow #inTitle{flex:1 1 0;min-width:0;}
-  .addrow #inDur{width:46px !important;min-width:0;flex:0 0 auto;}
+  .addrow #inDur{width:60px !important;min-width:0;flex:0 0 auto;}
 
   /* ---- spliced views get side padding (day view pads its own blocks) ---- */
   #view-journal,#view-proj,#view-cal,#view-stats,#view-calm,#view-profil{padding:16px 18px 0;}
@@ -952,15 +909,18 @@
   .bnav .blbl{font-size:.72rem;font-weight:700;}
   .bnav.active{color:var(--honey);}
   .bnav:hover{color:var(--ink);}
-  .bfab{flex:0 0 auto;width:62px;border:none;background:transparent;}
+  .bfab{flex:0 0 auto;width:62px;border:none;background:transparent;cursor:pointer;font-family:inherit;
+    display:flex;flex-direction:column;align-items:center;}
   .bfab .fab-circle{width:58px;height:58px;border-radius:50%;margin:-26px auto 0;
-    background:radial-gradient(circle at 42% 36%,#FBF3E4,#F1E2C2 70%);border:1.5px solid var(--petal-edge);
-    box-shadow:0 12px 26px -10px rgba(160,116,48,.6), 0 0 0 1px rgba(255,255,255,.7) inset;
-    display:grid;place-items:center;transition:.18s;}
-  .bfab .fab-circle svg{width:30px;height:30px;stroke:var(--gold);fill:none;stroke-width:1.5;}
+    background:radial-gradient(circle at 42% 36%,var(--rose-2),var(--rose-4) 78%);border:1.5px solid var(--rose-1);
+    box-shadow:0 12px 26px -10px rgba(181,73,95,.6), 0 0 0 1px rgba(255,255,255,.6) inset;
+    display:grid;place-items:center;transition:.22s cubic-bezier(.34,1.56,.64,1);}
+  .bfab .fab-circle svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;transition:transform .22s ease;}
   .bfab:hover .fab-circle{transform:translateY(-3px) scale(1.04);}
   .bfab:active .fab-circle{transform:scale(.95);}
-  .bfab .blbl{margin-top:5px;color:var(--ink-soft);}
+  .bfab.open .fab-circle{background:radial-gradient(circle at 42% 36%,var(--rose-3),var(--rose-4) 80%);}
+  .bfab.open .fab-circle svg{transform:rotate(45deg);}
+  .bfab .blbl{margin-top:5px;color:var(--rose-4);font-size:.72rem;font-weight:700;}
 
   /* toast lives at top of viewport; lift above bottom bar already handled by base */
 
@@ -978,6 +938,58 @@
   .petal.tab.active{background:transparent !important;color:inherit !important;}
   .flower-center.tab.active{background:radial-gradient(circle at 38% 32%,var(--pink-center),var(--pink-center-dark) 70%) !important;color:#fff !important;}
   .bnav.tab.active,.bfab.tab.active{background:transparent !important;}
+
+  /* ---- BLOOM QUICK-ADD MENU ---- */
+  .bloom-menu{position:fixed;inset:0;z-index:80;display:none;}
+  .bloom-menu.open{display:block;}
+  .bloom-scrim{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 100%,rgba(101,63,46,.28),rgba(101,63,46,.46));backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);animation:fadeIn .18s ease;}
+  /* cluster sits directly above the bottom bar via one safe-area-aware anchor */
+  .bloom-cluster{position:fixed;left:0;right:0;bottom:0;z-index:82;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    padding:0 16px calc(82px + env(safe-area-inset-bottom));pointer-events:none;}
+  .bloom-ask{text-align:center;font-family:'Fraunces',serif;font-style:italic;font-size:1.12rem;color:#fff;text-shadow:0 2px 12px rgba(80,50,40,.5);opacity:0;animation:askIn .26s ease .06s forwards;}
+  .bloom-row{display:flex;justify-content:center;align-items:flex-end;gap:22px;}
+  .bloom-bud{pointer-events:auto;width:80px;display:flex;flex-direction:column;align-items:center;gap:7px;border:none;background:transparent;cursor:pointer;font-family:inherit;
+    opacity:0;transform:translateY(22px) scale(.7);}
+  .bud-up{margin-bottom:30px;}
+  .bloom-menu.open .bloom-bud{animation:budIn .36s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .bloom-menu.open .bloom-row .bloom-bud:nth-child(1){animation-delay:.04s;}
+  .bloom-menu.open .bloom-row .bloom-bud:nth-child(2){animation-delay:.12s;}
+  .bloom-menu.open .bloom-row .bloom-bud:nth-child(3){animation-delay:.08s;}
+  .bloom-bud .circ{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 40% 34%,#FFFDF8,#FBF1DE 75%);border:1.5px solid #F2E6CC;
+    box-shadow:0 12px 26px -10px rgba(120,80,50,.5);transition:transform .15s;}
+  .bloom-bud .circ svg{width:26px;height:26px;stroke:var(--rose-4);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .bloom-bud .lab{font-size:.82rem;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(80,50,40,.55);}
+  .bloom-bud:active .circ{transform:scale(.93);}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes askIn{from{opacity:0;transform:translateY(6px)}to{opacity:.97;transform:none}}
+  @keyframes budIn{to{opacity:1;transform:none}}
+
+  /* ---- INTENTION EDITOR ---- */
+  .intent-modal{position:fixed;inset:0;z-index:90;display:none;}
+  .intent-modal.open{display:block;}
+  .intent-scrim{position:absolute;inset:0;background:rgba(74,46,32,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);animation:fadeIn .18s ease;}
+  .intent-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,86vw);
+    background:linear-gradient(180deg,#FFFCF7,#FCF5E9);border:1px solid var(--line);border-radius:22px;
+    padding:22px 22px 18px;box-shadow:0 30px 70px -24px rgba(90,60,40,.55);animation:cardIn .26s cubic-bezier(.34,1.56,.64,1);}
+  .intent-h{font-family:'Fraunces',serif;font-weight:600;font-size:1.32rem;color:#4a3a2c;}
+  .intent-sub{font-size:.84rem;color:var(--ink-soft);margin:4px 0 14px;line-height:1.4;}
+  .intent-input{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;color:#5b4636;background:#fff;}
+  .intent-input:focus{outline:none;border-color:var(--rose-2);box-shadow:0 0 0 3px rgba(229,134,153,.18);}
+  .intent-chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px;}
+  .intent-chips button{border:1px solid var(--rose-1);background:rgba(244,191,196,.18);color:var(--rose-4);
+    border-radius:20px;padding:5px 12px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;}
+  .intent-chips button:hover{background:rgba(244,191,196,.34);}
+  .intent-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+  .intent-cancel,.intent-save{border-radius:22px;padding:10px 20px;font-weight:800;cursor:pointer;font-family:inherit;font-size:.92rem;}
+  .intent-cancel{border:1px solid var(--line);background:#fff;color:var(--ink-soft);}
+  .intent-save{border:none;color:#fff;background:linear-gradient(180deg,var(--rose-2),var(--rose-4));box-shadow:0 6px 14px -7px rgba(181,73,95,.7);}
+  @keyframes cardIn{from{opacity:0;transform:translate(-50%,-46%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  .mood.pulse{animation:moodPulse 1.4s ease;}
+  @keyframes moodPulse{0%,100%{box-shadow:0 0 0 0 rgba(229,134,153,0)}30%{box-shadow:0 0 0 6px rgba(229,134,153,.28)}}
+  .block.justadded{box-shadow:0 0 0 2px var(--rose-2),0 10px 24px -10px rgba(181,73,95,.5)!important;border-color:var(--rose-2)!important;animation:slotPop 1.7s ease;}
+  @keyframes slotPop{0%{transform:scale(.97)}35%{transform:scale(1.015)}100%{transform:scale(1)}}
   .bnav.tab.active{color:var(--honey) !important;}
   .bfab.tab,.bnav.tab{box-shadow:none;}
 </style>
@@ -1046,24 +1058,27 @@
           </defs>
         </svg>
 
-        <!-- layer 1: petal shapes (4 petals, gap at the bottom; Day Plan removed) -->
-        <button class="tab petal" data-v="proj" aria-label="Proiecte"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <!-- layer 1: petal shapes (5 petals at 72°; centre = intenția zilei) -->
+        <button class="tab petal" data-v="journal" aria-label="Jurnal"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
         <button class="tab petal" data-v="calm" aria-label="Calm"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
-        <button class="tab petal" data-v="stats" aria-label="Progres"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
         <button class="tab petal" data-v="cal" aria-label="Calendar"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="stats" aria-label="Progres"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="proj" aria-label="Proiecte"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
 
         <!-- layer 2: upright icons + labels (positioned by trig, not counter-rotated) -->
         <div class="labels">
-          <div class="lbl p2" data-v="proj"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="t" data-i18n="tab_proj">Proiecte</span></div>
-          <div class="lbl p3" data-v="calm"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg></span><span class="t" data-i18n="tab_calm">Calm</span></div>
-          <div class="lbl p4" data-v="stats"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 20V12M12 20V6M19 20v-5"/></svg></span><span class="t" data-i18n="tab_stats">Progres</span></div>
-          <div class="lbl p5" data-v="cal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="t" data-i18n="tab_cal">Calendar</span></div>
+          <div class="lbl l1" data-v="journal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 5a2 2 0 0 1 2-2h11v16H7a2 2 0 0 0-2 2V5z"/><path d="M9 7h6M9 11h6"/></svg></span><span class="t" data-i18n="tab_journal">Jurnal</span></div>
+          <div class="lbl l2" data-v="calm"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg></span><span class="t" data-i18n="tab_calm">Calm</span></div>
+          <div class="lbl l3" data-v="cal"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="t" data-i18n="tab_cal">Calendar</span></div>
+          <div class="lbl l4" data-v="stats"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 20V12M12 20V6M19 20v-5"/></svg></span><span class="t" data-i18n="tab_stats">Progres</span></div>
+          <div class="lbl l5" data-v="proj"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="t" data-i18n="tab_proj">Proiecte</span></div>
         </div>
 
-        <!-- centre circle = Jurnal -->
-        <button class="tab flower-center" data-v="journal" aria-label="Jurnal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-3-4-3-8 0-12 3 4 3 8 0 12z"/><path d="M12 21V9M8 13c1.5-1 3-1 4 0M16 13c-1.5-1-3-1-4 0"/></svg>
-          <span class="lbl-c" data-i18n="tab_journal">Jurnal</span>
+        <!-- centre circle = Intenția zilei (acțiune, nu navigare) -->
+        <button class="flower-center" id="intentionBtn" aria-label="Intenția zilei">
+          <span class="seed"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c0-6 2-9 6-11-1 6-3 9-6 11z"/><path d="M12 22c0-6-2-9-6-11 1 6 3 9 6 11z"/><path d="M12 22V8"/></svg></span>
+          <span class="k" data-i18n="intent_k">intenție</span>
+          <span class="word" id="intentionWord"></span>
         </button>
 
       </div>
@@ -1103,6 +1118,7 @@
             <button id="scEditBtn" class="sc-edit-btn" type="button" data-i18n-title="sc_edit" title="Editează scurtăturile">✎</button>
           </div>
 
+          <div class="minilabel" data-i18n="sc_section">Scurtături</div>
           <div class="chips" id="chips"></div>
           <div class="chiphint" data-i18n="preset_hint">apasă: pre-completează · ține apăsat: adaugă direct</div>
           <div class="sc-form" id="scForm">
@@ -1113,12 +1129,13 @@
             <button id="scCancel" class="sc-cancel">✕</button>
           </div>
 
-          <div class="minilabel" data-i18n="lbl_time">Oră</div>
-          <span id="inTimeWrap"></span>
+          <div class="minilabel" data-i18n="new_activity">Activitate nouă</div>
           <div class="addrow">
             <input type="text" id="inTitle" data-i18n-ph="ph_title" placeholder="Ce vrei să faci? ex: Yoga de dimineață…" autocomplete="off">
             <input type="number" id="inDur" min="1" max="600" data-i18n-ph="ph_min" placeholder="min" data-i18n-title="dur_title" title="Durată în minute (opțional)" style="width:64px;border:1px solid rgba(184,137,63,.22);background:transparent;border-radius:13px;padding:11px 8px;font-family:inherit;color:var(--ink);">
           </div>
+          <div class="minilabel" data-i18n="lbl_time">Oră</div>
+          <span id="inTimeWrap"></span>
           <div class="time-preview" id="timePreview" aria-live="polite"></div>
 
           <div class="minilabel" data-i18n="lbl_area">Arie</div>
@@ -1357,26 +1374,55 @@
 <div class="bottombar">
   <button class="tab bnav" data-v="day" aria-label="Acasă">
     <svg viewBox="0 0 24 24"><path d="M12 21c0-5 0-8 3-11M12 21c0-4-1-6-4-8M12 10c0-3 1.4-5 4-6 .6 2.6-.4 5-3 6M12 13c-.6-2.8-2.4-4.4-5-5 0 2.8 1.6 4.6 4 5"/></svg>
-    <span class="blbl">Acasă</span>
+    <span class="blbl" data-i18n="tab_home">Acasă</span>
   </button>
-  <button class="tab bnav" data-v="journal" aria-label="Jurnal">
-    <svg viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 2-2h11v16H7a2 2 0 0 0-2 2V5z"/><path d="M9 7h6M9 11h6"/></svg>
-    <span class="blbl">Jurnal</span>
-  </button>
-  <button class="tab bfab" data-v="day" id="fabHome" aria-label="Adaugă activitate">
+  <button class="bfab" id="addFab" aria-label="Adaugă" aria-expanded="false">
     <span class="fab-circle">
-      <svg viewBox="0 0 24 24"><g transform="translate(12 12)"><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(60)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(120)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(180)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(240)"/><path d="M0 0C-3.2-3.6-3.2-7.4 0-9.6 3.2-7.4 3.2-3.6 0 0Z" transform="rotate(300)"/><circle cx="0" cy="0" r="1.7"/></g></svg>
+      <svg id="addFabIcon" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
     </span>
-    <span class="blbl">&#8203;</span>
-  </button>
-  <button class="tab bnav" data-v="calm" aria-label="Calm">
-    <svg viewBox="0 0 24 24"><path d="M5 19c0-7 5-12 14-13 0 9-6 14-14 13z"/><path d="M5 19c3-5 6-7 10-9"/></svg>
-    <span class="blbl">Calm</span>
+    <span class="blbl" data-i18n="add_short">Adaugă</span>
   </button>
   <button class="tab bnav" data-v="profil" aria-label="Profil">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span class="blbl">Profil</span>
+    <span class="blbl" data-i18n="tab_profil">Profil</span>
   </button>
+</div>
+
+<!-- bloom quick-add menu (opens from the + button) -->
+<div class="bloom-menu" id="bloomMenu" aria-hidden="true">
+  <div class="bloom-scrim" id="bloomScrim"></div>
+  <div class="bloom-cluster">
+    <div class="bloom-ask" data-i18n="bloom_ask">Ce vrei să adaugi?</div>
+    <div class="bloom-row">
+      <button class="bloom-bud" data-add="note">
+        <span class="circ"><svg viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 2-2h11v16H7a2 2 0 0 0-2 2V5z"/><path d="M9 8h6"/></svg></span>
+        <span class="lab" data-i18n="add_note">Notă</span>
+      </button>
+      <button class="bloom-bud bud-up" data-add="activity">
+        <span class="circ"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
+        <span class="lab" data-i18n="add_activity">Activitate</span>
+      </button>
+      <button class="bloom-bud" data-add="mood">
+        <span class="circ"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 4.6-7 9-7 9z"/></svg></span>
+        <span class="lab" data-i18n="add_mood">Stare</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- daily-intention editor -->
+<div class="intent-modal" id="intentModal" aria-hidden="true">
+  <div class="intent-scrim" id="intentScrim"></div>
+  <div class="intent-card">
+    <div class="intent-h" data-i18n="intent_title">Intenția zilei</div>
+    <div class="intent-sub" data-i18n="intent_sub">Un cuvânt sau o frază care să-ți coloreze ziua.</div>
+    <input type="text" id="intentInput" class="intent-input" maxlength="60" data-i18n-ph="intent_ph" placeholder="ex: prezență, blândețe, curaj…" autocomplete="off">
+    <div class="intent-chips" id="intentChips"></div>
+    <div class="intent-actions">
+      <button class="intent-cancel" id="intentCancel" data-i18n="cancel">Anulează</button>
+      <button class="intent-save" id="intentSave" data-i18n="save">Salvează</button>
+    </div>
+  </div>
 </div>
 
 </div><!-- /phone -->
@@ -1435,6 +1481,20 @@
     tab_cal:{ro:"Calendar",es:"Calendario",en:"Calendar"},
     tab_stats:{ro:"Progres",es:"Progreso",en:"Progress"},
     tab_calm:{ro:"Calm",es:"Calma",en:"Calm"},
+    tab_home:{ro:"Acasă",es:"Inicio",en:"Home"},
+    tab_profil:{ro:"Profil",es:"Perfil",en:"Profile"},
+    intent_k:{ro:"intenție",es:"intención",en:"intention"},
+    intent_title:{ro:"Intenția zilei",es:"La intención del día",en:"Today's intention"},
+    intent_sub:{ro:"Un cuvânt sau o frază care să-ți coloreze ziua.",es:"Una palabra o frase que dé color a tu día.",en:"A word or phrase to color your day."},
+    intent_ph:{ro:"ex: prezență, blândețe, curaj…",es:"ej: presencia, calma, valentía…",en:"e.g. presence, kindness, courage…"},
+    intent_saved:{ro:"Intenție salvată 🌸",es:"Intención guardada 🌸",en:"Intention saved 🌸"},
+    activity_added:{ro:"Activitate adăugată 🌸",es:"Actividad añadida 🌸",en:"Activity added 🌸"},
+    bloom_ask:{ro:"Ce vrei să adaugi?",es:"¿Qué quieres añadir?",en:"What would you like to add?"},
+    add_note:{ro:"Notă",es:"Nota",en:"Note"},
+    add_activity:{ro:"Activitate",es:"Actividad",en:"Activity"},
+    add_mood:{ro:"Stare",es:"Ánimo",en:"Mood"},
+    save:{ro:"Salvează",es:"Guardar",en:"Save"},
+    cancel:{ro:"Anulează",es:"Cancelar",en:"Cancel"},
     today:{ro:"Azi",es:"Hoy",en:"Today"},
     chosen_day:{ro:"Ziua aleasă",es:"Día elegido",en:"Chosen day"},
     day_plan:{ro:"Planul zilei",es:"Plan del día",en:"Day plan"},
@@ -1614,8 +1674,10 @@
     sc_name_ph:{ro:"Nume scurtătură…",es:"Nombre del atajo…",en:"Shortcut name…"},
     sc_add:{ro:"Adaugă scurtătură",es:"Añadir atajo",en:"Add shortcut"},
     sc_edit:{ro:"Editează scurtăturile",es:"Editar atajos",en:"Edit shortcuts"},
+    sc_section:{ro:"Scurtături",es:"Atajos",en:"Shortcuts"},
+    new_activity:{ro:"Activitate nouă",es:"Actividad nueva",en:"New activity"},
     sc_done:{ro:"Gata",es:"Listo",en:"Done"},
-    sc_add_long:{ro:"Adaugă o activitate",es:"Añade una actividad",en:"Add an activity"},
+    sc_add_long:{ro:"Adaugă o scurtătură",es:"Añade un atajo",en:"Add a shortcut"},
     calm_logged:{ro:"Notat ✓",es:"Anotado ✓",en:"Logged ✓"},
     calm_today:{ro:"Azi",es:"Hoy",en:"Today"},
     calm_ex_one:{ro:"exercițiu",es:"ejercicio",en:"exercise"},
@@ -2347,7 +2409,7 @@
     // inline editor (time + duration + tag), toggled by time pill or tag dot
     const ed=document.createElement("div"); ed.className="beditor";
     const r1=document.createElement("div"); r1.className="bedit-row"; r1.appendChild(document.createTextNode(t("ed_hour")));
-    r1.appendChild(makeTimePicker(b.time||"", true, (v)=>{ b.time=v; save(); timeEl.className="time"+(v?"":" empty"); timeEl.textContent=blockTimeLabel(b); }));
+    r1.appendChild(makeTimePicker(b.time||"", false, (v)=>{ b.time=v; save(); timeEl.className="time"+(v?"":" empty"); timeEl.textContent=blockTimeLabel(b); }));
     const r2=document.createElement("div"); r2.className="bedit-row"; r2.appendChild(document.createTextNode(t("ed_dur")));
     const di=document.createElement("input"); di.className="bedit-dur"; di.type="number"; di.min="1"; di.max="600";
     di.value=(b.dur&&b.dur>0)? b.dur : defMinFor(catKeyOf(b));
@@ -2369,9 +2431,13 @@
     r4.appendChild(mk(t("move_tom"), ()=>moveBlockToDate(b, addDays(cur,1))));
     r4.appendChild(mk(t("move_wknd"), ()=>moveBlockToDate(b, nextWeekend(cur))));
     r4.appendChild(mk(t("move_nextwk"), ()=>moveBlockToDate(b, nextMonday(cur))));
+    const dwrap=document.createElement("span"); dwrap.className="movedate-wrap";
     const dpick=document.createElement("input"); dpick.type="date"; dpick.className="movedate"; dpick.title=t("other_day");
     dpick.onchange=()=>{ if(dpick.value){ const p=dpick.value.split("-"); moveBlockToDate(b, new Date(+p[0],+p[1]-1,+p[2])); } };
-    r4.appendChild(dpick);
+    const dbtn=document.createElement("button"); dbtn.type="button"; dbtn.className="moveb movedate-btn"; dbtn.textContent="📅 "+t("other_day");
+    dbtn.onclick=()=>{ try{ if(typeof dpick.showPicker==="function") dpick.showPicker(); else { dpick.focus(); dpick.click(); } }catch(e){ try{ dpick.focus(); dpick.click(); }catch(_){} } };
+    dwrap.appendChild(dbtn); dwrap.appendChild(dpick);
+    r4.appendChild(dwrap);
     const done=document.createElement("button"); done.className="bedit-done"; done.textContent=t("ed_done");
     done.onclick=()=>{ ed.classList.remove("show"); renderList(); };
     ed.appendChild(r1); ed.appendChild(r2); ed.appendChild(r3); ed.appendChild(r4); ed.appendChild(done);
@@ -2418,15 +2484,28 @@
     el.innerHTML=clock+range; el.classList.add("show");
   }
   function addBlock({title,cat,time,dur,tags}){
-    title=(title||"").trim(); if(!title) return;
+    title=(title||"").trim(); if(!title) return null;
     const tg = Array.isArray(tags) ? tags.slice() : (tags? [tags] : []);
-    blocks.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,6), title, cat:cat||selCat, time:time||"", dur:dur||0, tags:tg, done:false});
+    const nb={id:Date.now()+"-"+Math.random().toString(36).slice(2,6), title, cat:cat||selCat, time:time||"", dur:dur||0, tags:tg, done:false};
+    blocks.push(nb);
     save(); renderList();
+    return nb.id;
+  }
+  function flashAddedSlot(id){
+    toast(t("activity_added"), 2200);
+    if(!id) return;
+    const el=document.querySelector('.block[data-id="'+id+'"]');
+    if(el){
+      try{ el.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(e){}
+      el.classList.add("justadded");
+      setTimeout(()=>{ try{ el.classList.remove("justadded"); }catch(e){} }, 1900);
+    }
   }
   function addFromForm(){
     const t=$("#inTitle").value.trim(); if(!t){ $("#inTitle").focus(); return; }
-    addBlock({title:t, cat:selCat, time:addTime, dur:parseInt($("#inDur").value,10)||0, tags:[...selTags]});
-    $("#inTitle").value=""; $("#inDur").value=""; selTags.clear(); renderAddTags(); buildAddTime(); $("#inTitle").focus();
+    const id=addBlock({title:t, cat:selCat, time:addTime, dur:parseInt($("#inDur").value,10)||0, tags:[...selTags]});
+    $("#inTitle").value=""; $("#inDur").value=""; selTags.clear(); renderAddTags(); buildAddTime();
+    flashAddedSlot(id);
   }
 
   async function save(){ await Store.set("day:"+keyFor(cur), JSON.stringify(blocks)); }
@@ -2434,7 +2513,7 @@
     const raw = await Store.get("day:"+keyFor(cur));
     try{ blocks = raw? JSON.parse(raw):[]; }catch(e){ blocks=[]; }
     if(!Array.isArray(blocks)) blocks=[];
-    renderHeader(); renderList();
+    renderHeader(); renderList(); renderIntention();
   }
 
   /* ---------- reschedule: move a slot to another day ---------- */
@@ -3438,7 +3517,7 @@ Objective description, "just the facts".
   /* ---------- backup: export / import ---------- */
   async function exportData(){
     const dump={ app:"mi-dia", version:1, exportedAt:new Date().toISOString(), data:{} };
-    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("calmlog:"), await Store.list("proj:"), ["areas","shortcuts","tags","projects","settings"]);
+    const keys=[].concat(await Store.list("day:"), await Store.list("journal:"), await Store.list("intent:"), await Store.list("calmlog:"), await Store.list("proj:"), ["areas","shortcuts","tags","projects","settings"]);
     for(const k of keys){ const v=await Store.get(k); if(v!=null && v!=="") dump.data[k]=v; }
     try{
       const blob=new Blob([JSON.stringify(dump,null,2)],{type:"application/json"});
@@ -3486,6 +3565,57 @@ Objective description, "just the facts".
 
   // tabs
   document.querySelectorAll(".tab").forEach(t=>{ t.onclick=()=>setView(t.getAttribute("data-v")); });
+
+  /* ---------- daily intention (centre of the flower) ---------- */
+  const INTENT_SUGGEST = {
+    ro:["prezență","blândețe","recunoștință","curaj","răbdare","bucurie"],
+    es:["presencia","calma","gratitud","valentía","paciencia","alegría"],
+    en:["presence","kindness","gratitude","courage","patience","joy"]
+  };
+  async function renderIntention(){
+    const el=document.getElementById("intentionWord"); if(!el) return;
+    let v=""; try{ v=(await Store.get("intent:"+keyFor(cur)))||""; }catch(e){ v=""; }
+    el.textContent=v;
+  }
+  function openIntent(){
+    const m=document.getElementById("intentModal"); if(!m) return;
+    const inp=document.getElementById("intentInput");
+    Store.get("intent:"+keyFor(cur)).then(v=>{ if(inp) inp.value=v||""; }).catch(()=>{ if(inp) inp.value=""; });
+    const wrap=document.getElementById("intentChips");
+    if(wrap){ wrap.innerHTML=""; (INTENT_SUGGEST[lang]||INTENT_SUGGEST.en).forEach(s=>{
+      const b=document.createElement("button"); b.type="button"; b.textContent=s;
+      b.onclick=()=>{ if(inp){ inp.value=s; inp.focus(); } }; wrap.appendChild(b); }); }
+    m.classList.add("open"); m.setAttribute("aria-hidden","false");
+    setTimeout(()=>{ try{ inp.focus(); }catch(e){} },60);
+  }
+  function closeIntent(){ const m=document.getElementById("intentModal"); if(m){ m.classList.remove("open"); m.setAttribute("aria-hidden","true"); } }
+  async function saveIntent(){
+    const inp=document.getElementById("intentInput"); const v=((inp&&inp.value)||"").trim();
+    try{ await Store.set("intent:"+keyFor(cur), v); }catch(e){}
+    await renderIntention(); closeIntent(); if(v) toast(t("intent_saved"));
+  }
+  { const ib=document.getElementById("intentionBtn"); if(ib) ib.onclick=openIntent; }
+  { const c=document.getElementById("intentCancel"); if(c) c.onclick=closeIntent; }
+  { const s=document.getElementById("intentSave"); if(s) s.onclick=saveIntent; }
+  { const sc=document.getElementById("intentScrim"); if(sc) sc.onclick=closeIntent; }
+  { const inp=document.getElementById("intentInput"); if(inp) inp.addEventListener("keydown",e=>{ if(e.key==="Enter") saveIntent(); else if(e.key==="Escape") closeIntent(); }); }
+
+  /* ---------- bloom quick-add (the "+" button) ---------- */
+  function openBloom(){ const m=document.getElementById("bloomMenu"), f=document.getElementById("addFab");
+    if(m){ m.classList.add("open"); m.setAttribute("aria-hidden","false"); } if(f){ f.classList.add("open"); f.setAttribute("aria-expanded","true"); } }
+  function closeBloom(){ const m=document.getElementById("bloomMenu"), f=document.getElementById("addFab");
+    if(m){ m.classList.remove("open"); m.setAttribute("aria-hidden","true"); } if(f){ f.classList.remove("open"); f.setAttribute("aria-expanded","false"); } }
+  function toggleBloom(){ const m=document.getElementById("bloomMenu"); if(m && m.classList.contains("open")) closeBloom(); else openBloom(); }
+  function bloomAction(kind){
+    closeBloom();
+    if(kind==="activity"){ setView("day"); setTimeout(()=>{ const i=document.getElementById("inTitle"); if(i){ try{ i.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){} try{ i.focus(); }catch(e){} } },200); }
+    else if(kind==="note"){ setView("journal"); setTimeout(()=>{ const i=document.getElementById("jText"); if(i){ try{ i.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){} try{ i.focus(); }catch(e){} } },240); }
+    else if(kind==="mood"){ setView("journal"); setTimeout(()=>{ const i=document.getElementById("mood"); if(i){ try{ i.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){} i.classList.add("pulse"); setTimeout(()=>i.classList.remove("pulse"),1400); } },240); }
+  }
+  { const f=document.getElementById("addFab"); if(f) f.onclick=toggleBloom; }
+  { const sc=document.getElementById("bloomScrim"); if(sc) sc.onclick=closeBloom; }
+  document.querySelectorAll(".bloom-bud").forEach(b=>{ b.onclick=()=>bloomAction(b.getAttribute("data-add")); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeBloom(); });
   // journal
   $("#jText").addEventListener("input",()=>{ updateJCount(); scheduleJSave(); });
   $("#jEvent").addEventListener("input", scheduleJSave);
