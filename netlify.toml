@@ -12,3 +12,12 @@
   from = "/"
   to = "/mi-dia.html"
   status = 200
+
+# Hide the old versioned builds: any direct request to /mi-dia-vNN.html sends the
+# visitor to the homepage (latest version). The files stay in git as rollback
+# points; they are just not reachable on the public site.
+[[redirects]]
+  from = "/mi-dia-v*"
+  to = "/"
+  status = 301
+  force = true
