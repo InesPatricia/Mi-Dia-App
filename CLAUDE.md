@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v48.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v56.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,11 +24,13 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v48.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v56.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
-- This spec file is `CLAUDE_v2.md` (the living doc, updated in place — not versioned).
+- This spec is the **living doc** (updated in place — not versioned). It is loaded by the harness
+  as **`CLAUDE.md`** (the canonical filename). A duplicate `CLAUDE_v2.md` was merged into it and
+  removed in the v56 session — do not re-create a second spec file.
 
 **Deployment + infra files (do NOT delete as "single-file violations"):**
 - The app is deployed on **Netlify**, auto-deploying from GitHub `main` on every push.
@@ -40,6 +42,11 @@ Personal use for now (localStorage only). Future: public/subscription version.
     file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".
     The app HTML itself stays one self-contained file; the manifest is inline (data URI).
   - Bump the `CACHE` constant in `sw.js` on each new build so old caches clear on activate.
+
+> **Version-numbering note (parallel-track collision):** "v48" was used by two parallel tracks —
+> a web-Claude bug fix (Finalizate tab, see changelog) AND the original PWA build. The PWA was
+> absent from the v49–v55 line; **v56 re-adds it on top of v55**, so v56 is the superset (all
+> v48–v55 fixes + PWA). The deployed/canonical line is now **v56**.
 
 ---
 
@@ -182,6 +189,8 @@ duplicated Acasă). Now there is ONE primary navigation:
 ## i18n system (3 languages: EN / ES / RO)
 
 - `let lang` (persisted in `settings.lang`); `const I18N = { en, es, ro }` (~180 keys).
+- **Default language is English** (`let lang="en"`, v50); a returning user keeps their saved
+  `settings.lang`. Header switcher order: **EN · ES · RO**, kept in the header (visible on open).
 - `t(k)` translation lookup; `applyI18n()` updates all `data-i18n` nodes;
   `LL(arr)` returns `arr[lang]` for language-keyed arrays
   (`BREATH`, `SOMATIC`, `JPROMPTS`, `PHRASES`, `PRESETS`, `CAT_LABELS`).
@@ -198,11 +207,22 @@ duplicated Acasă). Now there is ONE primary navigation:
 - **Calendar tab:** Month view (mood-tinted cells + journal emoji), Year "pixels" grid (12×31).
 - **Progress tab:** mood-productivity correlation, plain-language insight (statistical, not AI).
 - **Calm tab:** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer.
-- **Journal, Projects.**
+  **Redesigned (v54, direction B):** warm LIGHT treatment (the old full dark-green `calm-mode` override
+  was dropped) — soft sage/dusk wash + a gentle "spațiu de respiro" cue — and the card **emojis are now
+  home-style line-icons** tinted in each exercise's functional color.
+- **Profil + Setări (v55):** Profil = warm overview (greeting, today's intention, streak/calm/reflection
+  stats); Setări = sound/reminders, tags, areas, backup. The **Focus timer** lives on the Day-plan
+  header (opens in an overlay), not in settings. Language switcher stays in the header.
+- **Journal, Projects.** Journal: per-day mood + free text + 4F reflection scaffold + Word/PDF export.
+  **The EMCC competencies box under 4F was removed (v52)** — 4F and the export stay. Projects: **no
+  default seed (v53)** — a warm empty-state offers idea chips (Cărți & lecturi / Grijă de sine / Idei &
+  insights) that create a project on tap.
+- **Back navigation (v49):** every secondary view (Jurnal/Calm/Calendar/Progres/Proiecte/Profil) has a
+  `← Acasă/Inicio/Home` pill at the top that returns to the Day view.
 - **Intenția zilei (v38):** per-day intention set from the flower centre; suggestion chips; RO/ES/EN.
 - **Quick-add "bloom" (v38):** the bottom `+` blooms into Notă / Activitate / Stare (route to existing flows).
 - **3-language i18n** (EN/ES/RO) across the whole app.
-- **PWA (real, v48):** installable web app manifest (inline data URI) + a service worker
+- **PWA (real, v56):** installable web app manifest (inline data URI) + a service worker
   (`sw.js`) for offline. Add-to-Home-Screen, standalone display, app icon. JSON export/import
   backup (now includes `intent:` keys).
 
@@ -211,6 +231,12 @@ duplicated Acasă). Now there is ONE primary navigation:
 ## To do / Backlog (planned in chat, June 2026)
 
 Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `[~]` not yet audited by Claude.
+
+**P1 — done (testing-feedback design work, after the P0 batch v48–v53):**
+- `[x]` Calm tab redesign — **direction B** done in **v54**: warm LIGHT theme (dark-green `calm-mode`
+  override dropped), soft sage/dusk wash + "spațiu de respiro" cue, card emojis → home-style line-icons.
+- `[x]` Profil → split into **Profil + Setări** (segmented) in **v55**; the **Focus timer moved out of
+  settings** to a Day-plan launcher + overlay. Language switcher kept in the header.
 
 **A. Design unity & cleanup (from the opening audit)**
 - `[ ]` A1. Merge the two CSS layers into one source of truth — remove duplicate/conflicting
@@ -256,7 +282,10 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   - `time` = 24h string `"HH:MM"` or `""` (untimed); `dur` = minutes (0 = none).
 - `cats` — categories/areas (≤8): `{ id, label, color }` (label = "Arie" in UI).
 - `intent:YYYY-MM-DD` — the daily intention string (v38; `""` = none). Included in backup export.
-- `tags`, `journal` `{date,mood,energy,text,prompt}`, `projects`, `settings` (incl. `lang`).
+- `tags`, `journal` `{text,mood,event}` (the old `comp`/EMCC field was dropped in v52), `projects`
+  (start empty by default; each `{id,name,color,key?}` where `key` maps to `PROJ_LABELS` for i18n
+  display), `settings` (incl. `lang`). Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes the old
+  empty Inbox/Spain defaults).
 
 ---
 
@@ -335,11 +364,64 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   (`0 3px 12px -9px`), and added bottom padding in `.hero-body` (22px→30px) so the card isn't crammed
   against the header edge. (Option A — dissolving the card entirely so date/progress sit directly on
   the hero — was also mocked up but not chosen.)
-- **v48** — **Real PWA + first deploy.** Added a web app **manifest** (inline data URI: name,
-  short_name, `start_url:"/"`, `scope:"/"`, `display:standalone`, theme/background colors, icons —
-  reuses the existing 192px PNG + a new scalable rose-flower SVG, incl. a maskable variant) and a
-  **service worker** (`sw.js`, network-first + cache fallback) registered via a small `<script>` at
-  EOF. The app is now installable (Add-to-Home-Screen, standalone) and works offline. Deployed on
-  **Netlify** (`mi-diaa.netlify.app`), auto-deploy from GitHub `main`; `netlify.toml` serves
-  `mi-dia.html` at root and hides old `vNN` files. The app HTML stays single-file; `sw.js` +
-  `netlify.toml` are deliberate infra files (see the Deployment note near the top).
+
+## Changelog (v48 → v53) — testing-feedback batch (P0)
+
+- **v48** — **Bug fix: the "Finalizate" (Completed) tab was empty.** Root cause (reproduced in headless
+  Chromium, not guessed): inside `relTime()` a local `const t=new Date()` **shadowed the global
+  translation function `t()`**; the first completed entry dated "today" hit `t("rel_today")`, which
+  threw `t is not a function`, aborting `renderCompleted` before any row rendered. Fix: renamed the
+  local Date var to `now`. Both completed day-activities and project items now show. (Note: other
+  `const t=` locals exist but don't call the translate fn after, so they're harmless.)
+- **v49** — **Back button on every secondary view.** Added a discreet rose pill `← Acasă/Inicio/Home`
+  (`.viewback`, i18n key `back_home`) as the first child of `#view-journal/proj/cal/stats/calm/profil`,
+  wired to `setView("day")`. The shared hero stays on top; the back chip sits just below it. (`#view-day`
+  has none — it's home.)
+- **v50** — **Default language is now ENGLISH** (`let lang="en"`; returning users keep their saved
+  `settings.lang`). Header switcher reordered to **EN · ES · RO**. The switcher lives in the header and
+  is visible on open (language-agnostic codes), so a non-English speaker can switch without entering
+  Settings.
+- **v51** — **Header phrase no longer duplicated in Spanish.** `renderHeader` now leaves the translation
+  row (`#phraseRo`) empty when `lang==="es"` (the Spanish phrase already shows in `#phraseEs`).
+- **v52** — **Removed the EMCC competencies box under 4F** (the "Competențe EMCC acoperite" chips).
+  Removed: the HTML box, `.emcc-box`/`.emcc-label` CSS, the `EMCC_COMP` array, `jComp`, `renderComp()`,
+  the `comp` field in journal load/save, the EMCC section of the Word/PDF export, and the orphaned i18n
+  keys (`emcc_h`, `emcc_full_label`). **The 4F reflection button and the Word/PDF export stay fully
+  functional** (export now omits competencies).
+- **v53** — **Projects: zero default seed + warm empty-state.** No projects are seeded on a fresh
+  install. When `projects.length===0`, the Projects list shows a warm empty-state (`.proj-empty`):
+  title `proj_empty_title` ("Niciun proiect încă"), subtitle `proj_empty_sub`, and three tappable idea
+  chips — **Cărți & lecturi · Grijă de sine · Idei & insights** (keys `proj_books`, `proj_selfcare`,
+  `proj_ideas`) — that create an i18n-aware project on tap (`addProjByKey`, sets `key`). A one-time
+  migration (`mig_proj_v2`) removes the old default **Inbox** and **Proprietăți Spania** projects *only
+  if empty* (no data loss). `deleteActiveProject` now allows deleting the last project (→ empty-state).
+  `addItem` guards against no active project. The `+ project` chip still creates a custom one.
+
+## Changelog (v54 → v55) — design batch (P1)
+
+- **v54** — **Calm tab redesign, direction B (chosen by Ines).** Dropped the full **dark-green
+  `calm-mode` override**; calm-mode is now a **warm LIGHT theme** — keeps the cream/rose surfaces and
+  dark ink, only adds a soft sage/dusk **background wash** as a gentle "you've entered a calm space"
+  cue, plus a `← Acasă` cue line "un mic spațiu de respiro" (`calm_cue`, leaf line-icon). The bottom bar
+  and FAB now stay **rose** in calm-mode (removed the dark nav/bottombar/FAB overrides; the flower isn't
+  shown on the Calm view anyway). **Card emojis replaced with home-style line-icons** (`CALM_ICONS` map
+  + `calmIcon(id,color)`) tinted in each exercise's functional color (chip bg via `color-mix`); the
+  summary pills and the player title use the same icons. (Minor remaining: a `🌱` still sits in the
+  empty-summary text string.) Exercise `emoji:` fields remain in the data but are unused.
+- **v55** — **Profil split into "Profil" + "Setări" + Focus timer relocated.** The Profil view now has a
+  segmented control (Profile · Settings, `#profMode`). **Profil (overview):** warm greeting
+  (`pf_hello`), today's intention card (reads `intent:`), and 3 stat tiles with home-style line-icons —
+  days-with-a-plan streak, calm (7 days), reflections (computed from `getAllDays`/`calmlog:`/journal).
+  **Setări:** reminders & sound, tags, areas, backup (unchanged, just grouped). The **Focus timer moved
+  OUT of settings** to a launcher in the Day-plan header (`#focusBtn`, clock line-icon) that opens it in
+  an overlay (`#focusOverlay`, reuses the `.calm-player` scrim; timer markup + IDs `#ringProg/#tTime/
+  #tPresets/#tGo/#tReset` preserved so the timer JS is unchanged). Rationale (UX): a tool belongs where
+  the work happens (the Day view), not buried in passive Settings; keeps nav flat (no 6th petal / 4th
+  bar item). Per-slot ▶ timers are untouched. The **language switcher stays in the header** (visible on
+  open), deliberately NOT moved into Profil.
+
+- **v56** — **PWA restored on the v55 line + redeploy.** v55 (and the v49–v55 line) had lost the
+  PWA bits, so v56 ports the manifest (inline data URI: name, start_url `/`, standalone, rose-flower
+  icon + maskable) and the `sw.js` service-worker registration onto v55. Net: all v48–v55 fixes +
+  installable/offline PWA. Promoted to `mi-dia.html`; auto-deployed on Netlify. (See the
+  version-numbering note near the top about the "v48" collision.)
