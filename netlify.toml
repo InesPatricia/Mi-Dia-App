@@ -13,11 +13,12 @@
   to = "/mi-dia.html"
   status = 200
 
-# Hide the old versioned builds: any direct request to /mi-dia-vNN.html sends the
-# visitor to the homepage (latest version). The files stay in git as rollback
-# points; they are just not reachable on the public site.
+# Hide every non-promoted build: old versions (/mi-dia-vNN.html) AND mockups
+# (/mi-dia-mockup*, /mi-dia-flower-variants*) redirect to the homepage. The files
+# stay in git as rollback points; they are just not reachable on the public site.
+# NOTE: "/mi-dia-*" needs the hyphen, so it does NOT match "/mi-dia.html" (the live app).
 [[redirects]]
-  from = "/mi-dia-v*"
+  from = "/mi-dia-*"
   to = "/"
   status = 301
   force = true

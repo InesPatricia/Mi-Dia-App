@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v56.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v67.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,29 +24,29 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v56.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v67.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
 - This spec is the **living doc** (updated in place — not versioned). It is loaded by the harness
-  as **`CLAUDE.md`** (the canonical filename). A duplicate `CLAUDE_v2.md` was merged into it and
-  removed in the v56 session — do not re-create a second spec file.
+  as **`CLAUDE.md`** (the canonical filename). Web-Claude tends to regenerate it as `CLAUDE_v2.md`
+  WITHOUT the deploy/PWA/diacritics notes below — when that happens, merge it back into `CLAUDE.md`
+  and delete the duplicate. Do not keep two spec files.
 
 **Deployment + infra files (do NOT delete as "single-file violations"):**
 - The app is deployed on **Netlify**, auto-deploying from GitHub `main` on every push.
   Live site: **`mi-diaa.netlify.app`** (serves the promoted `mi-dia.html` at root).
-- Two infra files live in the repo root and are intentional (NOT part of the single-file app):
-  - **`netlify.toml`** — no build step; serves `mi-dia.html` at `/` (200 rewrite); redirects old
-    `/mi-dia-vNN.html` → `/` (301) so only the latest is publicly reachable.
+- Three infra files live in the repo root and are intentional (NOT part of the single-file app):
+  - **`netlify.toml`** — no build step; serves `mi-dia.html` at `/` (200 rewrite); redirects every
+    other `/mi-dia-*` file (old versions + mockups) → `/` (301) so only the latest is public.
   - **`sw.js`** — the PWA service worker (offline). A service worker MUST be a separate same-origin
     file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".
     The app HTML itself stays one self-contained file; the manifest is inline (data URI).
   - Bump the `CACHE` constant in `sw.js` on each new build so old caches clear on activate.
 
-> **Version-numbering note (parallel-track collision):** "v48" was used by two parallel tracks —
-> a web-Claude bug fix (Finalizate tab, see changelog) AND the original PWA build. The PWA was
-> absent from the v49–v55 line; **v56 re-adds it on top of v55**, so v56 is the superset (all
-> v48–v55 fixes + PWA). The deployed/canonical line is now **v56**.
+> **PWA checklist for each new build:** the app HTML must contain (a) `<link rel="manifest" ...>`
+> (inline data URI) and (b) a `<script>` registering `/sw.js`. If a new web-Claude build dropped
+> them (it happened on the v49–v55 line), port them on before deploying. v56+ and v67 have them.
 
 ---
 
@@ -88,34 +88,59 @@ If any check fails — fix before saving. Then render a screenshot to verify vis
 **Rose family (single action/brand color), NOT mauve/magenta:**
 
 ```
---rose-1:#F4BFC4   --rose-2:#E58699   --rose-3:#D15E78   --rose-4:#B5495F
+--rose-1:#F4BFC4   --rose-2:#E58699   --rose-3:#D15E78   --rose-4:#B5495F   (LOCKED, untouched)
+```
+
+**Extended tonal range (added v57, ADDITIVE — the four locked tokens above are never changed):**
+
+```
+--rose-0:#FBE4E5 (whisper)   --rose-5:#8E3349 (deep)   --rose-dust:#C39199 (muted text)
+--gold-1:#E8D2A0   --gold:#B8893F   --gold-deep:#9A6E2C    (discreet metallic gold accent)
+--sage-1:#E4E8DC   --sage:#9DAD8C   --sage-deep:#6F8268    (cool sage — Calm screen only)
 ```
 
 - Rose is the **single action/brand color** across all tabs: AZI/TODAY button, `+ Adaugă`
-  commit button, progress bars, JURNAL flower center, Calm accents, time-range preview pill.
-- Terracotta/gold are **removed from action buttons** (gold survives only as a soft decorative
-  accent, e.g. petal icons, the panel flower glyph, the ✎ edit button).
+  commit button, progress bars, JURNAL flower center, time-range preview pill, Settings
+  toggle-ON + Add/Export buttons (greened-out olive removed from actions in v67).
+- Gold survives only as a **discreet decorative accent** (petal icons, panel flower glyph,
+  ✎ edit button, hero "Día" italic, fine hairlines). Never an action color.
+- Sage/olive is **functional only**: the "corp & calm" area color, Calm-exercise colors,
+  green=done tick. Never used as an action (toggle/button) state.
 - **Category ("Arie"), tag, Calm-exercise colors, and green=done stay non-rose (functional).**
-- Typography: **Fraunces** (serif display, brand/headers) + **Nunito** (sans, body/labels).
+- Typography: **Fraunces** (serif display, brand/headers) + **Nunito Sans** (sans, body/labels —
+  migrated from Nunito in v57, loaded with the `opsz` optical-size axis).
 - Aesthetic goals: homogeneity, flow, naturalness, simplicity, femininity, gentleness
   (omogenitate, fluență, naturalețe, simplitate, feminitate, blândețe). Calm, not overwhelming.
+  Mediterranean "old rich" / quiet luxury.
 
-**Layout shell:** phone-frame; HERO (bougainvillea header photo, brand, daily phrase ES+local,
+**Layout shell:** phone-frame; HERO (bougainvillea terrace header photo, brand, daily phrase ES+local,
 date/progress band) → radial **flower navigation** → day panel (`.daypad`). Bottom bar present.
-The HERO is a rounded panel (`.hero`) with the photo + a fade veil. The date/progress sit inside a
-**discreet card** (`.hero-day-card`, softened in v47): **no border**, light translucent fill
-(`rgba(255,251,243,.42)`), very soft shadow, blur — kept deliberately subtle so it blends into the
-header instead of looking like a panel "stuck on top". Do not re-add a hard border / heavy shadow.
+The HERO is a rounded panel (`.hero`) with the photo + a fade veil. Revamp (v60/v61): the veil is
+softer so the Mediterranean terrace+bougainvillea photo breathes full-width; brand reads **Mi _Día_**
+with "Día" in italic gold (`.brand-accent`); sub-title is UPPERCASE letter-spaced
+("YOUR MEDITERRANEAN PLANNER"); a small seed icon (`.hero-mark`) sits top-left; a local warm gradient
+behind the phrase (`.phrase::before`) guarantees legibility over the photo. The date/progress sit
+inside a **discreet card** (`.hero-day-card`): no border, light translucent fill, soft shadow, blur.
+The daily phrase stays dynamic via i18n (not pinned to one value).
 
 **Navigation architecture (redesigned in v38 — resolves the old dual-nav root cause):**
 The flower and the bottom bar used to overlap (Jurnal + Calm appeared in both; the centre FAB
 duplicated Acasă). Now there is ONE primary navigation:
 - **Flower = the single primary navigation**, with **5 petals at 72°**: Jurnal (top), Calm,
   Calendar, Progres, Proiecte. Petals keep `data-v` and the `.tab` wiring (`setView`).
+  **Petal shape (final, L1·V3·C1, set in v58):** a teardrop/lacrimă — narrow base at centre,
+  wide middle, **sharp tip** outward; blush-rose fill (`#FFFEFB→#FDF2EF→#F7E2E0`) with a fine
+  rose edge (`#E6AEB6`); generated from `petalPath` in viewBox 128×149 (base at `50% 100%`).
+  Each petal's **label (icon + word) sits INSIDE the petal contour** (`.labels .lbl`,
+  `.l1`–`.l5` positioned by absolute coords; NOT counter-rotated inside the rotated petal —
+  that breaks layout). `:active` gives a subtle press-scale for mobile feedback.
 - **Flower CENTRE = "Intenția zilei"** (an ACTION, not a view): `#intentionBtn` opens a modal
   (`#intentModal`) with a text input + per-language suggestion chips + Salvează/Anulează. The
   intention is stored per day and shown in the centre as italic Fraunces (`#intentionWord`).
 - **Bottom bar = 3 non-overlapping items**: Acasă (`data-v="day"`) · **`+` (`#addFab`)** · Profil.
+  Since v66 the bar is **`position:fixed`** (native sticky tab bar — always visible, no scrolling
+  to reach it), centred at `--maxw`, with `env(safe-area-inset-bottom)` padding; `.phone-scroll`
+  carries 110px bottom padding so content is never hidden behind it.
   The `+` is NOT a nav tab — it toggles a **"bloom" quick-add menu** (`#bloomMenu`) whose three
   petal-buds route to existing flows: **Notă** → Jurnal (focus `#jText`), **Activitate** → Day
   add form (focus `#inTitle`), **Stare** → Jurnal mood picker (`#mood`, gentle pulse). `+` rotates
@@ -222,7 +247,7 @@ duplicated Acasă). Now there is ONE primary navigation:
 - **Intenția zilei (v38):** per-day intention set from the flower centre; suggestion chips; RO/ES/EN.
 - **Quick-add "bloom" (v38):** the bottom `+` blooms into Notă / Activitate / Stare (route to existing flows).
 - **3-language i18n** (EN/ES/RO) across the whole app.
-- **PWA (real, v56):** installable web app manifest (inline data URI) + a service worker
+- **PWA (real, v56+/v67):** installable web app manifest (inline data URI) + a service worker
   (`sw.js`) for offline. Add-to-Home-Screen, standalone display, app icon. JSON export/import
   backup (now includes `intent:` keys).
 
@@ -242,8 +267,9 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - `[ ]` A1. Merge the two CSS layers into one source of truth — remove duplicate/conflicting
   rules (the two `:root` blocks, `.datebar`, `.bar>i`). Highest value for maintainability;
   do carefully, screenshot after each cut. *(Most aligned with the "unified design" goal.)*
-- `[?]` A2. Gold/terracotta accents (active petal = terracotta, petal icons, ✎ button, `h2`
-  flower glyph): intentional secondary accent or drift? Possibly unify active state to rose.
+- `[x]` A2. Gold/terracotta accents — RESOLVED through the revamp: active petal/labels now use
+  **rose** (`--rose-4`); gold kept only as a discreet decorative accent (petal icons, panel glyph,
+  hero "Día", hairlines); olive green removed from Settings actions (v67). Sage reserved for Calm.
 - `[ ]` A3. Consolidate spacing/shadow/radius tokens (`--radius`/`-lg`, `--shadow`/`-sm`/`-soft`).
 - `[~]` A4. Consistency audit of the other tabs (Proiecte, Calm, Progres, Jurnal) — same panel
   style, headers, rose accents. Not yet inspected; may already be fine.
@@ -420,8 +446,55 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   bar item). Per-slot ▶ timers are untouched. The **language switcher stays in the header** (visible on
   open), deliberately NOT moved into Profil.
 
-- **v56** — **PWA restored on the v55 line + redeploy.** v55 (and the v49–v55 line) had lost the
-  PWA bits, so v56 ports the manifest (inline data URI: name, start_url `/`, standalone, rose-flower
-  icon + maskable) and the `sw.js` service-worker registration onto v55. Net: all v48–v55 fixes +
-  installable/offline PWA. Promoted to `mi-dia.html`; auto-deployed on Netlify. (See the
-  version-numbering note near the top about the "v48" collision.)
+---
+
+## Changelog (v56 → v67) — premium "mockup1" REVAMP
+
+Reference mockups (built & approved in chat, in outputs): `mi-dia-mockup1-complet.html`
+(3 screens), `mi-dia-flower-final-mockup1.html` (the chosen flower), `mi-dia-settings-redesign-mockup.html`,
+`mi-dia-plan-revamp-mockup1.md` (written plan). Direction confirmed by Ines: one rose family in
+many shades, two discreet surprise accents (thin gold + cool sage on Calm), Fraunces + Nunito Sans,
+flower-nav L1·V3·C1, labels inside petals, Mediterranean "old rich".
+
+- **v56** — minor addition over v55 (+12 lines).
+- **v57 — Faza A (foundation).** Body font Nunito → **Nunito Sans** (`opsz` axis; Google Fonts link +
+  all 23 CSS refs). ADDITIVE color tokens (LOCKED `--rose-1..4` untouched): `--rose-0`, `--rose-5`,
+  `--rose-dust`, `--gold-1/--gold-deep`, `--sage-1/--sage/--sage-deep`. Progress-bar gradient enriched
+  (rose-0→rose-5 crescendo); flower-centre given inner bottom-shadow depth.
+- **v58 — Faza B (flower-nav).** Replaced `petalPath` with the final **L1·V3·C1 teardrop** (sharp tip);
+  enriched `petalFill` (added 52% mid stop); removed legacy `scaleX(.82)`. Petal palette → blush rose
+  (`--petal-cream/-mid/-edge/-active/-line`); active icon/label → `--rose-4`. Labels re-centred INSIDE
+  each petal (`.l1`–`.l5` repositioned, smaller). Navigation verified intact (petal click → setView).
+- **v59 — Faza C (refinement).** Panel-flower glyph `%23E2922E` (strident orange) → `%23B8893F`
+  (discreet gold), 2 occurrences. `CHIP_TINTS.sc_journal` warmed from grey to rose. Header/day-card/
+  shortcuts/slots already existed well from v38, so Faza C was targeted refinement only.
+- **v60 / v61 — Header to match mockup.** Softer `hero-veil` (terrace+bougainvillea photo breathes
+  full-width); brand "Día" italic gold (`.brand-accent`); sub-title UPPERCASE letter-spaced (leading
+  dot removed from `brand_tag` in all 3 langs); seed icon top-left (`.hero-mark`); swapped the hero
+  photo to the better mockup image (terrace + bougainvillea cascade). v61 = clean rollback point after
+  these header edits (versioning discipline). NOTE: the hero photo is a large base64 (~64KB) → file
+  grew to ~335KB; acceptable for one image but keep an eye on total size.
+- **v62 — Faza D (Calendar / Calm).** Calm was already complete from v54 (warm light theme, line-icons,
+  7-day summary) — untouched. Calendar good; refined the **mood legend** to show colored square +
+  emoji + WORD (new i18n keys `mood_n1..5`: Ploaie/Înnorat/Variabil/Frumos/Senin + ES/EN).
+- **v63 — Faza E (finishes).** Most finishes already existed (blur bottom bar, rose FAB gradient,
+  micro-animations). Added petal `:active` press feedback for mobile touch; added a local warm gradient
+  behind the hero phrase (`.phrase::before`) for contrast over the photo.
+- **v64 — Spacing.** Lifted the Day-plan card up (flower `margin-bottom` 34px → −18px) to remove the
+  empty gap under the flower (the petals don't reach the box edge; scale(1.2) exaggerated it).
+- **v65 — FIX: Progres "Mood balance" percentages.** Bar was a single full-width colour with no %,
+  so 3 sunny days *looked* like "half the month". Added **% per mood** in the legend
+  (`counts[m]/total`); bar `flex` already proportional. Clarified it's % of **logged days**, not of
+  the whole month (e.g. 3 sunny + 1 cloudy → ☀️75% / 🌥️25%).
+- **v66 — Bottom bar native.** `.bottombar` `position:absolute` → **`position:fixed`** (centred at
+  `--maxw`, safe-area padding). It no longer scrolls with content — always visible like a native tab
+  bar. `.phone-scroll` keeps 110px bottom padding so nothing is hidden.
+- **v67 — Settings redesign (variant C).** Olive **green removed from ACTION elements** (it was
+  breaking the theme): `.toggle.on` → rose + thin gold ring; `.leadadd button` (+focus) and the Export
+  button → rose (`--rose-1`, matching Import). Olive/sage kept ONLY where functional (category dots,
+  Calm exercises, done-tick). Chosen from a 3-option mockup (A gradient / B minimal / **C rose+gold**).
+
+> **Status:** premium revamp Fazele A–E complete (v57–v64) + follow-up fixes (v65 mood %, v66 native
+> bottom bar, v67 Settings). Backlog A (merge the two CSS layers to one source of truth) is still open
+> and remains top priority. Real-device validation on Android Chrome (backlog C) still pending for the
+> new petal hit-test, fixed bottom bar + safe-area, and the larger hero photo.
