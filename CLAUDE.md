@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v67.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v89.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v67.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v89.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
@@ -46,7 +46,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 
 > **PWA checklist for each new build:** the app HTML must contain (a) `<link rel="manifest" ...>`
 > (inline data URI) and (b) a `<script>` registering `/sw.js`. If a new web-Claude build dropped
-> them (it happened on the v49–v55 line), port them on before deploying. v56+ and v67 have them.
+> them (it happened on the v49–v55 line), port them on before deploying. v56+ through v89 have them.
 
 ---
 
@@ -118,10 +118,16 @@ date/progress band) → radial **flower navigation** → day panel (`.daypad`). 
 The HERO is a rounded panel (`.hero`) with the photo + a fade veil. Revamp (v60/v61): the veil is
 softer so the Mediterranean terrace+bougainvillea photo breathes full-width; brand reads **Mi _Día_**
 with "Día" in italic gold (`.brand-accent`); sub-title is UPPERCASE letter-spaced
-("YOUR MEDITERRANEAN PLANNER"); a small seed icon (`.hero-mark`) sits top-left; a local warm gradient
-behind the phrase (`.phrase::before`) guarantees legibility over the photo. The date/progress sit
-inside a **discreet card** (`.hero-day-card`): no border, light translucent fill, soft shadow, blur.
-The daily phrase stays dynamic via i18n (not pinned to one value).
+("YOUR MEDITERRANEAN PLANNER"); a local warm gradient behind the phrase (`.phrase::before`)
+guarantees legibility over the photo.
+
+**Home screen final layout (v68 area, variant A2 + date band D3):** brand "Mi Día" → **Spanish phrase**
+(the catch, on the photo, no box) → **translation** below it in the app language (RO/EN; hidden on ES so
+it isn't duplicated) → **date band D3**. The "your mediterranean planner" sub-title is hidden on Home
+(only visible on stale old builds). The **D3 date band** is one simple elegant line `‹ Luni 8 iunie ›`
+(no year) + the "N/N done" counter on the right + a fine progress bar under it; the **"↩ azi"** link
+appears only when you are NOT on the current day. The hero photo was shortened (~158px) so the date band
+lands on the cream (legible). The daily phrase stays dynamic via i18n (not pinned to one value).
 
 **Navigation architecture (redesigned in v38 — resolves the old dual-nav root cause):**
 The flower and the bottom bar used to overlap (Jurnal + Calm appeared in both; the centre FAB
@@ -134,9 +140,11 @@ duplicated Acasă). Now there is ONE primary navigation:
   Each petal's **label (icon + word) sits INSIDE the petal contour** (`.labels .lbl`,
   `.l1`–`.l5` positioned by absolute coords; NOT counter-rotated inside the rotated petal —
   that breaks layout). `:active` gives a subtle press-scale for mobile feedback.
-- **Flower CENTRE = "Intenția zilei"** (an ACTION, not a view): `#intentionBtn` opens a modal
-  (`#intentModal`) with a text input + per-language suggestion chips + Salvează/Anulează. The
-  intention is stored per day and shown in the centre as italic Fraunces (`#intentionWord`).
+- **Flower CENTRE = "Intenția zilei"** (an ACTION, not a view): the centre reads "INTENȚIE" and opens a
+  **popup** (`#intentModal`) with **only a free-text field** (title = the question "Care e intenția ta?" +
+  description + Anulează/Salvează). **No hardcoded answers/suggestion chips anywhere** — the chips were
+  removed (v68 area); the question no longer lives in the header. The intention is stored per day and the
+  centre shows "intenție" + the value when set (italic Fraunces, `#intentionWord`).
 - **Bottom bar = 3 non-overlapping items**: Acasă (`data-v="day"`) · **`+` (`#addFab`)** · Profil.
   Since v66 the bar is **`position:fixed`** (native sticky tab bar — always visible, no scrolling
   to reach it), centred at `--maxw`, with `env(safe-area-inset-bottom)` padding; `.phone-scroll`
@@ -146,10 +154,14 @@ duplicated Acasă). Now there is ONE primary navigation:
   add form (focus `#inTitle`), **Stare** → Jurnal mood picker (`#mood`, gentle pulse). `+` rotates
   to `×` while open. Echoes the flower motif (something "blooms" both top and bottom).
 
-> NOTE: there are two CSS layers in the file — a legacy block and a `REDESIGN OVERRIDE`
-> (≈ line 670+) that wins via `!important`. Some duplicate/conflicting rules remain
-> (e.g. `.datebar`, `.bar>i`). A future cleanup to a single source of truth is desirable,
-> done carefully with screenshots.
+> NOTE: the file has a single `<style>` with two logical layers — a legacy block and a
+> `REDESIGN OVERRIDE` that wins via `!important`. Backlog A1 (merge to one source of truth) was
+> **done in verified slices v86–v89** (pixel-diff identical on 27 screens before/after each slice):
+> only pairs with an *identical* selector were merged (keeping each rule's unique props); residual
+> "overlaps" (`.panel`, `.datebar .day .d1`, `.panel h2`, `.progress-top b`) are legitimate
+> multi-selector utility groupings, intentionally left. Scoped higher-specificity rules untouched.
+> (Open note: legacy token `--rose:#CB8188` (mauve) is still used ~13× — distinct from the
+> bougainvillea `--rose-1..4` family; a possible accent inconsistency, to evaluate separately.)
 
 **Key component classes (day panel):** `.add-commit` (full-width commit button),
 `.time-preview` (+`.nx` next-day badge), `.minilabel` (ORĂ/ARIE/ETICHETE field headers),
@@ -230,24 +242,34 @@ duplicated Acasă). Now there is ONE primary navigation:
 - **Day tab:** add flow + slots as documented above (reschedule Tomorrow/Weekend/Next Week/custom,
   filter by category/tag/hide-done, slot editor, per-slot timer, overlap columns).
 - **Calendar tab:** Month view (mood-tinted cells + journal emoji), Year "pixels" grid (12×31).
-- **Progress tab:** mood-productivity correlation, plain-language insight (statistical, not AI).
+- **Progress tab (consolidated, v68 area):** one unified screen (the two overlapping systems were
+  removed). Interval switch (This week / This month / All); a single streak chip ("🔥 N days with a plan
+  in a row"); 3 tiles with rose figures (time invested, active days, slots done); "Hours per area"
+  (horizontal bars in the areas' functional colors); "Balance" (single proportion bar + "Most time in
+  <area> (X%)"); "Mood ↔ productivity" correlation panel (journal mood ↔ slots done). Removed: the goals
+  panel, the 4 old cards, the 28-day chart, the category/tag switch.
 - **Calm tab:** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer.
   **Redesigned (v54, direction B):** warm LIGHT treatment (the old full dark-green `calm-mode` override
   was dropped) — soft sage/dusk wash + a gentle "spațiu de respiro" cue — and the card **emojis are now
   home-style line-icons** tinted in each exercise's functional color.
-- **Profil + Setări (v55):** Profil = warm overview (greeting, today's intention, streak/calm/reflection
-  stats); Setări = sound/reminders, tags, areas, backup. The **Focus timer** lives on the Day-plan
-  header (opens in an overlay), not in settings. Language switcher stays in the header.
+- **Profil + Setări (v55; Profil redesigned "Călătoria ta" in v68 area):** Profil = warm overview —
+  greeting "Bună, <nume>" (name in rose italic; "Spațiul tău" if name empty), a "De când ești aici" card
+  (N days · N intentions · N slots fulfilled), 3 stat tiles with rose figures (days-with-a-plan · calm
+  moments · reflections), and a **"Intenții recente"** list (recent daily intentions with relative dates:
+  today / yesterday / "6 Iun"). Setări = sound/reminders, tags, areas, backup + a **"Numele tău"** field
+  (optional, max 24 chars, saved in `settings.name`, feeds the Profil greeting). The **Focus timer** lives
+  on the Day-plan header (opens in an overlay), not in settings. Language switcher stays in the header.
 - **Journal, Projects.** Journal: per-day mood + free text + 4F reflection scaffold + Word/PDF export.
   **The EMCC competencies box under 4F was removed (v52)** — 4F and the export stay. Projects: **no
   default seed (v53)** — a warm empty-state offers idea chips (Cărți & lecturi / Grijă de sine / Idei &
   insights) that create a project on tap.
 - **Back navigation (v49):** every secondary view (Jurnal/Calm/Calendar/Progres/Proiecte/Profil) has a
   `← Acasă/Inicio/Home` pill at the top that returns to the Day view.
-- **Intenția zilei (v38):** per-day intention set from the flower centre; suggestion chips; RO/ES/EN.
+- **Intenția zilei (v38; popup-only since v68 area):** per-day intention set from the flower centre via a
+  free-text popup (no suggestion chips, no header question); RO/ES/EN.
 - **Quick-add "bloom" (v38):** the bottom `+` blooms into Notă / Activitate / Stare (route to existing flows).
 - **3-language i18n** (EN/ES/RO) across the whole app.
-- **PWA (real, v56+/v67):** installable web app manifest (inline data URI) + a service worker
+- **PWA (real, v56+ through v89):** installable web app manifest (inline data URI) + a service worker
   (`sw.js`) for offline. Add-to-Home-Screen, standalone display, app icon. JSON export/import
   backup (now includes `intent:` keys).
 
@@ -264,9 +286,10 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   settings** to a Day-plan launcher + overlay. Language switcher kept in the header.
 
 **A. Design unity & cleanup (from the opening audit)**
-- `[ ]` A1. Merge the two CSS layers into one source of truth — remove duplicate/conflicting
-  rules (the two `:root` blocks, `.datebar`, `.bar>i`). Highest value for maintainability;
-  do carefully, screenshot after each cut. *(Most aligned with the "unified design" goal.)*
+- `[x]` A1. Merge the two CSS layers into one source of truth — **DONE in verified slices v86–v89**
+  (pixel-diff identical on 27 screens before/after each slice). Only identical-selector pairs were
+  merged, preserving each rule's unique props; residual multi-selector utility groupings left on purpose.
+  (Open follow-up, separate: the legacy `--rose:#CB8188` mauve token, still used ~13×.)
 - `[x]` A2. Gold/terracotta accents — RESOLVED through the revamp: active petal/labels now use
   **rose** (`--rose-4`); gold kept only as a discreet decorative accent (petal icons, panel glyph,
   hero "Día", hairlines); olive green removed from Settings actions (v67). Sage reserved for Calm.
@@ -310,8 +333,9 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - `intent:YYYY-MM-DD` — the daily intention string (v38; `""` = none). Included in backup export.
 - `tags`, `journal` `{text,mood,event}` (the old `comp`/EMCC field was dropped in v52), `projects`
   (start empty by default; each `{id,name,color,key?}` where `key` maps to `PROJ_LABELS` for i18n
-  display), `settings` (incl. `lang`). Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes the old
-  empty Inbox/Spain defaults).
+  display), `settings` (incl. `lang` and `name` — optional user name, max 24 chars, v68 area, feeds the
+  Profil greeting). Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes the old empty Inbox/Spain
+  defaults).
 
 ---
 
@@ -494,7 +518,53 @@ flower-nav L1·V3·C1, labels inside petals, Mediterranean "old rich".
   button → rose (`--rose-1`, matching Import). Olive/sage kept ONLY where functional (category dots,
   Calm exercises, done-tick). Chosen from a 3-option mockup (A gradient / B minimal / **C rose+gold**).
 
-> **Status:** premium revamp Fazele A–E complete (v57–v64) + follow-up fixes (v65 mood %, v66 native
-> bottom bar, v67 Settings). Backlog A (merge the two CSS layers to one source of truth) is still open
-> and remains top priority. Real-device validation on Android Chrome (backlog C) still pending for the
-> new petal hit-test, fixed bottom bar + safe-area, and the larger hero photo.
+---
+
+## Changelog (v68 → v89) — home/intention/progress/profile + CSS unification
+
+- **Home screen (variant A2 + date band D3).** Layout: brand "Mi Día" → Spanish phrase (catch, on the
+  photo, no box) → translation below in the app language (RO/EN; hidden on ES to avoid duplication) →
+  **D3 date band**. The "your mediterranean planner" sub-title is hidden on Home. The D3 band is one
+  simple elegant line `‹ Luni 8 iunie ›` (no year) + "N/N done" on the right + a fine progress bar under
+  it; the "↩ azi" link shows only when NOT on the current day. Hero photo shortened (~158px) so the band
+  lands on the cream (legible).
+- **Intenția zilei → moved to a popup.** The "Care e intenția ta?" question is **no longer in the
+  header**. It lives in a popup opened from the flower centre "INTENȚIE", with **only a free-text field**
+  (title = question + description + Anulează/Salvează). **No hardcoded answers/chips** anywhere. The
+  centre shows "intenție" + the value when set.
+- **Progres (P0-4) — consolidated into a single screen.** Removed the two overlapping systems. Now:
+  interval switch (This week / This month / All); one streak chip ("🔥 N days with a plan in a row");
+  3 tiles with rose figures (time invested, active days, slots done); "Hours per area" (horizontal bars
+  in the areas' functional colors); "Balance" (single proportion bar + "Most time in <area> (X%)");
+  "Mood ↔ productivity" correlation (renamed from "Mood balance" to not clash with "Balance"). Removed:
+  the goals panel (daily/weekly goal), the 4 old cards, the 28-day chart, the category/tag switch.
+- **Profil — redesign ("Călătoria ta").** Greeting "Bună, <nume>" (name in rose italic; "Spațiul tău" if
+  empty) + warm line; "De când ești aici" card (N days · N intentions · N slots fulfilled); 3 stat tiles
+  with rose figures (days with a plan · calm moments · reflections); "Intenții recente" list (recent daily
+  intentions, relative dates today/yesterday/"6 Iun").
+- **Setări — name field (new).** "Numele tău" (optional, max 24 chars), saved in `settings.name`, feeds
+  the Profil greeting.
+- **Backlog A1 — CSS unification: DONE (v86–v89).** The single `<style>`'s two logical layers
+  (base + REDESIGN OVERRIDE) were consolidated in **verified slices** (pixel-diff identical across 27
+  screens = 3 langs × 9 states, at each slice):
+  - **v86** — removed dead tokens (`--gold-1`, `--sage-1`, `--sage`, `--sage-deep`) + 2 dead rules
+    (`.panel h2`, `.panel{margin-bottom}`) + a consecutive `.progress-top b` duplicate.
+  - **v87** — merged identical-selector pairs `.datebar`, `.panel`, `.panel h2` → one rule each.
+  - **v88** — merged `.chip`, `.chip:hover`, `.nav button`, `.nav .today`.
+  - **v89** — merged `.addrow .add` (+`:hover`), `.progress-top b`, `.datebar .day .d1/.d2`, `.bar`.
+  - **Principle:** only identical-selector pairs (same specificity) were merged, keeping each rule's
+    unique props (`cursor`, `font-size`, `font-weight:800`, `border:none`, `line-height`). Scoped
+    higher-specificity rules (`.hero-day …`, `body[data-view="day"] …`, `.d3bar`) were untouched — which
+    is why nothing changed visually. Residual "overlaps" (`.panel`, `.datebar .day .d1`, `.panel h2`,
+    `.progress-top b`) are legitimate multi-selector utility groupings, left on purpose.
+  - **Open follow-up (separate, not touched — would be a design change):** legacy token
+    `--rose:#CB8188` (mauve) is still used ~13×, distinct from the bougainvillea `--rose-1..4` family;
+    possible accent inconsistency, to evaluate on its own.
+
+> **Status:** premium revamp Fazele A–E (v57–v64) + fixes (v65 mood %, v66 native bottom bar, v67
+> Settings) complete; home A2/D3, intention popup, Progres consolidation, Profil "Călătoria ta" + name
+> field (v68 area); **Backlog A1 (CSS unification) DONE (v86–v89).** Current build **`mi-dia-v89.html`**.
+> Remaining: B6 (duration "min" clipping), B8 (long-press on real Android), real-device validation on
+> Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo,
+> readability of "N/N done" on the date band, the name greeting + "Intenții recente"), D13 menstrual
+> cycle tracker, D14 public/subscription version.
