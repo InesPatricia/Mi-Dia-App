@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v89.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v97.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v89.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v97.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
@@ -561,10 +561,123 @@ flower-nav L1·V3·C1, labels inside petals, Mediterranean "old rich".
     `--rose:#CB8188` (mauve) is still used ~13×, distinct from the bougainvillea `--rose-1..4` family;
     possible accent inconsistency, to evaluate on its own.
 
-> **Status:** premium revamp Fazele A–E (v57–v64) + fixes (v65 mood %, v66 native bottom bar, v67
-> Settings) complete; home A2/D3, intention popup, Progres consolidation, Profil "Călătoria ta" + name
-> field (v68 area); **Backlog A1 (CSS unification) DONE (v86–v89).** Current build **`mi-dia-v89.html`**.
-> Remaining: B6 (duration "min" clipping), B8 (long-press on real Android), real-device validation on
-> Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo,
-> readability of "N/N done" on the date band, the name greeting + "Intenții recente"), D13 menstrual
-> cycle tracker, D14 public/subscription version.
+## Changelog (v90) — energizer arc, F1
+
+Reference mockups (built & approved in chat, in outputs): `mi-dia-mockup-feelbetter.html`,
+`mi-dia-mockup-feelbetter-v2.html`, `mi-dia-mockup-energizer-abc.html`,
+`mi-dia-mockup-energizer-interactive.html`, `mi-dia-mockup-name-structure.html`. Direction confirmed
+by Ines: screen name stays **"Calm"**, structure **①** (keep sub-segments), placement **B** (a
+direction toggle). Background: the "feel-better" arc came from a YouTube neuroscience video; of its 5
+habits, extended-exhale already existed (`ext`), so it was not duplicated.
+
+- **v90 — Calm: direction toggle Calmează-mă ⟷ Trezește-mă (F1).** The Calm view gets a full-width
+  toggle (`#calmDir`, state `calmDir` = `calm`|`energy`) above the existing sub-segments. The **title
+  stays "Calm"** (the flower petal is locked to "Calm" — the flower is not touched) and **structure ①**
+  keeps `Respiratie · Corp & calm` (`#calmMode`) intact under "Calmează-mă". Under **"Trezește-mă"**:
+  `#calmMode` is hidden, the cue swaps to `energy_cue` and the disclaimer to `energy_disclaimer`, and
+  the list = **ENERGY**.
+  - **ENERGY** (new; somatic format = `steps` + `dur`, so it reuses the somatic player UNCHANGED via
+    `openCalm`): `move` (Mișcare 2 minute, `--terra`, 120s), `light` (Ieși la lumină, `--sun`, 120s),
+    `shake` (Scuturare + postură, `--olive`, 60s). All RO/ES/EN.
+  - **New i18n:** `dir_calm`, `dir_energy`, `energy_cue`, `energy_disclaimer` (RO/ES/EN).
+  - **New tokens (ADDITIVE — the locked `--rose-1..4` are untouched):** `--sun:#E0A23C`
+    `--sun-l:#F7E6C4` `--terra:#D2723E` `--terra-l:#F2D8C4` (warm "energy" family; FUNCTIONAL only,
+    never an action color — consistent with Calm-exercise colors staying non-rose).
+  - **`CALM_ICONS`** + 3 entries (`move`, `light`, `shake`); **`calmById`** now searches
+    `BREATH.concat(SOMATIC, ENERGY)`.
+  - **Scoped CSS:** `#calmDir{display:flex;width:100%}` (own full-width row) + `#calmDir button{flex:1}`
+    + a warm selected state for `[data-d="energy"]`.
+  - **Validation:** div balance 177/177, `node --check` OK on both script blocks, rendered in both
+    states + the energizer player verified (headless Chromium — re-confirm on real Android).
+
+## Changelog (v91 → v93) — energizer F2, body scan, permission pause
+
+- **v91 — energizing breath (F2).** Added an inhale-dominant breath to the **ENERGY** list as its first
+  card: `ebreath` (Respirație energizantă, inhale 4 / hold 1 / exhale 2, `--sun`, 8 cycles). It has a
+  `pattern`, so `openCalm` renders it in the existing breath player UNCHANGED. `energy_disclaimer`
+  broadened to cover breathing/lightheadedness (RO/ES/EN). New `CALM_ICONS.ebreath`. "Trezește-mă" now
+  has 4 cards (1 breath + 3 movement). Pattern ratio chosen by Ines (gentle: 4/1/2).
+- **v92 — body scan with audio (Calm / Corp & calm).** New SOMATIC card `bodyscan` (`scan:true`, `dur:60`,
+  6 `regions` each with a `w` word + `c` cue, RO/ES/EN). The eyes-closed problem is solved by a
+  region runner (`startScan`): auto-advances ~10s per region, plays `chime("reminder")` on each
+  transition (Web Audio — no asset, offline), big current-region word (`#scanNow`, Fraunces) + cue,
+  static step list hidden while running. A player mode toggle `#scanMode` (state `scanMode`) =
+  **🔔 Doar ton / 🗣️ Voce**; voice uses `speechSynthesis` ONLY if a matching-language voice exists
+  (`langVoice()`), else toasts `scan_novoice` and stays on tone (honest fallback). `stopCalm` now also
+  `cancelSpeak()`. New i18n `scan_eyes/scan_tone/scan_voice/scan_novoice`, icon `CALM_ICONS.bodyscan`.
+  **TTS quality/availability + iOS gesture behavior must be tested on real Android — verified only as
+  logic in headless.**
+- **v93 — permission pause + emotion wheel (Jurnal / Stare).** When a LOW weather-mood (1 Ploaie or
+  2 Înnorat) is selected, a gentle card appears under the mood picker (`#permPause`): "E ok că simt
+  asta acum" + micro line + a **↻ O respirație** button that opens the calming extended-exhale
+  (`openCalm(calmById("ext"))` — a calm-side link, NOT the deferred F3 routing). Below it, **"Pune-i un
+  nume"** = the **emotion wheel** as a 2-tap drill-down: `EMOWHEEL` (7 cores → ~6 sub-emotions each, the
+  secondary ring subset, RO/ES/EN, colors matched to the uploaded Roata-emotiilor) → `#ppCores` →
+  `#ppSubs` → chosen chip with clear. **The named emotion is stored as text** in the journal object
+  (new field `emotion:{core,sub}`); **`mood` (1..5) is untouched**, so Calendar tinting + Progres
+  correlation keep working — the wheel is an additive labeling layer, not a replacement. `renderPermPause`
+  hooks the mood click + `loadJournal`/`saveJournal`. New i18n `pp_ok/pp_micro/pp_breath/pp_name/
+  pp_optional/pp_more/pp_clear`. Affect labeling is real but **modest** (Lieberman et al., *Psychological
+  Science*, 2007).
+
+## Changelog (v94 → v96) — emotion routing, wheel expansion, surfacing
+
+- **v94 — F3 routing (wheel → Calm/Energie).** Each `EMOWHEEL` core got a `route` field
+  ("calm" | "energy" | none). After a sub-emotion is chosen in the permission pause, a subtle chip
+  (`#ppRoute`) appears: "<core> is a high-arousal state — a moment of calm?" (→ Calm) or
+  "<core> is a low-energy state — a little lift?" (→ Energie). The button sets `calmDir` then
+  `setView("calm")` (which calls `renderCalm`). Routes: Tristețe/Rău → energy; Frică/Furie/Dezgust/
+  Surpriză → calm; Fericire → none. Never auto-switches. New i18n `pp_route_calm/pp_route_energy/
+  pp_go_calm/pp_go_energy`; CSS `.pp-route`.
+- **v95 — emotion wheel expanded.** `EMOWHEEL` grown from ~6 to ~8-12 sub-emotions per core (77 total,
+  RO/ES/EN), pulling the secondary+tertiary rings. Same 2-tap drill-down UI (no structural change).
+  Honesty note: curated/normalized, not a 1:1 transcription of the uploaded wheel image.
+- **v96 — "Emoții recente" in Profil.** New section under "Intenții recente" in the Profil overview
+  (`#pfEmo`): reads `journal.emotion` across days, sorts desc, shows the last 5 as core-colored dot +
+  `<b>core</b> · sub` + relative date (reusing `relDay`). Warm framing line `pf_emo_sub` ("…în cuvintele
+  tale"), gentle empty state `pf_emo_empty`. **`mood` (1..5) stays the analytics backbone** — this is a
+  read-only, on-demand, retrospective surface, deliberately NOT a Progres metric (the emotion is only
+  captured on low-mood days, so aggregating it would read as a "scoreboard of suffering"). New i18n
+  `pf_emo_h/pf_emo_sub/pf_emo_empty`; CSS `.pf-emo*`. Mockup approved first (`mi-dia-mockup-emotii-recente.html`).
+
+## Changelog (v97) — small finishes
+
+- **v97 — sun cue icon + Calendar emotion dot.**
+  - **Sun on "Trezește-mă":** the Calm cue icon (`#calmCueIcon`) swaps leaf → sun and tints `--sun` when
+    `calmDir==="energy"`, reverts to the olive leaf on "Calmează-mă" (handled in `renderCalm`).
+  - **Calendar emotion dot:** days whose journal has a named `emotion` show a small core-colored dot
+    (`.cell .emo-dot`, bottom-right, white ring) next to the existing mood tint + emoji. Legend
+    `cal_help_month` updated in RO/ES/EN ("corner dot = named emotion").
+  - **B6 (duration "min" clip): investigated, NOT changed** — no clear clipping found in the add form,
+    inline slot editor, or reminder chips; left open pending Ines pointing to the exact screen (avoid
+    "fixing" something that isn't broken).
+
+## Backlog — energizer / feel-better arc
+
+- `[x]` **F1 — Calm direction toggle** (v90).
+- `[x]` **F2 — energizing breath** (v91).
+- `[x]` **Body scan with eyes-closed audio guidance** (v92) — re-confirm TTS on real Android.
+- `[x]` **Permission pause + emotion wheel** (v93).
+- `[x]` **F3 — routing wheel → Calm/Energie** (v94) — subtle suggestion chip after naming the emotion;
+  per-core `route` ("calm" for high-arousal Frică/Furie/Dezgust/Surpriză, "energy" for low-energy
+  Tristețe/Rău, none for Fericire). Opens Calm and sets `calmDir`. Never auto-switches.
+- `[x]` **Extend the emotion wheel** (v95) — `EMOWHEEL` expanded to ~8-12 sub-emotions per core (77 total,
+  secondary+tertiary, curated & trilingual). NOTE: curated/normalized, not a pixel-perfect transcription
+  of the uploaded Roata-emotiilor (some image labels illegible/near-duplicate) — Ines can correct terms.
+- `[x]` **Surface the named emotion** (v96) — "Emoții recente" in Profil (mirrors "Intenții recente"):
+  last 5 named emotions, core-colored dot + label · sub + relative date, warm framing ("în cuvintele tale"),
+  gentle empty state. Deliberately NOT a Progres metric (avoid a "scoreboard of suffering" / rumination,
+  since emotions are only captured on low-mood days). Optional Calendar dot considered, not built.
+- `[x]` **Sun cue icon on "Trezește-mă"** (v97).
+- `[x]` **Calendar emotion dot** (v97) — subtle per-day core-colored dot + legend note.
+
+> **Status:** premium revamp Fazele A–E (v57–v64) + fixes (v65–v67); home A2/D3, intention popup, Progres
+> consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
+> (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
+> pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
+> (v96), sun cue icon + Calendar emotion dot (v97).** Current build **`mi-dia-v97.html`**.
+> Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
+> Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
+> readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
+> the permission-pause + wheel flow, Calendar emotion dot); **B6 duration "min" clip (open — needs Ines to pinpoint the screen)**; D13 menstrual cycle
+> tracker, D14 public/subscription version.
