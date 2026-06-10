@@ -446,7 +446,6 @@
   .cell .cdot{width:8px;height:8px;border-radius:50%;}
   @media(max-width:560px){.cell{min-height:58px;padding:5px;}.cell .num{font-size:.82rem;}.caldow span{font-size:.62rem;}.caltitle{font-size:1.15rem;}}
   .cell .mood{position:absolute;top:5px;right:6px;font-size:.72rem;}
-  .cell .emo-dot{position:absolute;bottom:7px;right:7px;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--cream);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
   .moodlegend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center;}
   .moodlegend .ml{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--ink-soft);font-weight:700;}
   .moodlegend .mlc{width:13px;height:13px;border-radius:4px;}
@@ -1514,7 +1513,7 @@
   </div><!-- /view-stats -->
   <div id="view-calm" class="view">
     <button class="viewback"><span class="va">←</span> <span data-i18n="back_home">Acasă</span></button>
-    <div class="calm-cue"><svg id="calmCueIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg><span id="calmCueText" data-i18n="calm_cue">un mic spațiu de respiro</span></div>
+    <div class="calm-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg><span id="calmCueText" data-i18n="calm_cue">un mic spațiu de respiro</span></div>
     <div class="set-help" id="calmDisc" style="margin-bottom:14px;" data-i18n="calm_disclaimer">Practici blânde de relaxare — nu sfat medical.</div>
     <div class="calm-summary" id="calmSummary"></div>
     <div class="segmented" id="calmDir">
@@ -1864,7 +1863,7 @@
     days_tracked:{ro:"zile însemnate",es:"días registrados",en:"days tracked"},
     dow_mon:{ro:"Lun",es:"Lun",en:"Mon"},dow_tue:{ro:"Mar",es:"Mar",en:"Tue"},dow_wed:{ro:"Mie",es:"Mié",en:"Wed"},
     dow_thu:{ro:"Joi",es:"Jue",en:"Thu"},dow_fri:{ro:"Vin",es:"Vie",en:"Fri"},dow_sat:{ro:"Sâm",es:"Sáb",en:"Sat"},dow_sun:{ro:"Dum",es:"Dom",en:"Sun"},
-    cal_help_month:{ro:"Fundalul = starea din jurnal · bulinele = categoriile · bulina din colț = emoția numită · numărul = sloturi făcute / total. Click pe o zi.",es:"Fondo = ánimo del diario · puntos = categorías · punto en la esquina = emoción nombrada · número = bloques hechos / total. Pulsa un día.",en:"Background = journal mood · dots = categories · corner dot = named emotion · number = slots done / total. Tap a day."},
+    cal_help_month:{ro:"Fundalul = starea din jurnal · bulinele = categoriile · numărul = sloturi făcute / total. Click pe o zi.",es:"Fondo = ánimo del diario · puntos = categorías · número = bloques hechos / total. Pulsa un día.",en:"Background = journal mood · dots = categories · number = slots done / total. Tap a day."},
     mood_n1:{ro:"Ploaie",es:"Lluvia",en:"Rainy"},
     mood_n2:{ro:"Înnorat",es:"Nublado",en:"Cloudy"},
     mood_n3:{ro:"Variabil",es:"Variable",en:"Mixed"},
@@ -3173,7 +3172,6 @@
       const num=document.createElement("div"); num.className="num"; num.textContent=d; c.appendChild(num);
       if(mood){ const me=document.createElement("span"); me.className="mood"; me.textContent=MOODS[mood-1]; c.appendChild(me); }
       else if(j && j.text && j.text.trim()){ const pen=document.createElement("span"); pen.className="pen"; pen.textContent="✍️"; c.appendChild(pen); }
-      if(j && j.emotion && j.emotion.core!=null){ const ce=emoByKey(j.emotion.core); if(ce){ const ed=document.createElement("span"); ed.className="emo-dot"; ed.style.background=ce.color; ed.title=LL(ce.label); c.appendChild(ed); } }
       if(total){
         const dots=document.createElement("div"); dots.className="dots";
         const cats=[]; arr.forEach(b=>{ const k=catKeyOf(b); if(cats.indexOf(k)===-1) cats.push(k); });
@@ -3970,10 +3968,6 @@ Objective description, "just the facts".
     const energy = calmDir==="energy";
     $("#calmMode").style.display = energy? "none" : "";
     $("#calmCueText").textContent = energy? t("energy_cue") : t("calm_cue");
-    { const ci=$("#calmCueIcon"); if(ci){ ci.innerHTML = energy
-        ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'
-        : '<path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/>';
-      ci.style.color = energy? "var(--sun)" : ""; } }
     $("#calmDisc").textContent = energy? t("energy_disclaimer") : t("calm_disclaimer");
     $("#calmMode").querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-m")===calmMode));
     const list = energy? ENERGY : (calmMode==="breath"? BREATH : SOMATIC);

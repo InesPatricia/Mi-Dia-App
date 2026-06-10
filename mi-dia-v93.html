@@ -249,12 +249,6 @@
   .pp-chosen{margin-top:12px;font-size:.86rem;font-weight:700;display:flex;align-items:center;gap:8px;}
   .pp-chosen .pp-dot{width:12px;height:12px;border-radius:50%;}
   .pp-chosen .pp-clear{margin-left:auto;border:none;background:transparent;color:var(--ink-soft);font-family:inherit;font-weight:700;font-size:.78rem;cursor:pointer;text-decoration:underline;}
-  .pp-route{margin-top:12px;display:flex;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--line);border-radius:13px;padding:11px 12px;}
-  .pp-route .pp-rtx{font-size:.8rem;line-height:1.35;color:var(--ink-soft);}
-  .pp-route .pp-rtx b{color:var(--ink);}
-  .pp-route .pp-rgo{margin-left:auto;border:none;border-radius:30px;padding:8px 13px;font-family:inherit;font-weight:800;font-size:.78rem;cursor:pointer;white-space:nowrap;color:#fff;}
-  .pp-route .pp-rgo.energy{background:var(--sun);}
-  .pp-route .pp-rgo.calm{background:var(--sea);}
   .jprompt-row{display:flex;gap:8px;align-items:stretch;margin-bottom:12px;}
   .jprompt{flex:1;text-align:left;background:var(--rose-1);border:1px dashed var(--rose-3);color:var(--ink);
     border-radius:13px;padding:10px 14px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit;transition:.15s;}
@@ -446,7 +440,6 @@
   .cell .cdot{width:8px;height:8px;border-radius:50%;}
   @media(max-width:560px){.cell{min-height:58px;padding:5px;}.cell .num{font-size:.82rem;}.caldow span{font-size:.62rem;}.caltitle{font-size:1.15rem;}}
   .cell .mood{position:absolute;top:5px;right:6px;font-size:.72rem;}
-  .cell .emo-dot{position:absolute;bottom:7px;right:7px;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--cream);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
   .moodlegend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center;}
   .moodlegend .ml{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--ink-soft);font-weight:700;}
   .moodlegend .mlc{width:13px;height:13px;border-radius:4px;}
@@ -1084,11 +1077,6 @@
   .pf-recent .rw{flex:1;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.02rem;color:#6E4631;}
   .pf-recent .rd{font-size:.74rem;color:var(--ink-soft);font-weight:600;white-space:nowrap;}
   .pf-recent .pf-recent-empty{justify-content:center;color:var(--ink-soft);font-size:.9rem;border-bottom:none;}
-  .pf-emo-sub{font-size:.82rem;color:var(--ink-soft);margin:-2px 0 6px;}
-  .pf-emo li{align-items:center;}
-  .pf-emo .rw{font-family:'Nunito Sans',system-ui,sans-serif;font-style:normal;font-size:.95rem;color:var(--ink);display:flex;align-items:center;gap:9px;}
-  .pf-emo .rw .pf-emo-dot{width:11px;height:11px;border-radius:50%;flex:none;}
-  .pf-emo .rw .es{color:var(--ink-soft);}
   .nameinput{width:100%;font-family:inherit;font-size:1rem;color:var(--ink);background:#FFFCF7;border:1px solid var(--line);border-radius:14px;padding:11px 14px;}
   .nameinput:focus{outline:none;border-color:var(--rose-3);box-shadow:0 0 0 3px rgba(209,94,120,.12);}
   .bottombar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:var(--maxw);z-index:50;
@@ -1408,7 +1396,6 @@
             <div class="pp-subs" id="ppSubs"></div>
           </div>
           <div class="pp-chosen" id="ppChosen" style="display:none;"></div>
-          <div class="pp-route" id="ppRoute" style="display:none;"></div>
         </div>
       </div>
       <input type="text" class="jevent" id="jEvent" data-i18n-ph="ph_event" placeholder="Eveniment (opțional): ex. ședință cu un client…" autocomplete="off">
@@ -1514,7 +1501,7 @@
   </div><!-- /view-stats -->
   <div id="view-calm" class="view">
     <button class="viewback"><span class="va">←</span> <span data-i18n="back_home">Acasă</span></button>
-    <div class="calm-cue"><svg id="calmCueIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg><span id="calmCueText" data-i18n="calm_cue">un mic spațiu de respiro</span></div>
+    <div class="calm-cue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/></svg><span id="calmCueText" data-i18n="calm_cue">un mic spațiu de respiro</span></div>
     <div class="set-help" id="calmDisc" style="margin-bottom:14px;" data-i18n="calm_disclaimer">Practici blânde de relaxare — nu sfat medical.</div>
     <div class="calm-summary" id="calmSummary"></div>
     <div class="segmented" id="calmDir">
@@ -1546,9 +1533,6 @@
       <div class="pf-stats" id="pfStats"></div>
       <h3 class="pf-recent-h" data-i18n="pf_recent_h">Intenții recente</h3>
       <ul class="pf-recent" id="pfRecent"></ul>
-      <h3 class="pf-recent-h" data-i18n="pf_emo_h">Emoții recente</h3>
-      <div class="pf-emo-sub" data-i18n="pf_emo_sub">Cum te-ai simțit, în cuvintele tale.</div>
-      <ul class="pf-recent pf-emo" id="pfEmo"></ul>
     </div>
 
     <div id="prof-settings" style="display:none;">
@@ -1805,9 +1789,6 @@
     pf_j_slots:{ro:"{n} sloturi împlinite",es:"{n} bloques cumplidos",en:"{n} slots fulfilled"},
     pf_recent_h:{ro:"Intenții recente",es:"Intenciones recientes",en:"Recent intentions"},
     pf_recent_empty:{ro:"Încă nicio intenție. Atinge centrul florii ca să începi. 🌱",es:"Aún ninguna intención. Toca el centro de la flor para empezar. 🌱",en:"No intentions yet. Tap the flower's center to begin. 🌱"},
-    pf_emo_h:{ro:"Emoții recente",es:"Emociones recientes",en:"Recent emotions"},
-    pf_emo_sub:{ro:"Cum te-ai simțit, în cuvintele tale.",es:"Cómo te has sentido, en tus palabras.",en:"How you've felt, in your own words."},
-    pf_emo_empty:{ro:"Încă nimic numit — apare aici când pui un nume unei stări mai grele.",es:"Aún nada nombrado — aparece aquí cuando le pones nombre a un estado más difícil.",en:"Nothing named yet — it appears here when you name a harder feeling."},
     rel_today:{ro:"azi",es:"hoy",en:"today"},
     rel_yest:{ro:"ieri",es:"ayer",en:"yesterday"},
     name_h:{ro:"Numele tău",es:"Tu nombre",en:"Your name"},
@@ -1864,7 +1845,7 @@
     days_tracked:{ro:"zile însemnate",es:"días registrados",en:"days tracked"},
     dow_mon:{ro:"Lun",es:"Lun",en:"Mon"},dow_tue:{ro:"Mar",es:"Mar",en:"Tue"},dow_wed:{ro:"Mie",es:"Mié",en:"Wed"},
     dow_thu:{ro:"Joi",es:"Jue",en:"Thu"},dow_fri:{ro:"Vin",es:"Vie",en:"Fri"},dow_sat:{ro:"Sâm",es:"Sáb",en:"Sat"},dow_sun:{ro:"Dum",es:"Dom",en:"Sun"},
-    cal_help_month:{ro:"Fundalul = starea din jurnal · bulinele = categoriile · bulina din colț = emoția numită · numărul = sloturi făcute / total. Click pe o zi.",es:"Fondo = ánimo del diario · puntos = categorías · punto en la esquina = emoción nombrada · número = bloques hechos / total. Pulsa un día.",en:"Background = journal mood · dots = categories · corner dot = named emotion · number = slots done / total. Tap a day."},
+    cal_help_month:{ro:"Fundalul = starea din jurnal · bulinele = categoriile · numărul = sloturi făcute / total. Click pe o zi.",es:"Fondo = ánimo del diario · puntos = categorías · número = bloques hechos / total. Pulsa un día.",en:"Background = journal mood · dots = categories · number = slots done / total. Tap a day."},
     mood_n1:{ro:"Ploaie",es:"Lluvia",en:"Rainy"},
     mood_n2:{ro:"Înnorat",es:"Nublado",en:"Cloudy"},
     mood_n3:{ro:"Variabil",es:"Variable",en:"Mixed"},
@@ -1926,10 +1907,6 @@
     pp_optional:{ro:"(opțional)",es:"(opcional)",en:"(optional)"},
     pp_more:{ro:"mai exact:",es:"más exacto:",en:"more exactly:"},
     pp_clear:{ro:"șterge",es:"borrar",en:"clear"},
-    pp_route_calm:{ro:"e o stare cu activare mare. Un moment de calm te-ar putea ajuta.",es:"es un estado de mucha activación. Un momento de calma podría ayudarte.",en:"is a high-arousal state. A moment of calm might help."},
-    pp_route_energy:{ro:"e o stare cu energie joasă. Un mic impuls te-ar putea ajuta.",es:"es un estado de baja energía. Un pequeño impulso podría ayudarte.",en:"is a low-energy state. A little lift might help."},
-    pp_go_calm:{ro:"🍃 Calm ›",es:"🍃 Calma ›",en:"🍃 Calm ›"},
-    pp_go_energy:{ro:"☀️ Energie ›",es:"☀️ Energía ›",en:"☀️ Energy ›"},
     cp_start:{ro:"Start",es:"Empezar",en:"Start"},
     cp_stop:{ro:"Stop",es:"Detener",en:"Stop"},
     cycles:{ro:"cicluri",es:"ciclos",en:"cycles"},
@@ -2986,16 +2963,6 @@
       if(recent.length===0){ re.innerHTML='<li class="pf-recent-empty">'+t("pf_recent_empty")+'</li>'; }
       else { re.innerHTML = recent.map(e=>'<li><span class="rw">„'+esc(e[1])+'”</span><span class="rd">'+relDay(e[0])+'</span></li>').join(""); }
     }
-    // recent emotions (named in the permission pause; only on low-mood days)
-    const ee=$("#pfEmo");
-    if(ee){ const emoEntries=[];
-      Object.keys(jmap).forEach(ds=>{ const o=jmap[ds]; if(o && o.emotion && o.emotion.core!=null && o.emotion.sub!=null) emoEntries.push([ds,o.emotion]); });
-      emoEntries.sort((a,b)=> a[0]<b[0]?1:(a[0]>b[0]?-1:0));
-      const recent=emoEntries.slice(0,5);
-      if(recent.length===0){ ee.innerHTML='<li class="pf-recent-empty">'+t("pf_emo_empty")+'</li>'; }
-      else { ee.innerHTML = recent.map(([ds,em])=>{ const c=emoByKey(em.core), s=c&&c.subs[em.sub]; if(!c||!s) return "";
-        return '<li><span class="rw"><span class="pf-emo-dot" style="background:'+c.color+'"></span><b>'+esc(LL(c.label))+'</b><span class="es">· '+esc(LL(s))+'</span></span><span class="rd">'+relDay(ds)+'</span></li>'; }).join(""); }
-    }
   }
 
   /* ---------- settings (sound + reminders) ---------- */
@@ -3173,7 +3140,6 @@
       const num=document.createElement("div"); num.className="num"; num.textContent=d; c.appendChild(num);
       if(mood){ const me=document.createElement("span"); me.className="mood"; me.textContent=MOODS[mood-1]; c.appendChild(me); }
       else if(j && j.text && j.text.trim()){ const pen=document.createElement("span"); pen.className="pen"; pen.textContent="✍️"; c.appendChild(pen); }
-      if(j && j.emotion && j.emotion.core!=null){ const ce=emoByKey(j.emotion.core); if(ce){ const ed=document.createElement("span"); ed.className="emo-dot"; ed.style.background=ce.color; ed.title=LL(ce.label); c.appendChild(ed); } }
       if(total){
         const dots=document.createElement("div"); dots.className="dots";
         const cats=[]; arr.forEach(b=>{ const k=catKeyOf(b); if(cats.indexOf(k)===-1) cats.push(k); });
@@ -3483,23 +3449,23 @@ Objective description, "just the facts".
   }
   let jMood=0, jSaveTimer=null, jPromptIdx=0;
   let jEmotion=null, ppCore=null;
-  // Emotion wheel — expanded toward the full Roata-emotiilor (secondary+tertiary, curated & trilingual,
-  // ~8-12 per core). Stored as {core:key, sub:index}; the 5 weather-moods stay the analytics backbone.
+  // Emotion wheel (starting subset of the uploaded Roata-emotiilor; secondary ring, ~6 per core).
+  // Stored as {core:key, sub:index}; the 5 weather-moods stay the analytics backbone (unchanged).
   const EMOWHEEL=[
-    {key:"tristete", color:"#8FB4D6", route:"energy", label:{ro:"Tristețe",es:"Tristeza",en:"Sadness"}, subs:[
-      {ro:"Singur",es:"Sola",en:"Lonely"},{ro:"Vulnerabil",es:"Vulnerable",en:"Vulnerable"},{ro:"Deprimat",es:"Deprimida",en:"Depressed"},{ro:"Vinovat",es:"Culpable",en:"Guilty"},{ro:"Disperat",es:"Desesperada",en:"Despairing"},{ro:"Rănit",es:"Herida",en:"Hurt"},{ro:"Gol pe interior",es:"Vacía",en:"Empty"},{ro:"Izolat",es:"Aislada",en:"Isolated"},{ro:"Abandonat",es:"Abandonada",en:"Abandoned"},{ro:"Neputincios",es:"Impotente",en:"Powerless"},{ro:"Rușinat",es:"Avergonzada",en:"Ashamed"},{ro:"Melancolic",es:"Melancólica",en:"Wistful"}]},
-    {key:"frica", color:"#EBB16A", route:"calm", label:{ro:"Frică",es:"Miedo",en:"Fear"}, subs:[
-      {ro:"Speriat",es:"Asustada",en:"Scared"},{ro:"Anxios",es:"Ansiosa",en:"Anxious"},{ro:"Nesigur",es:"Insegura",en:"Insecure"},{ro:"Copleșit",es:"Abrumada",en:"Overwhelmed"},{ro:"Îngrijorat",es:"Preocupada",en:"Worried"},{ro:"Neliniștit",es:"Inquieta",en:"Uneasy"},{ro:"Amenințat",es:"Amenazada",en:"Threatened"},{ro:"Înspăimântat",es:"Aterrada",en:"Terrified"},{ro:"Slab",es:"Débil",en:"Weak"},{ro:"Expus",es:"Expuesta",en:"Exposed"},{ro:"Inadecvat",es:"Inadecuada",en:"Inadequate"},{ro:"Respins",es:"Rechazada",en:"Rejected"}]},
-    {key:"furie", color:"#E8868F", route:"calm", label:{ro:"Furie",es:"Ira",en:"Anger"}, subs:[
-      {ro:"Nemulțumit",es:"Molesta",en:"Displeased"},{ro:"Frustrat",es:"Frustrada",en:"Frustrated"},{ro:"Iritat",es:"Irritada",en:"Irritated"},{ro:"Nervos",es:"Nerviosa",en:"On edge"},{ro:"Furios",es:"Furiosa",en:"Furious"},{ro:"Resentiment",es:"Resentida",en:"Resentful"},{ro:"Gelos",es:"Celosa",en:"Jealous"},{ro:"Ofensat",es:"Ofendida",en:"Offended"},{ro:"Provocat",es:"Provocada",en:"Provoked"},{ro:"Distant",es:"Distante",en:"Distant"},{ro:"Critic",es:"Crítica",en:"Critical"},{ro:"Exasperat",es:"Exasperada",en:"Exasperated"}]},
-    {key:"dezgust", color:"#A9A9A9", route:"calm", label:{ro:"Dezgust",es:"Asco",en:"Disgust"}, subs:[
-      {ro:"Dezamăgit",es:"Decepcionada",en:"Disappointed"},{ro:"Dezaprobare",es:"Desaprobación",en:"Disapproving"},{ro:"Reticent",es:"Reticente",en:"Reluctant"},{ro:"Scârbit",es:"Asqueada",en:"Repulsed"},{ro:"Îngrețoșat",es:"Repugnada",en:"Nauseated"},{ro:"Revoltat",es:"Indignada",en:"Revolted"},{ro:"Jenat",es:"Incómoda",en:"Awkward"},{ro:"Judecat",es:"Juzgada",en:"Judged"},{ro:"Ezitant",es:"Vacilante",en:"Hesitant"},{ro:"Critic",es:"Crítica",en:"Critical"}]},
-    {key:"rau", color:"#8FB48A", route:"energy", label:{ro:"Rău",es:"Mal",en:"Bad"}, subs:[
-      {ro:"Obosit",es:"Cansada",en:"Tired"},{ro:"Epuizat",es:"Agotada",en:"Drained"},{ro:"Plictisit",es:"Aburrida",en:"Bored"},{ro:"Stresat",es:"Estresada",en:"Stressed"},{ro:"Copleșit",es:"Saturada",en:"Overloaded"},{ro:"Apatic",es:"Apática",en:"Apathetic"},{ro:"Grăbit",es:"Apurada",en:"Rushed"},{ro:"Somnoros",es:"Soñolienta",en:"Sleepy"},{ro:"Indiferent",es:"Indiferente",en:"Indifferent"},{ro:"Lipsit de control",es:"Sin control",en:"Out of control"},{ro:"Deziluzionat",es:"Desilusionada",en:"Disillusioned"}]},
-    {key:"surpriza", color:"#B89BC9", route:"calm", label:{ro:"Surpriză",es:"Sorpresa",en:"Surprise"}, subs:[
-      {ro:"Uimit",es:"Asombrada",en:"Amazed"},{ro:"Confuz",es:"Confundida",en:"Confused"},{ro:"Stupefiat",es:"Atónita",en:"Stunned"},{ro:"Uluit",es:"Pasmada",en:"Astonished"},{ro:"Năucit",es:"Aturdida",en:"Dazed"},{ro:"Neliniștit",es:"Inquieta",en:"Restless"},{ro:"Entuziasmat",es:"Entusiasmada",en:"Excited"},{ro:"Impresionat",es:"Impresionada",en:"Awe-struck"}]},
+    {key:"tristete", color:"#8FB4D6", label:{ro:"Tristețe",es:"Tristeza",en:"Sadness"}, subs:[
+      {ro:"Singur",es:"Sola",en:"Lonely"},{ro:"Vulnerabil",es:"Vulnerable",en:"Vulnerable"},{ro:"Deprimat",es:"Deprimida",en:"Depressed"},{ro:"Vinovat",es:"Culpable",en:"Guilty"},{ro:"Disperat",es:"Desesperada",en:"Despairing"},{ro:"Rănit",es:"Herida",en:"Hurt"},{ro:"Gol pe interior",es:"Vacía",en:"Empty"},{ro:"Izolat",es:"Aislada",en:"Isolated"}]},
+    {key:"frica", color:"#EBB16A", label:{ro:"Frică",es:"Miedo",en:"Fear"}, subs:[
+      {ro:"Speriat",es:"Asustada",en:"Scared"},{ro:"Anxios",es:"Ansiosa",en:"Anxious"},{ro:"Nesigur",es:"Insegura",en:"Insecure"},{ro:"Copleșit",es:"Abrumada",en:"Overwhelmed"},{ro:"Slab",es:"Débil",en:"Weak"},{ro:"Amenințat",es:"Amenazada",en:"Threatened"}]},
+    {key:"furie", color:"#E8868F", label:{ro:"Furie",es:"Ira",en:"Anger"}, subs:[
+      {ro:"Nemulțumit",es:"Molesta",en:"Displeased"},{ro:"Frustrat",es:"Frustrada",en:"Frustrated"},{ro:"Nervos",es:"Nerviosa",en:"On edge"},{ro:"Iritat",es:"Irritada",en:"Irritated"},{ro:"Distant",es:"Distante",en:"Distant"},{ro:"Critic",es:"Crítica",en:"Critical"}]},
+    {key:"dezgust", color:"#A9A9A9", label:{ro:"Dezgust",es:"Asco",en:"Disgust"}, subs:[
+      {ro:"Dezamăgit",es:"Decepcionada",en:"Disappointed"},{ro:"Dezaprobare",es:"Desaprobación",en:"Disapproving"},{ro:"Reticent",es:"Reticente",en:"Reluctant"},{ro:"Respins",es:"Repelida",en:"Repelled"},{ro:"Jenat",es:"Avergonzada",en:"Awkward"}]},
+    {key:"rau", color:"#8FB48A", label:{ro:"Rău",es:"Mal",en:"Bad"}, subs:[
+      {ro:"Obosit",es:"Cansada",en:"Tired"},{ro:"Plictisit",es:"Aburrida",en:"Bored"},{ro:"Stresat",es:"Estresada",en:"Stressed"},{ro:"Copleșit",es:"Saturada",en:"Overloaded"},{ro:"Apatic",es:"Apática",en:"Apathetic"},{ro:"Grăbit",es:"Apurada",en:"Rushed"}]},
+    {key:"surpriza", color:"#B89BC9", label:{ro:"Surpriză",es:"Sorpresa",en:"Surprise"}, subs:[
+      {ro:"Uimit",es:"Asombrada",en:"Amazed"},{ro:"Confuz",es:"Confundida",en:"Confused"},{ro:"Stupefiat",es:"Atónita",en:"Stunned"},{ro:"Neliniștit",es:"Inquieta",en:"Restless"}]},
     {key:"fericire", color:"#EAD86B", label:{ro:"Fericire",es:"Alegría",en:"Happiness"}, subs:[
-      {ro:"Bucuros",es:"Contenta",en:"Joyful"},{ro:"Recunoscător",es:"Agradecida",en:"Grateful"},{ro:"Liniștit",es:"Serena",en:"Peaceful"},{ro:"Mulțumit",es:"Satisfecha",en:"Content"},{ro:"Sperant",es:"Esperanzada",en:"Hopeful"},{ro:"Mândru",es:"Orgullosa",en:"Proud"},{ro:"Liber",es:"Libre",en:"Free"},{ro:"Optimist",es:"Optimista",en:"Optimistic"},{ro:"Încrezător",es:"Confiada",en:"Confident"},{ro:"Iubitor",es:"Cariñosa",en:"Loving"},{ro:"Energizat",es:"Con energía",en:"Energized"},{ro:"Creativ",es:"Creativa",en:"Creative"}]}
+      {ro:"Bucuros",es:"Contenta",en:"Joyful"},{ro:"Recunoscător",es:"Agradecida",en:"Grateful"},{ro:"Liniștit",es:"Serena",en:"Peaceful"},{ro:"Sperant",es:"Esperanzada",en:"Hopeful"},{ro:"Mândru",es:"Orgullosa",en:"Proud"}]}
   ];
   function emoByKey(k){ return EMOWHEEL.find(e=>e.key===k); }
 
@@ -3539,11 +3505,6 @@ Objective description, "just the facts".
         ch.querySelector(".pp-clear").onclick=()=>{ jEmotion=null; ppCore=null; renderPermPause(); scheduleJSave(); };
       } else ch.style.display="none";
     } else ch.style.display="none";
-    const rt=$("#ppRoute"); const eo=jEmotion?emoByKey(jEmotion.core):null;
-    if(eo&&eo.route){ const dir=eo.route; rt.style.display="flex";
-      rt.innerHTML='<div class="pp-rtx"><b>'+LL(eo.label)+'</b> '+t(dir==="energy"?"pp_route_energy":"pp_route_calm")+'</div><button class="pp-rgo '+dir+'">'+t(dir==="energy"?"pp_go_energy":"pp_go_calm")+'</button>';
-      rt.querySelector(".pp-rgo").onclick=()=>{ calmDir=(dir==="energy")?"energy":"calm"; setView("calm"); };
-    } else rt.style.display="none";
   }
   function showPrompt(){ $("#jPrompt").textContent=jpromptText(JPROMPTS[jPromptIdx]); }
   function updateJCount(){ const v=$("#jText").value.trim(); const n=v? v.split(/\s+/).length:0; $("#jCount").textContent=n+" "+(n===1?t("word1"):t("words")); }
@@ -3970,10 +3931,6 @@ Objective description, "just the facts".
     const energy = calmDir==="energy";
     $("#calmMode").style.display = energy? "none" : "";
     $("#calmCueText").textContent = energy? t("energy_cue") : t("calm_cue");
-    { const ci=$("#calmCueIcon"); if(ci){ ci.innerHTML = energy
-        ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'
-        : '<path d="M5 19c0-9 7-14 14-14 0 9-5 14-14 14z"/><path d="M5 19c4-4 7-6 10-7"/>';
-      ci.style.color = energy? "var(--sun)" : ""; } }
     $("#calmDisc").textContent = energy? t("energy_disclaimer") : t("calm_disclaimer");
     $("#calmMode").querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-m")===calmMode));
     const list = energy? ENERGY : (calmMode==="breath"? BREATH : SOMATIC);
