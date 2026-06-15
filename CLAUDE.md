@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v110.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v119.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of

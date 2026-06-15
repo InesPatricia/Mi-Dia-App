@@ -55,9 +55,16 @@ const Cycle = (function () {
     else { try { cfg = { ...DEFAULTS, ...JSON.parse(raw) }; } catch (e) { cfg = { ...DEFAULTS }; } }
     // migrare din modelul vechi (o singura data `start`)
     if ((!cfg.periods || !cfg.periods.length) && cfg.start) cfg.periods = [cfg.start];
+    if ((!cfg.periods || !cfg.periods.length) && cfg.start) cfg.periods = [cfg.start];
     if (!Array.isArray(cfg.periods)) cfg.periods = [];
-    cfg.periods = cfg.periods.filter(Boolean).slice().sort();
+    // normalizeaza la obiecte {start, bleed}; migreaza vechiul format (lista de string-uri)
+    cfg.periods = cfg.periods
+      .map(x => typeof x === 'string' ? { start: x, bleed: null } : { start: x && x.start, bleed: (x && typeof x.bleed === 'number') ? x.bleed : null })
+      .filter(x => x.start)
+      .sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
     delete cfg.start;
+    // opt-in: OPRIT implicit (neutru). Userul il porneste din Setari.
+    if (typeof cfg.enabled !== 'boolean') cfg.enabled = false;
     return cfg;
   }
   async function saveConfig(cfg) { await dbSet(KEY, JSON.stringify(cfg)); }
@@ -74,22 +81,29 @@ const Cycle = (function () {
   function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
   function addDays(date, n) { const x = new Date(date); x.setDate(x.getDate() + n); return x; }
 
-  function sortedPeriods(cfg) { return (cfg.periods || []).slice().sort(); }
+  function sortedPeriods(cfg) { return (cfg.periods || []).slice().sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0); }
+  function startList(cfg) { return sortedPeriods(cfg).map(p => p.start); }
   /** Intervalele (in zile) intre menstruatii consecutive — lungimile reale ale ciclurilor. */
   function cycleIntervals(cfg) {
-    const p = sortedPeriods(cfg), out = [];
+    const p = startList(cfg), out = [];
     for (let i = 1; i < p.length; i++) out.push(daysBetween(parseYMD(p[i - 1]), parseYMD(p[i])));
     return out;
   }
-  /** Lungimea medie: din ciclurile tale reale daca exista, altfel fallback manual. */
+  /** Lungimea medie a CICLULUI: din ciclurile tale reale daca exista, altfel fallback manual. */
   function avgLength(cfg) {
     const iv = cycleIntervals(cfg).filter(x => x >= 15 && x <= 60);
     if (iv.length) return Math.round(iv.reduce((a, b) => a + b, 0) / iv.length);
     return cfg.length || 28;
   }
-  /** Cea mai recenta menstruatie logata la sau inainte de `date`. */
+  /** Durata medie a SANGERARII: din duratele logate daca exista, altfel default. */
+  function avgBleed(cfg) {
+    const bl = sortedPeriods(cfg).map(p => p.bleed).filter(b => typeof b === 'number' && b > 0);
+    if (bl.length) return Math.round(bl.reduce((a, b) => a + b, 0) / bl.length);
+    return cfg.period || 5;
+  }
+  /** Cea mai recenta menstruatie logata la sau inainte de `date` (returneaza data de start). */
   function lastPeriodOnOrBefore(cfg, date) {
-    const p = sortedPeriods(cfg); let last = null;
+    const p = startList(cfg); let last = null;
     for (const d of p) { if (daysBetween(parseYMD(d), date) >= 0) last = d; else break; }
     return last;
   }
@@ -102,44 +116,52 @@ const Cycle = (function () {
   }
 
   /** Ziua estimata de ovulatie (faza luteala fixa ~14 zile inainte de final). */
-  function ovulationDay(cfg) { return Math.max((cfg.period || 5) + 1, avgLength(cfg) - LUTEAL_FIXED); }
+  function ovulationDay(cfg) { return Math.max(avgBleed(cfg) + 1, avgLength(cfg) - LUTEAL_FIXED); }
 
-  /** Faza pentru o zi-din-ciclu. */
+  /** Faza pentru o zi-din-ciclu (faza menstruala = primele ~avgBleed zile). */
   function phaseForDay(cfg, d) {
     if (d == null) return null;
     const ov = ovulationDay(cfg);
-    if (d <= (cfg.period || 5)) return 'menstruala';
+    if (d <= avgBleed(cfg)) return 'menstruala';
     if (d < ov) return 'foliculara';
     if (d === ov) return 'ovulatie';
     return 'luteala';
   }
 
-  /** Gradul de deschidere a florii 0..1 (inchisa la menstruatie, plina la ovulatie). */
+  /** Gradul de iluminare a lunii 0..1. Luna PLINA e rezervata ovulatiei;
+   *  foliculara creste doar pana la ~jumatate-trei sferturi, luteala descreste. */
   function flowerOpen(cfg, d) {
     if (d == null) return 0.5;
-    const ov = ovulationDay(cfg), L = Math.max(avgLength(cfg), ov + 1), per = cfg.period || 5;
-    if (d <= per) return 0.10 + 0.06 * (d / per);
-    if (d < ov) return 0.30 + 0.65 * ((d - per) / (ov - per));
-    if (d === ov) return 1.0;
-    return Math.max(0.18, 0.85 - 0.45 * ((d - ov) / (L - ov)));
+    const ov = ovulationDay(cfg), L = Math.max(avgLength(cfg), ov + 1), per = avgBleed(cfg);
+    if (d <= per) return 0.08 + 0.06 * (d / per);                  // lună nouă (menstruatie)
+    if (d < ov) return 0.22 + 0.48 * ((d - per) / (ov - per));     // creste -> ~0.65 inainte de ovulatie
+    if (d === ov) return 1.0;                                      // plină (ovulatie)
+    return Math.max(0.16, 0.70 - 0.54 * ((d - ov) / (L - ov)));    // descreste (luteala)
   }
 
-  /** Istoric: fiecare menstruatie + lungimea ciclului pana la urmatoarea ("len": null = in curs). */
+  /** Istoric: fiecare menstruatie + lungimea ciclului pana la urmatoarea + durata sangerarii.
+   *  "len": null = ciclul curent (inca neinchis). */
   function history(cfg) {
     const p = sortedPeriods(cfg);
-    return p.map((d, i) => ({ date: d, len: i < p.length - 1 ? daysBetween(parseYMD(d), parseYMD(p[i + 1])) : null }));
+    return p.map((o, i) => ({ start: o.start, bleed: o.bleed, len: i < p.length - 1 ? daysBetween(parseYMD(o.start), parseYMD(p[i + 1].start)) : null }));
   }
 
   /* mutatii (pure: returneaza cfg modificat) */
-  function addPeriodDate(cfg, ymdStr) { const c = { ...cfg, periods: (cfg.periods || []).slice() }; if (c.periods.indexOf(ymdStr) < 0) c.periods.push(ymdStr); c.periods.sort(); return c; }
-  function removePeriodDate(cfg, ymdStr) { return { ...cfg, periods: (cfg.periods || []).filter(x => x !== ymdStr) }; }
+  function addPeriodDate(cfg, ymdStr, bleed) {
+    const c = { ...cfg, periods: (cfg.periods || []).slice() };
+    if (!c.periods.some(p => p.start === ymdStr)) c.periods.push({ start: ymdStr, bleed: (typeof bleed === 'number' ? bleed : (cfg.period || 5)) });
+    c.periods.sort((a, b) => a.start < b.start ? -1 : 1);
+    return c;
+  }
+  function removePeriodDate(cfg, ymdStr) { return { ...cfg, periods: (cfg.periods || []).filter(p => p.start !== ymdStr) }; }
+  function setBleed(cfg, ymdStr, bleed) { return { ...cfg, periods: (cfg.periods || []).map(p => p.start === ymdStr ? { ...p, bleed: Math.max(1, Math.min(10, bleed)) } : p) }; }
 
   /** Estimeaza faza pentru o data calendaristica oarecare (pentru Progres). */
   function phaseForDate(cfg, date) { return phaseForDay(cfg, dayOfCycle(cfg, date)); }
 
   /** Data estimata a urmatoarei menstruatii: ultima logata + lungimea medie, proiectata in viitor. */
   function nextPeriodStart(cfg, from) {
-    const p = sortedPeriods(cfg);
+    const p = startList(cfg);
     if (!p.length) return null;
     const L = avgLength(cfg);
     let nd = addDays(parseYMD(p[p.length - 1]), L); // pleaca de la ULTIMA menstruatie logata
@@ -171,9 +193,17 @@ const Cycle = (function () {
     add_btn:      { ro: 'Adaugă', es: 'Añadir', en: 'Add' },
     history_h:    { ro: 'Istoric', es: 'Historial', en: 'History' },
     in_progress:  { ro: 'în curs', es: 'en curso', en: 'ongoing' },
+    cycle_word:   { ro: 'ciclu', es: 'ciclo', en: 'cycle' },
+    current_cycle:{ ro: 'ciclul curent', es: 'ciclo actual', en: 'current cycle' },
+    bleed_word:   { ro: 'sângerare', es: 'sangrado', en: 'bleeding' },
+    avg_bleed:    { ro: 'Sângerare medie', es: 'Sangrado medio', en: 'Average bleeding' },
+    next_short:   { ro: 'următoarea', es: 'próxima', en: 'next' },
+    delete_word:  { ro: 'șterge', es: 'borrar', en: 'delete' },
     avg_real:     { ro: 'Lungime medie (din ciclurile tale)', es: 'Duración media (de tus ciclos)', en: 'Average length (from your cycles)' },
     no_logs:      { ro: 'Încă nimic înregistrat. Apasă mai sus când începe.', es: 'Aún nada registrado. Pulsa arriba cuando empiece.', en: 'Nothing logged yet. Tap above when it starts.' },
-    detail_title: { ro: 'Floarea ta', es: 'Tu flor', en: 'Your flower' },
+    track_cycle:  { ro: 'Urmărește-ți ciclul', es: 'Sigue tu ciclo', en: 'Track your cycle' },
+    track_hint:   { ro: 'opțional · luna arată faza estimată', es: 'opcional · la luna muestra la fase', en: 'optional · the moon shows the phase' },
+    detail_title: { ro: 'Luna ta', es: 'Tu luna', en: 'Your moon' },
     breath_intro: { ro: 'Cum respira luna', es: 'Cómo respira el mes', en: 'How the month breathes' },
     progres_title:{ ro: 'Cum te influenteaza ciclul', es: 'Cómo te influye el ciclo', en: 'How your cycle affects you' },
     progres_sub:  { ro: 'Starea, productivitatea si jurnalul, pe cele 4 faze.', es: 'Ánimo, productividad y diario, por las 4 fases.', en: 'Mood, productivity and journal, across the 4 phases.' },
@@ -221,6 +251,20 @@ const Cycle = (function () {
     try { return new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'long' }).format(date); }
     catch (e) { return ymd(date); }
   }
+  /** Intervalul sangerarii + anul: "3–7 feb 2025" (sau "30 ian – 3 feb 2025" peste luni). */
+  function formatRange(startStr, bleed) {
+    const loc = ({ ro: 'ro-RO', es: 'es-ES', en: 'en-US' })[langNow()] || 'en-US';
+    const s = parseYMD(startStr), e = addDays(s, Math.max(1, bleed || 1) - 1);
+    try {
+      const dM = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short' });
+      const mS = new Intl.DateTimeFormat(loc, { month: 'short' });
+      if (daysBetween(s, e) === 0)
+        return s.getDate() + ' ' + mS.format(s).replace('.', '') + ' ' + s.getFullYear();
+      if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear())
+        return s.getDate() + '–' + e.getDate() + ' ' + mS.format(s).replace('.', '') + ' ' + s.getFullYear();
+      return dM.format(s).replace('.', '') + ' – ' + dM.format(e).replace('.', '') + ' ' + e.getFullYear();
+    } catch (x) { return startStr; }
+  }
 
   /* ─── 4. VIEW ──────────────────────────────────────────────────────────── */
   /* Randare pura de prezentare: primeste date, returneaza/scrie markup. */
@@ -244,7 +288,24 @@ const Cycle = (function () {
     return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">${s}</svg>`;
   }
 
-  /** Mica icoana de vreme pentru starea medie pe faza (1..5 -> nor..soare). */
+  /** Faza lunii ca SVG: iluminarea exprima faza ciclului; partea luminata pe
+   *  dreapta cand creste (foliculara→ovulatie), pe stanga cand descreste (luteala). */
+  function moonSVG(frac, waxing, size) {
+    const r = size * 0.42, cx = size / 2, cy = size / 2;
+    const disc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#F0E2E3" stroke="#DFC9CB" stroke-width="0.9"/>`;
+    let lit = '';
+    if (frac <= 0.03) { lit = ''; }
+    else if (frac >= 0.97) { lit = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--rose-2,#E58699)"/>`; }
+    else {
+      const rx = r * Math.cos(Math.PI * frac);
+      const outerSweep = waxing ? 1 : 0;
+      const innerSweep = waxing ? (rx > 0 ? 0 : 1) : (rx > 0 ? 1 : 0);
+      lit = `<path d="M ${cx} ${cy - r} A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r} A ${Math.abs(rx).toFixed(2)} ${r} 0 0 ${innerSweep} ${cx} ${cy - r} Z" fill="var(--rose-2,#E58699)"/>`;
+    }
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">${disc}${lit}</svg>`;
+  }
+  /** (frac, waxing) pentru o zi din ciclu — creste pana la ovulatie, apoi descreste. */
+  function moonParams(cfg, d) { return { frac: flowerOpen(cfg, d), waxing: d == null ? true : d <= ovulationDay(cfg) }; }
   function weatherSVG(mood) {
     const sun = `<circle cx="15" cy="14" r="6.5" fill="#F4D27A" stroke="var(--sun,#E8A23D)" stroke-width="1.3"/><g stroke="var(--sun,#E8A23D)" stroke-width="1.3" stroke-linecap="round"><path d="M15 3v3M15 25v2M3 14h3M25 14h2M6 6l2 2M22 6l-2 2"/></g>`;
     const cloud = `<path d="M9 19a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1 3.5 3.5 0 0 1-.5 7H9z" fill="#E7ECF0" stroke="#BFC9D1" stroke-width="1.4"/>`;
@@ -253,33 +314,44 @@ const Cycle = (function () {
     return `<svg viewBox="0 0 30 30" width="28" height="28" aria-hidden="true">${body}</svg>`;
   }
 
-  /** HOME: cardul „Ritmul tau" (floare mica + faza + linie). */
-  function renderHome(cfg) {
+  /** HOME: ciclul nu mai sta pe Home (mutat in Calendar). Doar golim. */
+  function renderHome() {
     const el = document.getElementById('cycleHome');
+    if (el) el.innerHTML = '';
+  }
+
+  /** CALENDAR: strip discret cu luna (faza) + ziua, langa „Ritmul meu". */
+  function renderCalendar(cfg) {
+    const el = document.getElementById('cycleCal');
     if (!el) return;
-    if (!cfg.periods || !cfg.periods.length) {     // neconfigurat: invitatie blanda
-      el.innerHTML = `<button class="cy-setup-link" id="cySetupHome">${flowerSVG(0.5, 40)}<span>${ct('setup_cta')}</span></button>`;
-      const b = document.getElementById('cySetupHome'); if (b) b.onclick = openSettings;
-      return;
-    }
+    if (!cfg.enabled || !cfg.periods || !cfg.periods.length) { el.innerHTML = ''; return; }
     const d = dayOfCycle(cfg, new Date());
     const ph = phaseForDay(cfg, d);
+    const mp = moonParams(cfg, d);
     el.innerHTML =
-      `<button class="cy-home" id="cyHomeBtn" aria-label="${ct('detail_title')}">
-         <span class="cy-fl">${flowerSVG(flowerOpen(cfg, d), 64)}</span>
-         <span class="cy-info">
-           <span class="cy-tag">${ct('rhythm_tag')} · ${ct('estimat')}</span>
-           <span class="cy-t">${ct('day_n')} ${d} · <b>${phaseLabel(ph)}</b></span>
-         </span>
+      `<button class="cy-strip" id="cyStripBtn" aria-label="${ct('detail_title')}">
+         <span class="cy-moon">${moonSVG(mp.frac, mp.waxing, 30)}</span>
+         <span class="cy-strip-t">${ct('day_n')} ${d} · <b>${phaseLabel(ph)}</b> · ${ct('estimat')}</span>
        </button>`;
-    const b = document.getElementById('cyHomeBtn'); if (b) b.onclick = () => openDetail(cfg);
+    const b = document.getElementById('cyStripBtn'); if (b) b.onclick = () => openDetail(cfg);
+  }
+
+  /** SETARI: comutatorul opt-in „Urmărește-ți ciclul". */
+  function renderToggle(cfg) {
+    const el = document.getElementById('cycleToggle');
+    if (!el) return;
+    el.innerHTML =
+      `<div class="cy-tg"><div class="cy-tg-l">${ct('track_cycle')}<small>${ct('track_hint')}</small></div>
+         <button class="cy-sw ${cfg.enabled ? '' : 'off'}" id="cyToggleSw" role="switch" aria-checked="${cfg.enabled}"></button></div>`;
+    const sw = document.getElementById('cyToggleSw');
+    if (sw) sw.onclick = async () => { const c = await loadConfig(); c.enabled = !c.enabled; await saveConfig(c); await refresh(); };
   }
 
   /** PROGRES: comparatia pe faze (citeste din storage; onest cu putine date). */
   async function renderProgres(cfg) {
     const el = document.getElementById('cycleProgres');
     if (!el) return;
-    if (!cfg.periods || !cfg.periods.length) { el.innerHTML = ''; return; } // neconfigurat
+    if (!cfg.enabled || !cfg.periods || !cfg.periods.length) { el.innerHTML = ''; return; }
     const agg = await aggregateByPhase(cfg);       // {phase:{prodPct,moodAvg,journalDays,n}}
     const rows = PHASES.map(p => {
       const a = agg[p];
@@ -307,9 +379,10 @@ const Cycle = (function () {
     const d = dayOfCycle(cfg, new Date());
     const cur = phaseForDay(cfg, d);
     const arc = PHASES.map(p => {
-      const openByPhase = { menstruala: 0.12, foliculara: 0.55, ovulatie: 1.0, luteala: 0.45 };
+      const moonByPhase = { menstruala: [0.08, true], foliculara: [0.55, true], ovulatie: [1.0, true], luteala: [0.5, false] };
       const on = p === cur ? ' on' : '';
-      return `<div class="cy-st"><span>${flowerSVG(openByPhase[p], 58)}</span><span class="cy-lb${on}">${phaseLabel(p).replace('faza ', '')}</span></div>`;
+      const m = moonByPhase[p];
+      return `<div class="cy-st"><span>${moonSVG(m[0], m[1], 54)}</span><span class="cy-lb${on}">${phaseLabel(p).replace('faza ', '')}</span></div>`;
     }).join('');
     const e = EDU[cur];
     const edu = `<div class="cy-edu"><div class="cy-eh">${phaseLabel(cur)}</div>
@@ -333,25 +406,42 @@ const Cycle = (function () {
     const hist = history(cfg).slice().reverse();   // cele mai recente sus
     const L = avgLength(cfg);
     const iv = cycleIntervals(cfg).filter(x => x >= 15 && x <= 60);
-    const histRows = hist.length ? hist.map(h =>
-      `<div class="cy-hrow"><span class="cy-hd">${formatDate(parseYMD(h.date))}</span>
-         <span class="cy-hl">${h.len != null ? (h.len + ' ' + ct('setup_days')) : ct('in_progress')}</span>
-         <button class="cy-del" data-d="${h.date}" aria-label="×">×</button></div>`).join('')
-      : `<div class="cy-empty-hist">${ct('no_logs')}</div>`;
-    const avgBlock = iv.length
-      ? `<div class="cy-avg">${ct('avg_real')}: <b>${L} ${ct('setup_days')}</b></div>`
-      : `<label class="cy-set-row"><span>${ct('setup_length')}</span>
-           <span class="cy-step"><button type="button" id="cyLenMinus">−</button><b id="cyLenVal">${cfg.length}</b> ${ct('setup_days')}<button type="button" id="cyLenPlus">+</button></span></label>`;
-    const np = (cfg.periods && cfg.periods.length) ? nextPeriodStart(cfg, new Date()) : null;
+    const hasData = cfg.periods && cfg.periods.length;
+    const np = hasData ? nextPeriodStart(cfg, new Date()) : null;
+    // rezumat (medii) — inlocuieste cifrele repetate de pe fiecare rand
+    const sum = [];
+    if (hasData) {
+      sum.push(`${ct('cycle_word')} <b>~${L} ${ct('setup_days')}</b>`);
+      sum.push(`${ct('bleed_word')} <b>~${avgBleed(cfg)} ${ct('setup_days')}</b>`);
+      if (np) sum.push(`${ct('next_short')} <b>${formatDate(np)}</b>`);
+    }
+    const summary = sum.length ? `<div class="cy-sum">${sum.join(' · ')}</div>` : '';
+    // listă fină: un rand per ciclu; editarea (sângerare / șterge) apare la tap
+    const rows = hist.length ? hist.map(h => {
+      const cyc = h.len == null ? ct('current_cycle') : (h.len <= 90 ? (ct('cycle_word') + ' ' + h.len + ' ' + ct('setup_days')) : '');
+      const bl = (typeof h.bleed === 'number' ? h.bleed : (cfg.period || 5));
+      return `<div class="cy-hitem">
+          <button type="button" class="cy-hrow" data-row="${h.start}">
+            <span class="cy-hd">${formatRange(h.start, bl)}</span>
+            <span class="cy-hl${h.len == null ? ' cur' : ''}">${cyc}</span></button>
+          <div class="cy-hedit" id="cyEdit-${h.start}" hidden>
+            <span class="cy-bl-lab">${ct('bleed_word')}</span>
+            <span class="cy-bstep"><button type="button" class="cy-bm" data-b="${h.start}">−</button><b>${bl}</b><button type="button" class="cy-bp" data-b="${h.start}">+</button></span> ${ct('setup_days')}
+            <button type="button" class="cy-del" data-d="${h.start}">${ct('delete_word')}</button>
+          </div></div>`;
+    }).join('') : `<div class="cy-empty-hist">${ct('no_logs')}</div>`;
+    // cand nu avem inca destule cicluri reale, oferim stepper-ul manual de lungime
+    const lenFallback = (!iv.length && hasData) ? `<label class="cy-set-row"><span>${ct('setup_length')}</span>
+        <span class="cy-step"><button type="button" id="cyLenMinus">−</button><b id="cyLenVal">${cfg.length}</b> ${ct('setup_days')}<button type="button" id="cyLenPlus">+</button></span></label>` : '';
     return `<div class="cy-detail-h">${ct('setup_title')}</div>
       <button class="cy-save" id="cyLogToday">${ct('log_today')}</button>
       <details class="cy-other"><summary>${ct('log_other')}</summary>
         <div class="cy-other-row"><input type="date" id="cyOtherDate" max="${today}">
           <button class="cy-add" id="cyAddDate">${ct('add_btn')}</button></div></details>
-      ${np ? `<div class="cy-next">${ct('next_period')}: <b>${formatDate(np)}</b></div>` : ''}
       <div class="cy-hist-h">${ct('history_h')}</div>
-      <div class="cy-hist">${histRows}</div>
-      ${avgBlock}`;
+      ${summary}
+      <div class="cy-hist">${rows}</div>
+      ${lenFallback}`;
   }
 
   async function renderSettings() {
@@ -365,6 +455,23 @@ const Cycle = (function () {
     if (logT) logT.onclick = () => save(addPeriodDate(cfg, ymd(new Date())));
     const add = document.getElementById('cyAddDate');
     if (add) add.onclick = () => { const v = document.getElementById('cyOtherDate').value; if (v) save(addPeriodDate(cfg, v)); };
+    // tap pe un rand -> deschide/inchide panoul de editare (doar unul deschis)
+    document.querySelectorAll('.cy-hrow').forEach(r => r.onclick = () => {
+      const panel = document.getElementById('cyEdit-' + r.getAttribute('data-row'));
+      const open = panel && !panel.hidden;
+      document.querySelectorAll('.cy-hedit').forEach(p => p.hidden = true);
+      if (panel) panel.hidden = open;
+    });
+    // sângerare +/- : actualizare live, fara a inchide panoul / re-randa tot
+    const bleedStep = async (btn, dir) => {
+      const s = btn.getAttribute('data-b');
+      const bEl = btn.parentNode.querySelector('b');
+      let v = (parseInt(bEl.textContent, 10) || (cfg.period || 5)) + dir;
+      v = Math.max(1, Math.min(10, v)); bEl.textContent = v;
+      const c = await loadConfig(); await saveConfig(setBleed(c, s, v)); await refresh();
+    };
+    document.querySelectorAll('.cy-bm').forEach(b => b.onclick = () => bleedStep(b, -1));
+    document.querySelectorAll('.cy-bp').forEach(b => b.onclick = () => bleedStep(b, +1));
     document.querySelectorAll('.cy-del').forEach(b => b.onclick = () => save(removePeriodDate(cfg, b.getAttribute('data-d'))));
     // stepper de fallback (doar cand nu avem inca destule cicluri reale)
     const minus = document.getElementById('cyLenMinus'), plus = document.getElementById('cyLenPlus'), val = document.getElementById('cyLenVal');
@@ -435,6 +542,8 @@ const Cycle = (function () {
 
   /* ─── 5. WIRING ────────────────────────────────────────────────────────── */
   let _booted = false;
+  let _cfgCache = null;          // ultimul cfg incarcat (pentru interogari sincrone, ex. grila de calendar)
+  let _onChange = null;          // callback optional: aplicatia il seteaza ca sa re-randeze calendarul
 
   function injectCSS() {
     if (document.getElementById('cy-css')) return;
@@ -489,14 +598,33 @@ const Cycle = (function () {
       .cy-next{font-size:.84rem;color:var(--ink-soft,#897662);margin:12px 0 2px;}
       .cy-next b{color:var(--rose-4,#B5495F);}
       .cy-hist-h{font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:16px 0 6px;color:var(--ink,#3A2D21);}
+      .cy-sum{font-size:.8rem;color:var(--ink-soft,#897662);margin:2px 0 6px;line-height:1.55;}
+      .cy-sum b{color:var(--rose-4,#B5495F);}
       .cy-hist{border-top:1px solid var(--line,#EFE6D4);}
-      .cy-hrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line,#EFE6D4);}
-      .cy-hd{flex:1;font-weight:700;font-size:.88rem;color:var(--ink,#3A2D21);}
-      .cy-hl{font-size:.78rem;color:var(--ink-soft,#897662);font-weight:700;}
-      .cy-del{border:none;background:transparent;color:var(--rose-dust,#C39199);font-size:1.05rem;line-height:1;cursor:pointer;padding:2px 4px;}
-      .cy-empty-hist{font-size:.82rem;color:var(--ink-soft,#897662);font-style:italic;padding:10px 2px;}
-      .cy-avg{font-size:.84rem;color:var(--ink-soft,#897662);margin-top:14px;}
-      .cy-avg b{color:var(--rose-4,#B5495F);}
+      .cy-hitem{border-bottom:1px solid var(--line,#EFE6D4);}
+      .cy-hrow{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;cursor:pointer;padding:13px 2px;text-align:left;font-family:inherit;}
+      .cy-hd{font-weight:700;font-size:.92rem;color:var(--ink,#3A2D21);}
+      .cy-hl{font-size:.8rem;color:var(--ink-soft,#897662);font-weight:700;}
+      .cy-hl.cur{color:var(--rose-4,#B5495F);}
+      .cy-hedit{display:flex;align-items:center;gap:9px;background:#FCF3F0;border-radius:13px;padding:10px 12px;margin:0 0 11px;font-size:.8rem;color:var(--ink-soft,#897662);font-weight:700;}
+      .cy-hedit[hidden]{display:none;}
+      .cy-bstep{display:inline-flex;align-items:center;gap:8px;}
+      .cy-bstep b{min-width:14px;text-align:center;color:var(--ink,#3A2D21);}
+      .cy-bm,.cy-bp{border:none;background:var(--rose-0,#FBE4E5);color:var(--rose-4,#B5495F);width:22px;height:22px;border-radius:7px;font-weight:800;cursor:pointer;line-height:1;}
+      .cy-hedit .cy-del{margin-left:auto;border:none;background:transparent;color:var(--rose-dust,#C39199);font-weight:700;font-size:.78rem;cursor:pointer;}
+      .cy-empty-hist{font-size:.82rem;color:var(--ink-soft,#897662);font-style:italic;padding:12px 2px;}
+      #cycleHome:empty,#cycleCal:empty,#cycleProgres:empty,#cycleToggle:empty{display:none;}
+      .cy-strip{display:inline-flex;align-items:center;gap:9px;background:transparent;border:none;cursor:pointer;padding:8px 2px 0;text-align:left;}
+      .cy-strip .cy-moon{flex:none;line-height:0;}
+      .cy-strip-t{font-family:'Fraunces',serif;font-size:.96rem;color:var(--ink,#3A2D21);}
+      .cy-strip-t b{color:var(--rose-3,#D15E78);font-weight:600;}
+      .cy-tg{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--line,#EFE6D4);border-radius:14px;padding:11px 13px;}
+      .cy-tg-l{font-size:.9rem;font-weight:700;color:var(--ink,#3A2D21);}
+      .cy-tg-l small{display:block;color:var(--ink-soft,#897662);font-weight:600;font-size:.7rem;margin-top:2px;}
+      .cy-sw{flex:none;width:42px;height:24px;border-radius:20px;border:none;background:var(--rose-3,#D15E78);position:relative;cursor:pointer;transition:background .16s;}
+      .cy-sw::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;right:3px;transition:.16s;}
+      .cy-sw.off{background:#D9CEBA;}
+      .cy-sw.off::after{left:3px;right:auto;}
       .cy-saved{display:flex;flex-direction:column;gap:3px;background:#EAF0E2;border-radius:13px;padding:11px 14px;margin-top:14px;}
       .cy-saved .ok{font-weight:800;color:#4E7E3A;font-size:.9rem;}
       .cy-saved .np{font-size:.84rem;color:var(--ink,#3A2D21);}
@@ -512,11 +640,28 @@ const Cycle = (function () {
   /** Re-randeaza suprafetele modulului (apelat la init, la schimbarea limbii, la salvare). */
   async function refresh() {
     const cfg = await loadConfig();
-    renderHome(cfg);
-    await renderProgres(cfg);
-    // butonul "Ritmul meu" din Calendar isi ia textul din i18n (se traduce la schimbarea limbii)
+    _cfgCache = cfg;               // tine config sincron pentru isMenstrualDay (grila de calendar)
+    renderHome();                  // ciclul nu mai e pe Home
+    renderCalendar(cfg);           // strip cu luna in Calendar
+    await renderProgres(cfg);      // panou (doar daca enabled)
+    renderToggle(cfg);             // comutator opt-in in Setari
+    // butonul "Ritmul meu" din Calendar: vizibil doar daca ciclul e activat
     const calBtn = document.getElementById('cycleSetupBtn');
-    if (calBtn) calBtn.textContent = ct('setup_title');
+    if (calBtn) { calBtn.style.display = cfg.enabled ? '' : 'none'; calBtn.textContent = ct('setup_title'); }
+    if (typeof _onChange === 'function') { try { _onChange(); } catch (e) { } } // re-randeaza grila lunii
+  }
+
+  /** SINCRON: data e zi de menstruatie? (in [start, start+bleed-1] pt vreun period logat). */
+  function isMenstrualDay(date) {
+    const cfg = _cfgCache;
+    if (!cfg || !cfg.enabled || !cfg.periods || !cfg.periods.length) return false;
+    for (const p of cfg.periods) {
+      const s = parseYMD(p.start);
+      const len = (typeof p.bleed === 'number' && p.bleed > 0) ? p.bleed : (cfg.period || 5);
+      const diff = daysBetween(s, date);
+      if (diff >= 0 && diff < len) return true;
+    }
+    return false;
   }
 
   /** Punct unic de pornire. Apeleaza-l din init()-ul aplicatiei, dupa settings. */
@@ -530,9 +675,10 @@ const Cycle = (function () {
 
   /* API public minim, clar: ce poate apela restul aplicatiei. */
   return {
-    init, refresh, openSettings,
+    init, refresh, openSettings, isMenstrualDay,
+    onChange(fn) { _onChange = fn; },
     // expuse pentru testare (functii pure):
-    _calc: { dayOfCycle, phaseForDay, ovulationDay, flowerOpen, phaseForDate, nextPeriodStart, avgLength, cycleIntervals, history, addPeriodDate, removePeriodDate, lastPeriodOnOrBefore }
+    _calc: { dayOfCycle, phaseForDay, ovulationDay, flowerOpen, phaseForDate, nextPeriodStart, avgLength, avgBleed, cycleIntervals, history, addPeriodDate, removePeriodDate, setBleed, lastPeriodOnOrBefore }
   };
 })();
 
