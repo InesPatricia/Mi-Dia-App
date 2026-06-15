@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (CLAUDE_v2.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v97.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v110.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -248,7 +248,7 @@ duplicated Acasă). Now there is ONE primary navigation:
   (horizontal bars in the areas' functional colors); "Balance" (single proportion bar + "Most time in
   <area> (X%)"); "Mood ↔ productivity" correlation panel (journal mood ↔ slots done). Removed: the goals
   panel, the 4 old cards, the 28-day chart, the category/tag switch.
-- **Calm tab:** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer.
+- **Respiro tab (renamed from "Calm" in v101 — petal label + hero title now "Respiro", RO/ES/EN):** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer. Hosts BOTH calming and energizing content via the Calmează-mă/Trezește-mă toggle (energizer arc v90–v97).
   **Redesigned (v54, direction B):** warm LIGHT treatment (the old full dark-green `calm-mode` override
   was dropped) — soft sage/dusk wash + a gentle "spațiu de respiro" cue — and the card **emojis are now
   home-style line-icons** tinted in each exercise's functional color.
@@ -271,7 +271,21 @@ duplicated Acasă). Now there is ONE primary navigation:
 - **3-language i18n** (EN/ES/RO) across the whole app.
 - **PWA (real, v56+ through v89):** installable web app manifest (inline data URI) + a service worker
   (`sw.js`) for offline. Add-to-Home-Screen, standalone display, app icon. JSON export/import
-  backup (now includes `intent:` keys).
+  backup (now includes `intent:` AND `cycle` keys — fixed in v101).
+- **Persistence module (v102, `persist.js`):** gentle Home banner that reminds to back up (or to install
+  as PWA — iOS "Add to Home Screen" hint / Android install prompt) when there is no/old (>14d) backup;
+  "Last backup: <date>" in Settings; export auto-marks the backup date. Dismissable (~7 days). Addresses
+  the iOS Safari ~7-day localStorage eviction risk for the future public version.
+- **Cycle — "Ritmul meu" (v98→v107, `cycle.js`, OPT-IN):** self-contained module. **Opt-in toggle**
+  "Urmărește-ți ciclul" in Settings (**OFF by default** for everyone, v109 → app is gender-neutral by default; user turns it on). When on, it lives in **Calendar** (a discreet **moon strip** whose
+  shape shows the estimated phase — new moon at menstruation, waxing to FULL at ovulation, waning in
+  luteal; full moon reserved for ovulation) + a **"Ritmul meu" sheet** to LOG real periods ("Menstruația a
+  început azi" / another date) with **history** (each period + cycle length, "în curs" for the latest) and
+  delete; **average length is computed from the user's real cycles** (manual stepper fallback when <2
+  logs). Reflection panel **"Cum te influenteaza ciclul"** stays in **Progres** (mood avg + productivity +
+  journal days per phase). Detail overlay **"Luna ta"** = 4-phase moon arc + educational sheet + firm
+  disclaimer (estimated, not medical, not contraception). Save confirmation = toast + next estimated
+  period. NOT on Home (moved off in v106 to keep Home to a single signature flower).
 
 ---
 
@@ -318,9 +332,12 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   tints the FAB green) — one-line change if you want rose everywhere.
 
 **D. Roadmap (larger, deferred)**
-- `[ ]` D13. **Menstrual cycle tracker** (Calendar tab): cycle start dates; phases (menstrual,
-  follicular, ovulatory, luteal) with explanations (hormones, energy, mood); correlate with the
-  tracked mood/productivity data. **Write in all 3 languages from the start.** *(Major next feature.)*
+- `[x]` D13. **Menstrual cycle tracker — DONE (v98→v107).** Opt-in, in Calendar + Progres (not Home).
+  Real period logging + history, average from real cycles, moon-phase indicator (full = ovulation),
+  4-phase educational arc, mood/productivity correlation, firm disclaimer, trilingual. Framed as a
+  PERSONAL pattern surfacing, non-prescriptive (cycle-phase→work-type prescriptions are NOT well
+  supported by research — 2025 PLOS One meta-analysis). Remaining: real-Android validation of the new
+  logging/moon/toggle flow.
 - `[ ]` D14. Long-term: public/subscription version.
 
 ---
@@ -336,6 +353,13 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   display), `settings` (incl. `lang` and `name` — optional user name, max 24 chars, v68 area, feeds the
   Profil greeting). Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes the old empty Inbox/Spain
   defaults).
+- `cycle` (v98→v108): `{ periods:[{start:"YYYY-MM-DD", bleed:N|null}], length, period, enabled }`. `periods` =
+  real logged menstruations (sorted by start), each with optional **bleed duration** (days of bleeding);
+  `length` = manual cycle-length avg fallback; `period` = default bleed days (5); `enabled` = opt-in flag.
+  Migrates old single `start` → list, and old string-list (`v105–v107`) → objects. Cycle length is computed
+  from start-to-start intervals (`avgLength`); bleed duration averaged separately (`avgBleed`, also drives the
+  menstrual-phase threshold). Included in backup.
+- `lastBackup` (ISO date) + `persistDismiss` (ISO date) — used by the Persistence module (v102).
 
 ---
 
@@ -675,9 +699,40 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Current build **`mi-dia-v97.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v107). Current build **`mi-dia-v110.html`**.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
 > the permission-pause + wheel flow, Calendar emotion dot); **B6 duration "min" clip (open — needs Ines to pinpoint the screen)**; D13 menstrual cycle
 > tracker, D14 public/subscription version.
+
+
+---
+
+## Changelog (v98 → v107) — cycle feature, Respiro, persistence, opt-in, moon
+
+- **v98** — Cycle feature integrated (initially: flower on Home + reflection in Progres + "Ciclul meu" setup in Calendar). Calendar grid untouched.
+- **v99** — Save confirmation: toast "Salvat ✓" + in-sheet "next period estimated" line.
+- **v100** — Cycle setup button renamed to **"Ritmul meu / My rhythm / Mi ritmo"** (i18n-aware).
+- **v101** — **"Calm" → "Respiro"** (petal + hero title, RO/ES/EN). Fixed backup bug: added `cycle` to export keys; import now refreshes the cycle UI.
+- **v102** — **Persistence module** (`persist.js`): backup-reminder / PWA-install banner + "Last backup" in Settings + export marks backup date.
+- **v103** — Banner moved below the autosave hint (off the top of Home); cycle button restyled to a quiet outline pill (`cyRhythmBtn`).
+- **v104** — Removed the gold divider line under the hero quote translation (`border-top` on `body[data-view="day"] .hero-day-card`). Real-Android screenshot confirmed the app renders well on device.
+- **v105** — **Real period logging + history.** Model changed from single `start` → **`periods` list** (migrates old `start`). Average length computed from real cycle intervals (manual fallback <2 logs). "Ritmul meu" sheet: "Menstruația a început azi" / another date + history (length per cycle, "în curs") + delete.
+- **v106** — **Opt-in + moon + moved off Home.** Added `enabled` flag + Settings toggle "Urmărește-ți ciclul" (default OFF for new users, ON if data exists). Cycle moved off Home → **Calendar** (moon strip) + Progres reflection; Home back to a single signature flower. Indicator changed from a botanical **flower → moon phase** (illumination = phase; waxing on the right = follicular→ovulation, waning on the left = luteal). Detail title "Floarea ta" → **"Luna ta"**.
+- **v107** — Moon illumination corrected: **full moon reserved for ovulation**; follicular grows only to ~half/three-quarters (was ~88% near-full, which looked full at small size and contradicted the legend).
+- **v108** — **Bleed-duration logging + clearer history labels.** History was ambiguous ("ongoing" / "N days" read as bleeding length, but meant cycle length). Now each logged period also stores a **bleed duration** (editable stepper, default 5); history shows "cycle N days" / "current cycle" + "bleeding: N days"; Settings shows "Average bleeding". Model `periods` changed from string-list to `{start,bleed}` objects (auto-migrated). `avgBleed` drives the menstrual-phase threshold.
+- **v110** — **Menstruation marked in the Calendar grid (V3: rose number + underline)** computed from start + bleed duration, gated on `cycle.enabled` — navigate Lună/An to any past month to see "from–to" at a glance. **History rows now show the bleeding interval + year** (`formatRange`, e.g. "3–7 feb 2025"); implausible logging gaps (>90d) no longer display a fake cycle length. New module API: `isMenstrualDay` + `onChange` (live grid re-render).
+- **v109** — **Cycle OFF by default** (was: on if data existed) → neutral for all new users; turn on via Settings. **History redesigned to a fine one-row-per-cycle list** (date + cycle length / "current cycle"), with a summary line on top (avg cycle · avg bleeding · next) and **edit-on-tap** (bleeding stepper + delete expand only for the tapped row) — replaces the cluttered two-row-with-steppers layout. Bleeding edits update live without re-rendering the sheet.
+
+## Architecture direction (since v98)
+
+- **No big-bang rewrite of the ~4300-line file.** Instead, new features are built as **self-contained modules** following a clean 5-layer pattern (DATA / CALC / I18N / VIEW / WIRING), readable top-to-bottom by a new developer, with **pure, unit-testable calc functions** and no hidden dependencies.
+- The cycle module exposes a small public API to the host app: `init`, `refresh`, `openSettings`, **`isMenstrualDay(date)`** (sync, used by the calendar grid), and **`onChange(fn)`** (host registers a callback so the month grid re-renders live after a log). It keeps a synchronous `_cfgCache` updated on every `refresh`.
+- Reference modules: **`cycle.js`** and **`persist.js`** (each a single IIFE, portable `window.storage || localStorage`, own i18n, injects own CSS, mounts via a few clearly-marked anchors + one `init()` call).
+- **Incremental migration plan:** apply the same module pattern to the remaining views one slice at a time (Store→Data layer, then per-view render modules, then extract pure calc). No rush; the app keeps working throughout.
+- **Validation chain (this environment):** Python div-balance check → `node --check` on each `<script>` block → Playwright/Chromium headless screenshots at 412px. Mermaid data-flow diagrams (`diag-dataflow`, `diag-cycle-mood`) document how one input feeds many screens. **Headless ≠ real Android** — device pass (QA checklist) is still required and remains Ines's step.
+
+## Gender-neutrality decision (v106, research-grounded)
+
+- Cycle is **opt-in, not gender-gated.** Rationale: gating would require asking gender at signup (UX best practice: ask only if needed, make optional, inclusive); gender doesn't predict who wants the feature; major platforms (Apple/Samsung Health) ship cycle tracking as an opt-in module. Opt-in default-OFF keeps the app neutral; moving cycle off Home removes the second flower. "Too feminine" is also a visual-design signal (color/typography/florals) — optional future lever: temper rose toward terracotta/olive/gold for broader reach (Ines's call, not done).
