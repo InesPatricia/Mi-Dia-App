@@ -1,4 +1,4 @@
-# Mi Día — Project Context for Claude (CLAUDE_v2.md)
+# Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
 > Last updated: June 2026 · Current latest build: **`mi-dia-v119.html`**
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v97.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v119.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
@@ -171,7 +171,7 @@ duplicated Acasă). Now there is ONE primary navigation:
 
 ---
 
-## Day tab — add flow & slot rendering (current, v23–v47)
+## Day tab — add flow & slot rendering (HISTORICAL v23–v47 — SUPERSEDED by the v112+ composer; see "Add flow — CURRENT (v112+)" below)
 
 **Add flow reads top-to-bottom (configure → commit):**
 1. **Scurtături** (section label, v43) → quick presets (3-col grid) + a `+ Adaugă o scurtătură`
@@ -313,10 +313,9 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 - `[~]` A5. Microcopy tone check across RO/ES/EN (warmth preserved, not just literal translation).
 
 **B. Add-flow follow-ups (from this session's work)**
-- `[ ]` B6. Fix the duration field clipping its placeholder ("mi" instead of "min") — too narrow.
+- `[ ]` B6. Duration field clips its placeholder ("mi" vs "min") on a narrow screen — investigated (v97) without a clear repro; **still OPEN, needs Ines to point to the exact screen.** (Note: the composer duration is now quick-chips, so this likely refers to the slot-editor / shortcut-form `min` field.)
 - `[x]` B7. Default time: **KEPT** — 7:00 AM stays the real default (confirmed by Ines, through v47).
-- `[?]` B8. Long-press discoverability: after phone testing, decide whether long-press stays or
-  we add a more visible affordance (e.g. a small "+" on the shortcut card).
+- `[x]` B8. Long-press discoverability — **DONE (v112/v113):** long-press replaced by a visible **"+"** on each shortcut pill (tap=prefill, "+"=instant add). Confirmed unreliable/undiscoverable on Ines's Android.
 - `[ ]` B9. Optional: gentle progressive disclosure of tags/duration (the "hybrid" idea) if the
   panel still feels dense in real use.
 
@@ -330,6 +329,27 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   support for the bloom + intention scrims.
 - `[?]` C12c. Decide if the `+` should stay rose in **calm-mode** (currently the calm dark override
   tints the FAB green) — one-line change if you want rose everywhere.
+
+**E. UX coherence pass (from the v89/v97 audit — still open after the add-flow arc, priority order)**
+- `[ ]` E1. **Duplicate title on secondary screens** — the screen name shows in the hero photo AND again as a heading below (Proiecte / Progres / Calendar / Respiro). Highest visibility.
+- `[ ]` E2. **Emoji placeholder in the Proiecte empty-state** → swap for a line icon (rest of the app uses line icons). Cheapest consistency win.
+- `[ ]` E3. **Header translation line clips into the hero photo** on Home at some widths.
+- `[ ]` E4. **Progres "Ore pe arie" vs "Echilibru"** visualize the same data twice → keep one.
+- `[ ]` E5. **Profil ↔ Progres overlapping metrics** (days-with-plan, slots, reflections) → split, one per screen.
+- `[ ]` E6. **"AZI" / date-nav styled inconsistently** across screens → unify into one style.
+- `[ ]` E7. **Legacy `--rose:#CB8188` mauve token (~13×)** → align to the `--rose-1..4` family or keep intentionally (decide).
+- Recommended attack order: **E1 → E2 → E3**, then E4–E5, then E6–E7.
+
+**F. Android QA checklist (Ines's device pass — headless ≠ real device)**
+- `[?]` Native OS clock opens at "oră" in the composer AND in the slot editor.
+- `[?]` Memento: set a slot 1–2 min out, app open → toast + chime + rose pulse at the time.
+- `[?]` Shortcuts: 3 shown; "Add a shortcut" works and the new one appears; ✎ deletes.
+- `[?]` Composer: chips on one row; expands on typing; "+" and Enter both commit.
+- `[?]` Body scan TTS actually speaks (langVoice fallback).
+- `[?]` B6 "min" clip on a narrow screen (pinpoint the screen).
+- `[?]` Overlap columns readable on narrow screens; tap targets comfortable.
+- `[?]` Trilingual switch (RO/ES/EN) updates every label, including the area chip.
+- `[?]` localStorage persistence after close/reopen.
 
 **D. Roadmap (larger, deferred)**
 - `[x]` D13. **Menstrual cycle tracker — DONE (v98→v107).** Opt-in, in Calendar + Progres (not Home).
@@ -699,7 +719,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v107). Current build **`mi-dia-v110.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Current build **`mi-dia-v119.html`**.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -724,6 +744,41 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 - **v108** — **Bleed-duration logging + clearer history labels.** History was ambiguous ("ongoing" / "N days" read as bleeding length, but meant cycle length). Now each logged period also stores a **bleed duration** (editable stepper, default 5); history shows "cycle N days" / "current cycle" + "bleeding: N days"; Settings shows "Average bleeding". Model `periods` changed from string-list to `{start,bleed}` objects (auto-migrated). `avgBleed` drives the menstrual-phase threshold.
 - **v110** — **Menstruation marked in the Calendar grid (V3: rose number + underline)** computed from start + bleed duration, gated on `cycle.enabled` — navigate Lună/An to any past month to see "from–to" at a glance. **History rows now show the bleeding interval + year** (`formatRange`, e.g. "3–7 feb 2025"); implausible logging gaps (>90d) no longer display a fake cycle length. New module API: `isMenstrualDay` + `onChange` (live grid re-render).
 - **v109** — **Cycle OFF by default** (was: on if data existed) → neutral for all new users; turn on via Settings. **History redesigned to a fine one-row-per-cycle list** (date + cycle length / "current cycle"), with a summary line on top (avg cycle · avg bleeding · next) and **edit-on-tap** (bleeding stepper + delete expand only for the tapped row) — replaces the cluttered two-row-with-steppers layout. Bleeding edits update live without re-rendering the sheet.
+
+## Changelog (v111 → v119) — bug fixes + add-flow redesign + start-time memento
+
+- **v111** — Two pencil bugs: moved the "edit shortcuts" ✎ into its own header row above the shortcuts (was misplaced in the panel head); removed a meaningless decorative ✎ from the quick-add row.
+- **v112** — **Unified composer (direction C+A).** Replaced the collapsible "＋ câmpuri complete" with a composer that expands on typing and reveals inline **Oră · Arie · Etichetă** + start–end preview. **Native OS time picker** (`<input type=time>` overlay) in composer AND slot editor; duration quick-chips (default 30). Shortcuts get a visible **"+"** (tap=prefill, +=instant add) replacing long-press. New i18n: `ora_chip`, `lbl_dur`, `sc_add_direct`. Removed `data-i18n` from the area/tag chip labels so language-switch no longer clobbers the selected area name (`refreshAreaChip`/`refreshTagChip` run on `applyI18n`).
+- **v113** — Shortcuts rendered as compact pills; **default shortcuts reduced 7→3** (Coaching · 4F reflection · Movement). Removed dead code: `quickAdd`, `toggleAddForm`, legacy `makeTimePicker`.
+- **v114** — Tried a wrap-flow shortcut layout (rejected on device — ragged/uneven).
+- **v115** — Shortcuts = **neat 2-column grid**, bounded to ~2 rows; equal-width cells, labels clamp to 2 lines (no truncation).
+- **v116** — Fixed **add-shortcut on device**: removed the hard 3-item display cap (newly added shortcuts were hidden beyond it, so "Add" looked broken). Fixed **overlap**: moved the add-form below the hint and removed the legacy `-11px` negative margin on `.chiphint`.
+- **v117** — **One-time migration** (`sc_default3_v117` flag in Store): resets a device's persisted shortcut list to the 3 curated defaults once, then never again — fixes installs whose saved 7-item list overrode the v113 default change.
+- **v118** — **In-app start-time memento.** While the app is OPEN, when a timed slot's **start time arrives** → toast ("⏰ E ora pentru: …") + gentle 2-note chime (respects the sound setting) + a rose pulse on the slot (`.memento-flash`). Fires once per slot/day (`mementoFired` keyed by date); **past slots are suppressed on load** (no retroactive alerts). New Settings toggle **"Memento la ora slotului"** (`#mementoToggle`, default ON, persisted as `settings.memento`). i18n RO/ES/EN. **Foreground-only by design** — closed/background notification would need a backend + push (out of scope). This is separate from the existing end-of-slot reminder system (`reminderLeads`, tied to the manual Focus timer), which is untouched.
+- **v119** — **Composer compaction.** `#inTimeWrap` was stretching full-width and pushing Arie/Etichetă to a second row (wasted space); pinned to content width so Oră·Arie·Etichetă fit one row. Tighter chip paddings + section margins. Composer height ~196px → ~160px.
+
+## Add flow — CURRENT (v112+ unified composer, supersedes the v23–v47 title-first flow)
+
+The day-tab add area was rebuilt in **v112** and refined through **v119**. It now has two stacked blocks: a **Shortcuts** block, then a **Composer**.
+
+**Composer (one capture field that grows):**
+- Resting state = a single line: a title input ("What do you want to do today?") + a rose **"+"** commit button.
+- It **expands when you START TYPING** (not on focus — Ines's call). The reveal shows, on **one row**, three chips: **Oră · Arie · Etichetă**, plus a live **start–end preview** pill, then a **Durată** quick-chip row.
+- **Commit:** the "+" button OR **Enter**. Fast path = type a title + Enter with nothing else = an untimed slot (preserves quick capture). After commit the composer resets and collapses.
+- **Oră = native OS clock.** The "oră" chip is a styled `<label>` with a transparent `<input type="time">` overlaid on top (`.oraField`/`.oraInput`, opacity:0, inset:0). This opens the real Android/iOS time wheel reliably — `showPicker()` was unreliable on Ines's device. The 24h value maps straight to `addTime`. The **same `makeNativeTime()` helper is reused in the slot editor** (replaced the old custom `makeTimePicker`, now removed).
+- **Arie chip** toggles the existing `#catpick` inline; selecting an area updates the chip label+dot (`refreshAreaChip`). **Etichetă chip** toggles `#inTagChips` inline; the chip shows a count (`refreshTagChip`). Both reuse the pre-existing `selCat` / `selTags` state and `addFromForm`.
+- **Durată = quick-chips** 15/30/45/60/90 (`buildDurRow`/`setDurSel` → hidden `#inDur`), default **30**.
+- Compaction (v119): `#inTimeWrap` was stretching full-width and pushing area/tag to a 2nd row; pinned to content width so all three chips share one row. Composer height ~196px → ~160px.
+
+**Shortcuts block (above the composer):**
+- A **neat 2-column grid** of compact pills (v115). Each pill = **tap body** (pre-fills the composer: title + area + duration, then focuses the title) **+ a visible "+"** (instant add, untimed — replaced the old, undiscoverable long-press).
+- **✎** (top-right of the block) toggles edit mode → each pill shows **✕** (two-tap delete). "**+ Adaugă o scurtătură**" opens an inline editor (name + area + min).
+- **3 curated defaults** (Coaching · 4F reflection · Movement). A one-time migration (`sc_default3_v117`) resets any device's persisted shortcut list to these 3 once, so older installs that had the legacy 7 collapse to 3.
+- Hint line under the grid: "tap: pre-fill · '+': add instantly".
+
+**Slot rendering** unchanged in spirit: a timed slot shows its full **start–end range** on its own line above the title, tinted with the Arie color; overlapping intervals still cluster into side-by-side columns (see v33 note).
+
+**Dead code removed (v113):** `quickAdd`, `toggleAddForm`, and the legacy `makeTimePicker` — all unused after the composer landed.
 
 ## Architecture direction (since v98)
 
