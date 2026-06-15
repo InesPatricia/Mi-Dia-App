@@ -1,22 +1,17 @@
 # Mi Día — Netlify config
 # Single self-contained HTML app, no build step.
-# Serves the promoted build (mi-dia.html) at the site root.
+# The promoted build is index.html, served at the site root automatically.
 
 [build]
   publish = "."
   command = ""
 
-# Serve mi-dia.html at "/" without changing the URL (200 = rewrite, not redirect).
-# mi-dia.html is the promoted latest build, so the live site always tracks it.
-[[redirects]]
-  from = "/"
-  to = "/mi-dia.html"
-  status = 200
+# No root rewrite needed: index.html is served at "/" by default.
 
 # Hide every non-promoted build: old versions (/mi-dia-vNN.html) AND mockups
 # (/mi-dia-mockup*, /mi-dia-flower-variants*) redirect to the homepage. The files
 # stay in git as rollback points; they are just not reachable on the public site.
-# NOTE: "/mi-dia-*" needs the hyphen, so it does NOT match "/mi-dia.html" (the live app).
+# NOTE: "/mi-dia-*" needs the hyphen, so it does NOT match index.html (the live app).
 [[redirects]]
   from = "/mi-dia-*"
   to = "/"

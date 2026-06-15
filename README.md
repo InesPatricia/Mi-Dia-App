@@ -11,7 +11,7 @@ journaling, projects, calendar, statistics and calm tools — with a focus on
 coaching reflection and energy awareness.
 
 ### Running the app
-The app is a single file. Open `mi-dia.html` directly in your browser
+The app is a single file. Open `index.html` directly in your browser
 (double-click, or drag it into Chrome). All data is saved locally in the browser.
 
 ### Backup
@@ -35,7 +35,7 @@ diario guiado, proyectos, calendario, estadísticas y herramientas de calma —
 con foco en la reflexión de coaching y la conciencia de la energía.
 
 ### Cómo ejecutar la app
-La app es un único archivo. Abre `mi-dia.html` directamente en el navegador
+La app es un único archivo. Abre `index.html` directamente en el navegador
 (doble clic, o arrástralo a Chrome). Todos los datos se guardan localmente en el navegador.
 
 ### Copia de seguridad
@@ -59,7 +59,7 @@ ghidat, proiecte, calendar, statistici și unelte de calm — cu focus pe reflec
 de coaching și conștientizarea energiei.
 
 ### Cum rulez aplicația
-Aplicația e un singur fișier. Deschide `mi-dia.html` direct în browser
+Aplicația e un singur fișier. Deschide `index.html` direct în browser
 (dublu-click, sau trage-l în Chrome). Toate datele se salvează local în browser.
 
 ### Backup

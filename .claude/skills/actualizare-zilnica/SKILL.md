@@ -26,22 +26,23 @@ git diff --staged   # modificari stageuite
 ```
 Identifica ce s-a schimbat real fata de inceputul zilei.
 
-### 2. Promoveaza automat ultima versiune vNN -> mi-dia.html
-Fluxul proiectului: iteram in `mi-dia-vNN.html`; `mi-dia.html` e oglinda celei mai noi versiuni.
+### 2. Promoveaza automat ultima versiune vNN -> index.html
+Fluxul proiectului: iteram in `mi-dia-vNN.html`; **`index.html`** e oglinda celei mai noi versiuni
+(fisierul promovat, servit la root de orice host static — Cloudflare Pages primar, Netlify fallback).
 1. Gaseste ultima versiune (cel mai mare `NN`):
    ```
    node -e "const fs=require('fs');const f=fs.readdirSync('.').filter(x=>/^mi-dia-v\d+\.html$/.test(x));const l=f.map(x=>({x,n:+x.match(/v(\d+)/)[1]})).sort((a,b)=>b.n-a.n)[0];console.log(l?l.x:'NONE');"
    ```
-2. Daca rezultatul e `NONE` (nu exista versiuni), sari peste promovare si lucreaza direct cu `mi-dia.html`.
-3. Altfel, **copiaza** ultima versiune peste `mi-dia.html` (idempotent — daca e deja la zi, git nu va vedea nicio schimbare):
-   - bash: `cp <ultima-vNN> mi-dia.html`  ·  PowerShell: `Copy-Item <ultima-vNN> mi-dia.html -Force`
-4. Daca `git status --short mi-dia.html` arata o schimbare, actualizeaza in `CLAUDE.md` linia `Current latest build: ...` cu numele ultimei versiuni.
+2. Daca rezultatul e `NONE` (nu exista versiuni), sari peste promovare si lucreaza direct cu `index.html`.
+3. Altfel, **copiaza** ultima versiune peste `index.html` (idempotent — daca e deja la zi, git nu va vedea nicio schimbare):
+   - bash: `cp <ultima-vNN> index.html`  ·  PowerShell: `Copy-Item <ultima-vNN> index.html -Force`
+4. Daca `git status --short index.html` arata o schimbare, actualizeaza in `CLAUDE.md` linia `Current latest build: ...` cu numele ultimei versiuni, **si bump `CACHE` din `sw.js`** la `mi-dia-vNN`.
 5. **Asigura-te ca noul fisier `mi-dia-vNN.html` e adaugat in git** (sunt fisiere urmarite, nu ignorate) — il stageezi la pasul de commit.
 
 ### 3. Valideaza sursa (OBLIGATORIU inainte de orice commit)
-Valideaza `mi-dia.html` (= ultima versiune dupa promovare). Python lipseste pe masina asta — foloseste Node:
+Valideaza `index.html` (= ultima versiune dupa promovare). Python lipseste pe masina asta — foloseste Node:
 ```
-node -e "const fs=require('fs');const html=fs.readFileSync('mi-dia.html','utf8');const s=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);s.forEach((x,i)=>fs.writeFileSync('_tmp_eod'+i+'.js',x));let b=html.replace(/<style>[\s\S]*?<\/style>/g,'').replace(/<script>[\s\S]*?<\/script>/g,'');const o=(b.match(/<div\b/g)||[]).length,c=(b.match(/<\/div>/g)||[]).length;console.log('Script blocks:',s.length,'| DIV:',o,'/',c,o===c?'OK':'MISMATCH');"
+node -e "const fs=require('fs');const html=fs.readFileSync('index.html','utf8');const s=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);s.forEach((x,i)=>fs.writeFileSync('_tmp_eod'+i+'.js',x));let b=html.replace(/<style>[\s\S]*?<\/style>/g,'').replace(/<script>[\s\S]*?<\/script>/g,'');const o=(b.match(/<div\b/g)||[]).length,c=(b.match(/<\/div>/g)||[]).length;console.log('Script blocks:',s.length,'| DIV:',o,'/',c,o===c?'OK':'MISMATCH');"
 node --check _tmp_eod0.js && echo "JS OK"
 ```
 Sterge fisierele `_tmp_eod*.js` dupa. **Daca DIV != balansat sau JS pica → opreste-te, raporteaza, NU commita.**

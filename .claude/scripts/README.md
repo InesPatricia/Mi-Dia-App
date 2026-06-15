@@ -1,7 +1,7 @@
 # Actualizare zilnica — automatizare (Windows Task Scheduler)
 
 Ruleaza skill-ul `actualizare-zilnica` in fiecare zi la **21:00**: valideaza
-`mi-dia.html`, sincronizeaza docs/memorie cu fapte confirmate, apoi commit + push.
+`index.html` (oglinda ultimei versiuni vNN), sincronizeaza docs/memorie cu fapte confirmate, apoi commit + push.
 
 ## Fisiere
 - `actualizare-zilnica.cmd` — wrapper-ul care lanseaza Claude headless cu `/actualizare-zilnica` si scrie log in `.claude/logs/`.

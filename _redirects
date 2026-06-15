@@ -1,12 +1,11 @@
 # Cloudflare Pages redirects (Netlify-compatible syntax).
-# Mirrors netlify.toml so the site behaves identically when hosted on
-# Cloudflare Pages. Cloudflare reads this file; it ignores netlify.toml.
-
-# Serve the promoted build (mi-dia.html) at the root WITHOUT changing the
-# URL (200 = rewrite/proxy, not a redirect). This is what makes "/" show the app.
-/              /mi-dia.html   200
+# Cloudflare reads this file; it ignores netlify.toml.
+#
+# The promoted build is index.html, which every static host serves at "/"
+# automatically — so NO root rewrite is needed (and a root rewrite fought
+# Cloudflare's automatic .html clean-URL handling, causing a 308 loop / 522).
 
 # Hide non-promoted builds: old versioned files (/mi-dia-vNN.html) and mockups
-# redirect to the homepage. The hyphen means this does NOT match "/mi-dia.html"
-# (the live app). Best-effort on Cloudflare (a splat is a "dynamic" redirect).
+# redirect to the homepage. The hyphen means this does NOT match index.html.
+# Best-effort on Cloudflare (a splat is a "dynamic" redirect).
 /mi-dia-*      /              301
