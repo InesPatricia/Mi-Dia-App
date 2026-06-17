@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v119.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v125.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v119.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v125.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
@@ -725,7 +725,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Current build **`mi-dia-v119.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Current build **`mi-dia-v125.html`**.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -762,6 +762,46 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 - **v117** — **One-time migration** (`sc_default3_v117` flag in Store): resets a device's persisted shortcut list to the 3 curated defaults once, then never again — fixes installs whose saved 7-item list overrode the v113 default change.
 - **v118** — **In-app start-time memento.** While the app is OPEN, when a timed slot's **start time arrives** → toast ("⏰ E ora pentru: …") + gentle 2-note chime (respects the sound setting) + a rose pulse on the slot (`.memento-flash`). Fires once per slot/day (`mementoFired` keyed by date); **past slots are suppressed on load** (no retroactive alerts). New Settings toggle **"Memento la ora slotului"** (`#mementoToggle`, default ON, persisted as `settings.memento`). i18n RO/ES/EN. **Foreground-only by design** — closed/background notification would need a backend + push (out of scope). This is separate from the existing end-of-slot reminder system (`reminderLeads`, tied to the manual Focus timer), which is untouched.
 - **v119** — **Composer compaction.** `#inTimeWrap` was stretching full-width and pushing Arie/Etichetă to a second row (wasted space); pinned to content width so Oră·Arie·Etichetă fit one row. Tighter chip paddings + section margins. Composer height ~196px → ~160px.
+
+## Changelog (v120 → v125) — Calendar redesign + Journal redesign
+
+- **v120–v121** — groundwork for the Calendar redesign. (Granular per-version notes were on Claude Code
+  on Ines's machine; the web-Claude session that produced this batch did not have them.)
+- **v122–v124** — **Calendar redesign: "lentile" model** Plan / Stare-Lumína / Ritm; azahar popup at the
+  day detail; mood "glow" radials in Sorolla light; cycle Option A; bugfix navigating to Jurnal.
+- **v125** — **JOURNAL REDESIGN** (see the architecture note below) + **date-nav unified** with Home.
+
+### Journal redesign (v125) — photo-led + airy, the app's real identity
+
+Direction: photo-led + airy, on the REAL identity (wine-rose #9E2B4E + gold #C19A46 + olive + soft cream
+cards) + the OliveDetails.png ornament + HeaderImage.png.
+
+- **Header:** there is NO separate journal header anymore. It reuses the global `.hero` (the embedded jpeg
+  moved into the `:root` var `--hero-bg`; `.hero-photo` uses the var). On sub-screens `.hero` collapses to
+  photo + "← Journal" + langbar — so the journal has ONE header (a redundant `jhero` that caused a double
+  header was removed).
+- **Stare = tonal DISCS** (not weather-emoji). `renderMood()` builds discs (JDOT) + a wine ring on the
+  selected one + `#moodWord = t("mood_n"+jMood)`. All wiring preserved: jMood toggle, permPause (emotion
+  wheel on low moods 1–2), autosave, 4F, export, i18n.
+- **Stare = LIGHT on the page:** `applyJWash()` sets `--jwash`/`--jwash2` on `#view-journal` from `JWASH`
+  per mood (page + the writing card warm/cool, .45s transition). Senin → gold, Ploaie → blue-grey.
+- **Writing card** `.jwrite-card` with a fine gold frame (`.jwrite-frame`).
+
+### Date-nav unified (v125) — UX-coherence (6) RESOLVED
+
+Base `.datebar`/`.nav` aligned to Home's compact sizes: day 1.4rem, 38px buttons, smaller TODAY pill;
+`.datebar .day{flex:1;min-width:0}` + `.datebar .nav{flex:none}`. Fixes the clipped `›` arrow on Android
+and unifies the date card across Jurnal + Calendar.
+
+## Backlog (v125 → v126)
+
+- `[x]` **PROMOTE v125:** copy `mi-dia-v125.html` → `index.html` + bump `CACHE` in `sw.js` (done at deploy).
+- `[ ]` **Journal — IN PROGRESS** (approved mockup: `mi-dia-jsol2.html`): drop the separate olive ribbon;
+  put the olives as a **FRAME** in the writing card (cutouts from the right of OliveDetails, chroma-keyed
+  to transparent, small top-right/bottom-right corner accents that FRAME, not crowd); placeholder = the
+  original `ph_journal` text; move "+ reflecție ghidată" + Word/PDF export into a subtle row BELOW the
+  card. → becomes **v126**.
+- `[ ]` **Real Android QA on v125:** mood-wash intensity + olive accents on a real screen.
 
 ## Add flow — CURRENT (v112+ unified composer, supersedes the v23–v47 title-first flow)
 
