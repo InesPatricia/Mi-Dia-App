@@ -27,6 +27,11 @@ Personal use for now (localStorage only). Future: public/subscription version.
 - **Current latest = `mi-dia-v125.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
+- **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
+  June 2026 — keeps VS Code uncluttered). Older `mi-dia-vNN.html` files are **pruned from the working
+  tree but preserved in Git history** — recover any with `git show <commit>:mi-dia-vNN.html`. So Git
+  history (not a pile of files in the folder) is the rollback archive. When promoting a new build,
+  `git rm` the previous `mi-dia-vNN.html` after the new one is committed.
 - The older `index.html` + Python base64-icon-sync workflow is **SUPERSEDED — do not use it.**
 - This spec is the **living doc** (updated in place — not versioned). It is loaded by the harness
   as **`CLAUDE.md`** (the canonical filename). Web-Claude tends to regenerate it as `CLAUDE_v2.md`
