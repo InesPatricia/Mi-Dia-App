@@ -101,7 +101,12 @@ Personal use for now (localStorage only). Future: public/subscription version.
   + **cycle (opt-in)** (`cycle.spec.js` — OFF by default (no Rhythm lens / access), enabling the Settings
   `role="switch"` surfaces the Rhythm lens + "Ritmul meu" access in the Calendar)
   + **profile** (`profile.spec.js` — Profile/Settings segment swap, the name field feeding the greeting,
-  seeded daily intentions surfacing in "recent intentions").
+  seeded daily intentions surfacing in "recent intentions")
+  + **emotion routing + body scan** (`emotion-flows.spec.js` — naming a low-mood emotion (Sadness→Lonely)
+  surfaces the F3 routing chip → opens Respiro; the Body scan player shows its scan stage + tone/voice toggle)
+  + **focus timer + backup roundtrip** (`timer-backup.spec.js` — the Day-header Focus overlay (preset sets
+  the time, close), and a full **export → delete → import** roundtrip that restores the slot from the
+  downloaded backup file via `#importFile.setInputFiles`).
 - The Calendar/Progress suites are **data-driven via `seedStorage`** + the `dayKey()` helper (writes
   `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
 - The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
