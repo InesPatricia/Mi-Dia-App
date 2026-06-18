@@ -1,0 +1,24 @@
+{
+  "name": "mi-dia-app",
+  "version": "1.0.0",
+  "description": "Mi Dia - Mediterranean daily planner PWA (single-file app; this manifest exists only for the dev-only Playwright test harness).",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:watch": "playwright test --headed --workers=1",
+    "test:ui": "playwright test --ui",
+    "test:shard": "playwright test --shard=1/2",
+    "test:merge": "playwright merge-reports --reporter html ./all-blob-reports",
+    "report": "node make-report.js",
+    "test:report": "playwright show-report",
+    "codegen": "playwright codegen http://localhost:5173"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "http-server": "^14.1.1"
+  }
+}
