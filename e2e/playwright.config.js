@@ -24,12 +24,12 @@ module.exports = defineConfig({
   reporter: process.env.CI ? [['blob']] : [['html', { open: 'never' }], ['list']],
   use: {
     baseURL: `http://localhost:${PORT}`,
-    // Lean by default (fast runs): keep evidence only when a test fails.
-    //  - screenshot/video/trace retained on failure for debugging.
-    // To WATCH a run live, use `npm run test:watch` (headed) or `npm run test:ui` (UI mode);
-    // to record video of a passing run on demand, run with `PWVIDEO=1`.
-    screenshot: 'only-on-failure',
-    video: process.env.PWVIDEO ? 'on' : 'retain-on-failure',
+    // CI: capture a screenshot of EVERY test (pass or fail) so the merged HTML report
+    // is fully illustrated. Locally stay lean (screenshot only on failure) for fast runs.
+    // To WATCH a run live: `npm run test:watch` (headed) / `npm run test:ui`; to record
+    // video of a passing run on demand: `PWVIDEO=1`.
+    screenshot: process.env.CI ? 'on' : 'only-on-failure',
+    video: process.env.CI || process.env.PWVIDEO ? 'on' : 'retain-on-failure',
     trace: 'on-first-retry',
     // Optional slow-motion for watching a headed run with the eye: set PWSLOW=350 (ms/action).
     launchOptions: { slowMo: process.env.PWSLOW ? Number(process.env.PWSLOW) : 0 },
