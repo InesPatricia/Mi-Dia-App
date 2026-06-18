@@ -1331,7 +1331,7 @@
         <div class="ro" id="phraseRo"></div>
       </div>
       <div class="hero-section">
-        <button class="hsec-back" id="heroSecBack" data-i18n-title="back_home" title="Acasă" aria-label="Acasă">←</button>
+        <button class="hsec-back" id="heroSecBack" data-i18n-title="back_home" data-i18n-aria="aria_back" title="Acasă" aria-label="Inapoi acasa">←</button>
         <span class="hsec-title" id="heroSecTitle"></span>
       </div>
 
@@ -1382,11 +1382,11 @@
         </svg>
 
         <!-- layer 1: petal shapes (5 petals at 72°; centre = intenția zilei) -->
-        <button class="tab petal" data-v="journal" aria-label="Jurnal"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
-        <button class="tab petal" data-v="calm" aria-label="Respiro"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
-        <button class="tab petal" data-v="cal" aria-label="Calendar"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
-        <button class="tab petal" data-v="stats" aria-label="Progres"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
-        <button class="tab petal" data-v="proj" aria-label="Proiecte"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="journal" data-i18n-aria="tab_journal" aria-label="Jurnal"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="calm" data-i18n-aria="tab_calm" aria-label="Respiro"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="cal" data-i18n-aria="tab_cal" aria-label="Calendar"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="stats" data-i18n-aria="tab_stats" aria-label="Progres"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
+        <button class="tab petal" data-v="proj" data-i18n-aria="tab_proj" aria-label="Proiecte"><svg class="shape" viewBox="0 0 128 149"><use href="#petalPath" fill="url(#petalFill)" stroke="var(--petal-line)" stroke-width="1.2"/></svg></button>
 
         <!-- layer 2: upright icons + labels (positioned by trig, not counter-rotated) -->
         <div class="labels">
@@ -1398,7 +1398,7 @@
         </div>
 
         <!-- centre circle = Intenția zilei (acțiune, nu navigare) -->
-        <button class="flower-center" id="intentionBtn" aria-label="Intenția zilei">
+        <button class="flower-center" id="intentionBtn" data-i18n-aria="intent_q" aria-label="Intenția zilei">
           <span class="seed"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c0-6 2-9 6-11-1 6-3 9-6 11z"/><path d="M12 22c0-6-2-9-6-11 1 6 3 9 6 11z"/><path d="M12 22V8"/></svg></span>
           <span class="k" data-i18n="intent_k">intenție</span>
           <span class="word" id="intentionWord"></span>
@@ -1463,13 +1463,13 @@
           <div class="composer" id="composer">
             <div class="ctop">
               <input type="text" id="inTitle" data-i18n-ph="qa_ph" placeholder="Ce vrei să faci azi?" autocomplete="off">
-              <button class="qa-go" id="addBtn" type="button" data-i18n-title="add" title="Adaugă" aria-label="Adaugă">+</button>
+              <button class="qa-go" id="addBtn" type="button" data-i18n-title="add" data-i18n-aria="aria_addslot" title="Adaugă" aria-label="Adauga activitate">+</button>
             </div>
             <div class="composer-reveal" id="composerReveal">
               <div class="cstrip">
                 <span id="inTimeWrap"></span>
-                <button class="achip" id="areaChip" type="button"><span class="lead"><span class="cpdot" id="areaChipDot"></span></span> <span class="lab" id="areaChipLab">Arie</span></button>
-                <button class="achip" id="tagChip" type="button"><span class="lead"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></span> <span class="lab" id="tagChipLab">Etichete</span></button>
+                <button class="achip" id="areaChip" type="button" data-testid="composer-area"><span class="lead"><span class="cpdot" id="areaChipDot"></span></span> <span class="lab" id="areaChipLab">Arie</span></button>
+                <button class="achip" id="tagChip" type="button" data-testid="composer-tags"><span class="lead"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></span> <span class="lab" id="tagChipLab">Etichete</span></button>
               </div>
               <div class="time-preview" id="timePreview" aria-live="polite"></div>
               <div class="durlbl" data-i18n="lbl_dur">Durată</div>
@@ -1750,24 +1750,24 @@
 
 <!-- ============ BOTTOM BAR ============ -->
 <div class="bottombar">
-  <button class="tab bnav" data-v="day" aria-label="Acasă">
+  <button class="tab bnav" data-v="day" data-i18n-aria="tab_home" aria-label="Acasă">
     <svg viewBox="0 0 24 24"><path d="M12 21c0-5 0-8 3-11M12 21c0-4-1-6-4-8M12 10c0-3 1.4-5 4-6 .6 2.6-.4 5-3 6M12 13c-.6-2.8-2.4-4.4-5-5 0 2.8 1.6 4.6 4 5"/></svg>
     <span class="blbl" data-i18n="tab_home">Acasă</span>
   </button>
-  <button class="bfab" id="addFab" aria-label="Adaugă" aria-expanded="false">
+  <button class="bfab" id="addFab" data-i18n-aria="aria_quickadd" aria-label="Adaugă" aria-expanded="false">
     <span class="fab-circle">
       <svg id="addFabIcon" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
     </span>
     <span class="blbl" data-i18n="add_short">Adaugă</span>
   </button>
-  <button class="tab bnav" data-v="profil" aria-label="Profil">
+  <button class="tab bnav" data-v="profil" data-i18n-aria="tab_profil" aria-label="Profil">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     <span class="blbl" data-i18n="tab_profil">Profil</span>
   </button>
 </div>
 
 <!-- bloom quick-add menu (opens from the + button) -->
-<div class="bloom-menu" id="bloomMenu" aria-hidden="true">
+<div class="bloom-menu" id="bloomMenu" role="dialog" data-i18n-aria="bloom_ask" aria-label="Ce vrei să adaugi?" aria-hidden="true">
   <div class="bloom-scrim" id="bloomScrim"></div>
   <div class="bloom-cluster">
     <div class="bloom-ask" data-i18n="bloom_ask">Ce vrei să adaugi?</div>
@@ -1789,7 +1789,7 @@
 </div>
 
 <!-- daily-intention editor -->
-<div class="intent-modal" id="intentModal" aria-hidden="true">
+<div class="intent-modal" id="intentModal" role="dialog" data-i18n-aria="intent_q" aria-label="Care e intenția ta?" aria-hidden="true">
   <div class="intent-scrim" id="intentScrim"></div>
   <div class="intent-card">
     <div class="intent-h" data-i18n="intent_q">Care e intenția ta?</div>
@@ -1892,6 +1892,9 @@
     tab_calm:{ro:"Respiro",es:"Respiro",en:"Respiro"},
     tab_home:{ro:"Acasă",es:"Inicio",en:"Home"},
     tab_profil:{ro:"Profil",es:"Perfil",en:"Profile"},
+    aria_back:{ro:"Inapoi acasa",es:"Volver al inicio",en:"Back to home"},
+    aria_quickadd:{ro:"Adaugare rapida",es:"Anadir rapido",en:"Quick add"},
+    aria_addslot:{ro:"Adauga activitate",es:"Anadir actividad",en:"Add activity"},
     intent_k:{ro:"intenție",es:"intención",en:"intention"},
     intent_title:{ro:"Intenția zilei",es:"La intención del día",en:"Today's intention"},
     intent_sub:{ro:"Un cuvânt sau o frază care să-ți coloreze ziua.",es:"Una palabra o frase que dé color a tu día.",en:"A word or phrase to color your day."},
@@ -2214,6 +2217,7 @@
     document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.getAttribute("data-i18n")); });
     document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph"))); });
     document.querySelectorAll("[data-i18n-title]").forEach(el=>{ el.setAttribute("title", t(el.getAttribute("data-i18n-title"))); });
+    document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria"))); });
     try{ document.documentElement.lang=lang; }catch(e){}
     try{
       renderChips(); renderCatPick(); renderLegend(); renderSettings(); renderTagManager(); renderAddTag(); renderFilterControls(); buildAddTime(); renderTimer();

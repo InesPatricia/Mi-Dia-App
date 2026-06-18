@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v125.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v127.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v125.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v127.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
@@ -54,6 +54,82 @@ Personal use for now (localStorage only). Future: public/subscription version.
     file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".
     The app HTML itself stays one self-contained file; the manifest is inline (data URI).
   - Bump the `CACHE` constant in `sw.js` on each new build so old caches clear on activate.
+
+**Test harness (dev-only — NOT a single-file violation):**
+- **Playwright e2e tests** are a fully self-contained project in **`e2e/`** (`package.json`,
+  `playwright.config.js`, `node_modules/`, `tests/`). Kept OUT of the repo root on purpose so app
+  code vs test code is visually obvious: anything under `e2e/` = test, everything at root = app/docs.
+  This is a separate dev-only concern; the "no npm/build tooling/backend" rule applies to the APP, not
+  to test tooling. `e2e/node_modules/` and Playwright outputs (`e2e/test-results/`,
+  `e2e/playwright-report/`) are gitignored — only `e2e/package.json`, `e2e/playwright.config.js`, and
+  `e2e/tests/` are committed. The app stays one self-contained HTML file at root (so Cloudflare Pages
+  keeps serving `index.html` + `sw.js` from `/` — the app dir was deliberately NOT moved).
+- Config serves the repo **parent dir (`..`)** over http via `http-server` (so root `index.html` + the
+  service worker behave like production) and runs in a **mobile Chromium** viewport (Pixel 5) because
+  the app is phone-first.
+- Run (from `e2e/`): `cd e2e && npm test` · HTML report: `npm run test:report` · **concise Markdown
+  summary: `npm run report`** (runs the suite, writes `e2e/TEST-REPORT.md` — per-suite + per-test
+  pass/fail, totals, duration; via `make-report.js`, JSON-reporter-to-file so server logs can't corrupt
+  it) · record new flows: `cd e2e && npm run codegen`. Watch live: `npm run test:watch` (headed) /
+  `npm run test:ui`. Shard across CI machines: `--shard=i/n` (see `.github/workflows/e2e.yml`).
+- **Evidence:** config sets `screenshot:'on'`, so every run captures a screenshot of each test's final
+  state (pass or fail) — browsable in the HTML report at `e2e/playwright-report/index.html` (open via
+  `npm run test:report`); raw PNGs land in `e2e/test-results/<test>/test-finished-*.png`. Identical
+  frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
+  video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
+- Current coverage (**20 tests**): **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
+  + **add-flow / composer** (`add-flow.spec.js` — expand-on-typing, fast Enter, duration, native time,
+  area selection; asserts the DOM AND the stored block model via `readBlocks()`)
+  + **journal + mood** (`journal.spec.js` — mood disc selection + word, low-mood permission pause +
+  emotion-wheel drilldown, text/mood autosave surviving a reload, export buttons)
+  + **persistence + i18n** (`persistence-i18n.spec.js` — a created slot survives reload, backup export
+  fires a JSON download, switching to RO re-labels visible text AND the i18n aria-labels)
+  + **slot interactions** (`slot-interactions.spec.js` — done toggle (+persist), two-tap delete,
+  reschedule to Tomorrow, hide-done filter, overlap clustering). Slots are anchored by their user-typed
+  title (`getByText`/`hasText`); named controls use `getByRole` (move buttons, the "hide completed"
+  filter via its label), unlabelled ones are reached structurally within the block.
+  + **shortcuts** (`shortcuts.spec.js` — 3 curated defaults shown, tap pill pre-fills the composer
+  (no commit), per-pill "+" adds an untimed slot instantly, add a new shortcut via the form, edit-mode
+  two-tap delete). Pills anchored by their visible label; the per-pill "+" by its i18n aria-label; the
+  ✎ edit toggle by its stable id `#scEditBtn`.
+  + **calendar** (`calendar.spec.js` — Month/Year toggle, prev/next/Today nav, one cell per day, and
+  seeded blocks/mood driving the Plan ring (`.lring`) + Mood glow (`.glow`) lenses)
+  + **progress** (`progress.spec.js` — range switch, seeded DONE blocks driving the stat tiles
+  (`slots done`/`active days`) + streak + area bars, and the mood↔productivity insight with 3+ journal days)
+  + **respiro** (`respiro.spec.js` — Calm/Wake direction toggle, Breathing/Somatic sub-segment, open +
+  close an exercise player)
+  + **cycle (opt-in)** (`cycle.spec.js` — OFF by default (no Rhythm lens / access), enabling the Settings
+  `role="switch"` surfaces the Rhythm lens + "Ritmul meu" access in the Calendar)
+  + **profile** (`profile.spec.js` — Profile/Settings segment swap, the name field feeding the greeting,
+  seeded daily intentions surfacing in "recent intentions").
+- The Calendar/Progress suites are **data-driven via `seedStorage`** + the `dayKey()` helper (writes
+  `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
+- The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
+  discs use their i18n aria-labels; wheel/pause/slot chips reached structurally within their containers).
+- **Open a11y gap (found while testing, NOT yet fixed):** the slot **done tick** (a `<div>`) and the
+  **time pill** (a `<span>`) have NO accessible name — a screen-reader user can't tell what they do.
+  Instrumenting them like v126 (role="button" + i18n aria-label, set in `blockEl`) would fix the a11y
+  AND let `slot-interactions.spec.js` use `getByRole` instead of `.tick`/`.time` structural locators.
+- **Locator strategy (v126+):** lead with user-facing locators — `getByRole`/`getByText`/`getByLabel`.
+  Nav controls carry **i18n `aria-label`s** (default UI language = EN, so accessible names are the EN
+  i18n values: petals = Journal/Respiro/Calendar/Progress/Projects; bottom bar = Home/Profile;
+  `#addFab` = "Quick add"; `#heroSecBack` = "Back to home"; flower centre = "What's your intention?").
+  Modals expose `role="dialog"` → `getByRole('dialog', {name})`. **State** (active view, menu open) has
+  no semantic locator, so it is asserted on attributes: `body[data-view]`, `aria-expanded`, and the
+  composer's `.active` expand class. The bloom scrim is a structural overlay with no accessible name →
+  reached by id `#bloomScrim`. **`data-testid`** is used ONLY for the composer **area/tag chips**
+  (`composer-area` / `composer-tags`), whose visible label is dynamic state (current selection) so there
+  is no stable accessible name — the canonical Playwright case for `getByTestId`. It is NOT sprinkled
+  elsewhere (nav/modals use roles; the title uses its placeholder; duration chips use their numeric text;
+  the native time input uses its `aria-label="Time"`, scoped to `#composer` since the slot editor reuses
+  the same control).
+- Selector gotchas: the **flower nav lives inside `#view-day`** (only clickable on the Day view — return
+  Home between petals); the legacy `.viewback` pill is hidden by CSS off Day (use the hero back, accessible
+  name "Back to home"). `Store` falls back to `localStorage` in a plain browser, so `e2e/tests/helpers.js`
+  `seedStorage()` can preset state before load.
+- **Honest limit:** headless Chromium ≠ real Android — native time pickers (`<input type=time>`),
+  blur/backdrop-filter, fonts and touch gestures stay MANUAL QA (backlog C/F). Playwright covers
+  logic/DOM/navigation/persistence/i18n.
 
 > **PWA checklist for each new build:** the app HTML must contain (a) `<link rel="manifest" ...>`
 > (inline data URI) and (b) a `<script>` registering `/sw.js`. If a new web-Claude build dropped
@@ -730,7 +806,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Current build **`mi-dia-v125.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126). Current build **`mi-dia-v126.html`**.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -798,15 +874,52 @@ Base `.datebar`/`.nav` aligned to Home's compact sizes: day 1.4rem, 38px buttons
 `.datebar .day{flex:1;min-width:0}` + `.datebar .nav{flex:none}`. Fixes the clipped `›` arrow on Android
 and unifies the date card across Jurnal + Calendar.
 
-## Backlog (v125 → v126)
+## Changelog (v126) — test instrumentation + a11y aria-label fix
+
+- **v126 — `data-i18n-aria` + role on modals (enables semantic Playwright locators; fixes an a11y
+  bug).** Context: the Playwright e2e suite was using CSS/`data-v`/ID selectors because the nav
+  controls' `aria-label`s were **hardcoded Romanian and never tracked the UI language** —
+  `applyI18n()` only handled `data-i18n`/`-ph`/`-title`. That is a real accessibility defect (an EN
+  screen-reader user heard "Jurnal" on a button labelled "Journal"). Fix:
+  - **`applyI18n()` extended** with one additive line: any `[data-i18n-aria]` element gets its
+    `aria-label` set from `t(key)`, so the accessible name now follows EN/ES/RO.
+  - **`data-i18n-aria` applied** to the 5 petals (`tab_journal|tab_calm|tab_cal|tab_stats|tab_proj`),
+    the bottom bar (`tab_home`, `tab_profil`), `#addFab`, `#intentionBtn` (`intent_q`), `#heroSecBack`.
+  - **Two new i18n keys** to keep accessible names UNIQUE (else `getByRole({name})` hits strict-mode
+    collisions): `aria_back` ("Back to home") on `#heroSecBack` (distinct from the bottom-bar "Home")
+    and `aria_quickadd` ("Quick add") on `#addFab`.
+  - **`role="dialog"` + `data-i18n-aria`** added to `#intentModal` (`intent_q`) and `#bloomMenu`
+    (`bloom_ask`) so `getByRole('dialog')` works. Purely additive — NO focus-trap/`aria-modal` added,
+    so popup UX is unchanged; the `aria-hidden` open/close toggle is untouched.
+  - **Zero visual change** (attribute-only edits; div-balance 211/211, `node --check` OK, screenshot
+    identical to v125). The e2e suite was refactored to lead with `getByRole`/`getByText` accordingly.
+
+## Changelog (v127) — composer test instrumentation
+
+- **v127 — composer locators for the add-flow e2e suite (+ commit-button a11y).** Three small,
+  attribute-only edits so the day-tab composer can be driven by first-class Playwright locators:
+  - **`#addBtn` (commit "+")**: added `data-i18n-aria="aria_addslot"` + new key `aria_addslot`
+    ("Add activity") — its accessible name now tracks language (was static RO "Adaugă"), consistent
+    with the v126 a11y fix. `getByRole('button', {name:'Add activity'})`.
+  - **`#areaChip` / `#tagChip`**: added `data-testid="composer-area"` / `"composer-tags"`. These chips'
+    visible label is **dynamic state** (the current area / tag count), so there is no stable accessible
+    name to target — `getByTestId` is the right tool (and we deliberately DON'T override their
+    meaningful dynamic label with a static aria-label). The title (placeholder), duration chips (numeric
+    text), and native time input (existing `aria-label`) already had good user-facing handles — left as-is.
+  - **Zero visual change** (attribute-only; div-balance 211/211, `node --check` OK). New suite:
+    `e2e/tests/add-flow.spec.js` (expand-on-typing-not-focus, fast Enter → untimed slot, duration capture,
+    native time → Timed group, area selection), asserting both the DOM and the persisted block model
+    (`readBlocks()` helper).
+
+## Backlog (v127 → v128)
 
 - `[x]` **PROMOTE v125:** copy `mi-dia-v125.html` → `index.html` + bump `CACHE` in `sw.js` (done at deploy).
 - `[ ]` **Journal — IN PROGRESS** (approved mockup: `mi-dia-jsol2.html`): drop the separate olive ribbon;
   put the olives as a **FRAME** in the writing card (cutouts from the right of OliveDetails, chroma-keyed
   to transparent, small top-right/bottom-right corner accents that FRAME, not crowd); placeholder = the
   original `ph_journal` text; move "+ reflecție ghidată" + Word/PDF export into a subtle row BELOW the
-  card. → becomes **v126**.
-- `[ ]` **Real Android QA on v125:** mood-wash intensity + olive accents on a real screen.
+  card. → becomes **v128** (shifted: v126 = a11y/test instrumentation, v127 = composer test instrumentation).
+- `[ ]` **Real Android QA on v125–v127:** mood-wash intensity + olive accents on a real screen.
 
 ## Add flow — CURRENT (v112+ unified composer, supersedes the v23–v47 title-first flow)
 
