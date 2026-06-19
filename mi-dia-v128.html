@@ -1895,6 +1895,7 @@
     aria_back:{ro:"Inapoi acasa",es:"Volver al inicio",en:"Back to home"},
     aria_quickadd:{ro:"Adaugare rapida",es:"Anadir rapido",en:"Quick add"},
     aria_addslot:{ro:"Adauga activitate",es:"Anadir actividad",en:"Add activity"},
+    aria_done:{ro:"Marcheaza ca facut",es:"Marcar como hecho",en:"Mark as done"},
     intent_k:{ro:"intenție",es:"intención",en:"intention"},
     intent_title:{ro:"Intenția zilei",es:"La intención del día",en:"Today's intention"},
     intent_sub:{ro:"Un cuvânt sau o frază care să-ți coloreze ziua.",es:"Una palabra o frase que dé color a tu día.",en:"A word or phrase to color your day."},
@@ -2864,13 +2865,18 @@
     if(draggable){ const h=document.createElement("span"); h.className="drag"; h.textContent="⠿"; h.title=t("drag_hint"); brow.appendChild(h); }
 
     const tick=document.createElement("div"); tick.className="tick";
+    tick.setAttribute("role","button"); tick.tabIndex=0;
+    tick.setAttribute("aria-label", t("aria_done")); tick.setAttribute("aria-pressed", b.done?"true":"false");
     tick.onclick=()=>{ b.done=!b.done; b.doneAt=b.done?Date.now():0; save(); renderList(); if(b.done) maybeCelebrate(); };
+    tick.onkeydown=(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tick.click(); } };
     brow.appendChild(tick);
 
     // time pill (tap to edit)
     const timeEl=document.createElement("span"); timeEl.className="time"+(b.time?"":" empty");
     timeEl.textContent=blockTimeLabel(b);
     timeEl.title=t("edit_time");
+    timeEl.setAttribute("role","button"); timeEl.tabIndex=0;
+    timeEl.setAttribute("aria-label", (b.time? blockTimeLabel(b)+", " : "")+t("edit_time"));
     if(b.time){ const btime=document.createElement("div"); btime.className="btime"; btime.appendChild(timeEl); el.appendChild(btime); }
     else { brow.appendChild(timeEl); }
 
@@ -2946,6 +2952,7 @@
 
     const toggleEd=()=>{ ed.classList.toggle("show"); };
     timeEl.onclick=toggleEd;
+    timeEl.onkeydown=(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleEd(); } };
     tagdot.onclick=toggleEd;
 
     return el;

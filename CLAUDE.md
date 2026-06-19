@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v127.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v128.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v127.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v128.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
@@ -111,10 +111,10 @@ Personal use for now (localStorage only). Future: public/subscription version.
   `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
 - The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
   discs use their i18n aria-labels; wheel/pause/slot chips reached structurally within their containers).
-- **Open a11y gap (found while testing, NOT yet fixed):** the slot **done tick** (a `<div>`) and the
-  **time pill** (a `<span>`) have NO accessible name — a screen-reader user can't tell what they do.
-  Instrumenting them like v126 (role="button" + i18n aria-label, set in `blockEl`) would fix the a11y
-  AND let `slot-interactions.spec.js` use `getByRole` instead of `.tick`/`.time` structural locators.
+- **A11y gap (found while testing) — FIXED in v128:** the slot **done tick** and **time pill** now have
+  `role="button"` + i18n `aria-label` (+ `aria-pressed` on the tick) + Enter/Space keyboard activation,
+  set in `blockEl`. The done test uses `getByRole('button', {name:'Mark as done'})`; the time pill keeps a
+  `.time` structural locator (its accessible name includes the dynamic time).
 - **Locator strategy (v126+):** lead with user-facing locators — `getByRole`/`getByText`/`getByLabel`.
   Nav controls carry **i18n `aria-label`s** (default UI language = EN, so accessible names are the EN
   i18n values: petals = Journal/Respiro/Calendar/Progress/Projects; bottom bar = Home/Profile;
@@ -811,7 +811,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126). Current build **`mi-dia-v126.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128). Current build **`mi-dia-v128.html`**.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -916,15 +916,28 @@ and unifies the date card across Jurnal + Calendar.
     native time → Timed group, area selection), asserting both the DOM and the persisted block model
     (`readBlocks()` helper).
 
-## Backlog (v127 → v128)
+## Changelog (v128) — slot a11y (done tick + time pill)
+
+- **v128 — keyboard + screen-reader access for the slot tick & time pill.** Both were operable only by
+  mouse/touch and had NO accessible name. In `blockEl`:
+  - **Done tick** (`.tick`, a `<div>`) → `role="button"` + `tabindex=0` + `aria-label` (new key
+    `aria_done` = "Mark as done") + **`aria-pressed`** reflecting `b.done` + an Enter/Space `keydown`
+    handler. Now a proper toggle button for SR/keyboard.
+  - **Time pill** (`.time`, a `<span>` that opens the inline editor) → `role="button"` + `tabindex=0` +
+    `aria-label` = "`<time>`, Tap to edit the time" (keeps the time AND states the action) + Enter/Space.
+  - Attribute/behaviour-only (div-balance 211/211, `node --check` OK). `slot-interactions.spec.js`'s
+    done test upgraded to `getByRole('button', {name:'Mark as done'})` + asserts `aria-pressed`.
+  - **Resolves the "Open a11y gap" backlog item** raised during testing.
+
+## Backlog (v128 → v129)
 
 - `[x]` **PROMOTE v125:** copy `mi-dia-v125.html` → `index.html` + bump `CACHE` in `sw.js` (done at deploy).
 - `[ ]` **Journal — IN PROGRESS** (approved mockup: `mi-dia-jsol2.html`): drop the separate olive ribbon;
   put the olives as a **FRAME** in the writing card (cutouts from the right of OliveDetails, chroma-keyed
   to transparent, small top-right/bottom-right corner accents that FRAME, not crowd); placeholder = the
   original `ph_journal` text; move "+ reflecție ghidată" + Word/PDF export into a subtle row BELOW the
-  card. → becomes **v128** (shifted: v126 = a11y/test instrumentation, v127 = composer test instrumentation).
-- `[ ]` **Real Android QA on v125–v127:** mood-wash intensity + olive accents on a real screen.
+  card. → becomes **v129** (shifted: v126/v127 = test instrumentation, v128 = slot a11y).
+- `[ ]` **Real Android QA on v125–v128:** mood-wash intensity + olive accents on a real screen.
 
 ## Add flow — CURRENT (v112+ unified composer, supersedes the v23–v47 title-first flow)
 
