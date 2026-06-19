@@ -33,14 +33,18 @@ test.describe('slot interactions', () => {
     await addSlot(page, 'Read book');
 
     const b = block(page, 'Read book');
-    await b.locator('.tick').click();
+    // v128: the tick is now a real role="button" with an i18n aria-label + aria-pressed
+    const tick = b.getByRole('button', { name: 'Mark as done' });
+    await tick.click();
     await expect(b).toHaveClass(/done/);
+    await expect(tick).toHaveAttribute('aria-pressed', 'true');
 
     expect((await readBlocks(page)).find((x) => x.title === 'Read book').done).toBe(true);
 
     // toggling again clears it
-    await b.locator('.tick').click();
+    await tick.click();
     await expect(b).not.toHaveClass(/done/);
+    await expect(tick).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('two-tap delete removes a slot', async ({ page }) => {
@@ -70,7 +74,7 @@ test.describe('slot interactions', () => {
     await addSlot(page, 'Keep me');
     await addSlot(page, 'Done one');
 
-    await block(page, 'Done one').locator('.tick').click();
+    await block(page, 'Done one').getByRole('button', { name: 'Mark as done' }).click();
     await expect(block(page, 'Done one')).toHaveClass(/done/);
 
     await page.getByRole('button', { name: 'Filters', exact: true }).click();
