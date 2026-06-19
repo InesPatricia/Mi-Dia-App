@@ -16,8 +16,20 @@ defaults:
     working-directory: e2e
 
 jobs:
+  # Fast gate: the single-file build is structurally sound (div balance + JS parses).
+  # No browsers, no deps — runs in seconds before the heavier test shards.
+  validate:
+    name: validate build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 18 }
+      - run: node validate-build.js
+
   test:
     name: test (shard ${{ matrix.shard }}/2)
+    needs: validate
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -33,7 +45,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run shard ${{ matrix.shard }} of 2
-        run: npx playwright test --shard=${{ matrix.shard }}/2
+        # skip @visual: snapshot baselines are OS-specific (generated on the dev machine)
+        run: npx playwright test --shard=${{ matrix.shard }}/2 --grep-invert "@visual"
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

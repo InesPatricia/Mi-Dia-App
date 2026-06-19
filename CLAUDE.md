@@ -106,7 +106,17 @@ Personal use for now (localStorage only). Future: public/subscription version.
   surfaces the F3 routing chip → opens Respiro; the Body scan player shows its scan stage + tone/voice toggle)
   + **focus timer + backup roundtrip** (`timer-backup.spec.js` — the Day-header Focus overlay (preset sets
   the time, close), and a full **export → delete → import** roundtrip that restores the slot from the
-  downloaded backup file via `#importFile.setInputFiles`).
+  downloaded backup file via `#importFile.setInputFiles`)
+  + **accessibility** (`a11y.spec.js` — axe-core scan of all 6 views on a CURATED rule set: accessible
+  names/roles/labels/valid-ARIA; guards the v126/v128 work. Color-contrast etc. intentionally out of scope)
+  + **visual regression** (`visual.spec.js`, tagged `@visual` — `toHaveScreenshot()` of the design-locked
+  flower nav + bottom bar; NOT full screens, to dodge the daily date/phrase. Baselines are OS-specific
+  (`*-win32.png`, dev machine) so CI skips `@visual` via `--grep-invert`; run locally with `npm run test:visual`).
+- **Automation / quality gates:** `npm run validate` (= `validate-build.js`: div-balance + `node --check`
+  on the build — the CLAUDE.md manual rule, now scriptable + a fast CI `validate` job that gates the test
+  shards). **Test-independence (anti-bias):** `e2e/SPEC-TEMPLATE.md` drives a 2-isolated-agent flow — an
+  *implementer* (app code) and a *tester* (black-box Playwright from the spec only) never see each other's
+  code; they meet at the written contract (acceptance criteria + stable selector handles).
 - The Calendar/Progress suites are **data-driven via `seedStorage`** + the `dayKey()` helper (writes
   `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
 - The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
