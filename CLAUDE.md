@@ -77,7 +77,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
   `npm run test:report`); raw PNGs land in `e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
-- Current coverage (**20 tests**): **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
+- Current coverage (**64 tests across 17 specs**): **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
   + **add-flow / composer** (`add-flow.spec.js` — expand-on-typing, fast Enter, duration, native time,
   area selection; asserts the DOM AND the stored block model via `readBlocks()`)
   + **journal + mood** (`journal.spec.js` — mood disc selection + word, low-mood permission pause +
@@ -102,6 +102,8 @@ Personal use for now (localStorage only). Future: public/subscription version.
   `role="switch"` surfaces the Rhythm lens + "Ritmul meu" access in the Calendar)
   + **profile** (`profile.spec.js` — Profile/Settings segment swap, the name field feeding the greeting,
   seeded daily intentions surfacing in "recent intentions")
+  + **projects** (`projects.spec.js` — empty-state idea chips, creating a project (idea chip + custom form),
+  add item + complete it (`.itick`), search finds an item, Lists/Search/Completed segment, two-tap delete)
   + **emotion routing + body scan** (`emotion-flows.spec.js` — naming a low-mood emotion (Sadness→Lonely)
   surfaces the F3 routing chip → opens Respiro; the Body scan player shows its scan stage + tone/voice toggle)
   + **focus timer + backup roundtrip** (`timer-backup.spec.js` — the Day-header Focus overlay (preset sets
