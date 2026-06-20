@@ -15,13 +15,16 @@ test.describe('profile', () => {
     await gotoApp(page);
     await openProfile(page);
 
+    // default segment = the overview panel
     await expect(page.locator('#prof-overview')).toBeVisible();
     await expect(page.locator('#prof-settings')).toBeHidden();
 
+    // selecting Settings swaps to the settings panel
     await seg(page, 'Settings').click();
     await expect(page.locator('#prof-settings')).toBeVisible();
     await expect(page.locator('#prof-overview')).toBeHidden();
 
+    // selecting Profile swaps back to the overview
     await seg(page, 'Profile').click();
     await expect(page.locator('#prof-overview')).toBeVisible();
   });
@@ -30,9 +33,11 @@ test.describe('profile', () => {
     await gotoApp(page);
     await openProfile(page);
 
+    // type a name in the Settings name field
     await seg(page, 'Settings').click();
     await page.getByPlaceholder('e.g. Ines').fill('Ines');
 
+    // back on the overview the greeting includes the name
     await seg(page, 'Profile').click();
     await expect(page.locator('#pfHello')).toContainText('Ines');
   });
@@ -45,6 +50,7 @@ test.describe('profile', () => {
     await gotoApp(page);
     await openProfile(page);
 
+    // both seeded intentions surface in the "recent intentions" list
     const recent = page.locator('#pfRecent');
     await expect(recent).toContainText('Be present');
     await expect(recent).toContainText('Move gently');

@@ -30,8 +30,11 @@ test.describe('accessibility (axe, curated rules)', () => {
   for (const v of VIEWS) {
     test(`${v.name} view has no name/role/label violations`, async ({ page }) => {
       await gotoApp(page);
+      // navigate to the view under test
       await v.open(page);
+      // run axe with the curated rule set
       const { violations } = await scan(page);
+      // the view must report zero name/role/label violations
       expect(violations, fmt(violations)).toEqual([]);
     });
   }

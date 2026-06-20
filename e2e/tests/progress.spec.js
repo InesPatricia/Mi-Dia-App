@@ -18,6 +18,7 @@ test.describe('progress', () => {
     await gotoApp(page);
     await openProgress(page);
 
+    // selecting the "All" range marks it active and de-selects the others
     const all = page.getByRole('button', { name: 'All', exact: true });
     await all.click();
     await expect(all).toHaveClass(/sel/);
@@ -31,6 +32,7 @@ test.describe('progress', () => {
     await gotoApp(page);
     await openProgress(page);
 
+    // the tiles count the 2 done blocks across 1 active day
     const cards = page.locator('#statCards');
     await expect(cards.locator('.scard', { hasText: 'slots done' }).locator('.big')).toHaveText('2');
     await expect(cards.locator('.scard', { hasText: 'active days' }).locator('.big')).toHaveText('1');
@@ -52,8 +54,10 @@ test.describe('progress', () => {
     });
     await gotoApp(page);
     await openProgress(page);
+    // widen to the "All" range so the 3 seeded journal days are included
     await page.getByRole('button', { name: 'All', exact: true }).click();
 
+    // the mood↔productivity panel renders an insight + per-mood bars
     await expect(page.locator('#moodInsight')).not.toBeEmpty();
     await expect(page.locator('#moodBars').locator('.msg')).not.toHaveCount(0);
   });

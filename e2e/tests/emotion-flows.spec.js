@@ -6,6 +6,7 @@ const { gotoApp } = require('./helpers');
 test.describe('emotion routing + body scan', () => {
   test('naming a low-mood emotion routes to Respiro (F3)', async ({ page }) => {
     await gotoApp(page);
+    // open the Journal view
     await page.getByRole('button', { name: 'Journal', exact: true }).click();
 
     // low mood -> permission pause + emotion wheel
@@ -23,11 +24,14 @@ test.describe('emotion routing + body scan', () => {
 
   test('the Body scan opens its scan stage with a tone/voice toggle', async ({ page }) => {
     await gotoApp(page);
+    // open Respiro and the Somatic sub-segment
     await page.getByRole('button', { name: 'Respiro', exact: true }).click();
     await page.getByRole('button', { name: 'Somatic / vagus nerve', exact: true }).click();
 
+    // open the Body scan exercise
     await page.locator('#calmGrid .calmcard', { hasText: 'Body scan' }).click();
 
+    // the player opens on the somatic + scan stage
     const player = page.locator('#calmPlayer');
     await expect(player).toHaveClass(/show/);
     await expect(page.locator('#cpSomatic')).toBeVisible();

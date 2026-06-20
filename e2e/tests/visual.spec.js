@@ -12,11 +12,13 @@ const { gotoApp } = require('./helpers');
 test.describe('visual regression @visual', () => {
   test('flower navigation looks unchanged', async ({ page }) => {
     await gotoApp(page);
+    // the radial flower navigation must match its locked baseline
     await expect(page.locator('.flower')).toHaveScreenshot('flower-nav.png');
   });
 
   test('bottom bar looks unchanged', async ({ page }) => {
     await gotoApp(page);
+    // the fixed bottom bar must match its locked baseline
     await expect(page.locator('.bottombar')).toHaveScreenshot('bottom-bar.png');
   });
 });
