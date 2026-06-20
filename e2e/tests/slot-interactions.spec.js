@@ -39,6 +39,7 @@ test.describe('slot interactions', () => {
     await expect(b).toHaveClass(/done/);
     await expect(tick).toHaveAttribute('aria-pressed', 'true');
 
+    // the done state is persisted to the model
     expect((await readBlocks(page)).find((x) => x.title === 'Read book').done).toBe(true);
 
     // toggling again clears it
@@ -55,6 +56,7 @@ test.describe('slot interactions', () => {
     await del.click(); // first tap arms ("✕ sigur?")
     await del.click(); // second tap confirms
 
+    // the slot is removed from the Day list
     await expect(page.locator('#list').getByText('Temp task')).toHaveCount(0);
   });
 
@@ -66,6 +68,7 @@ test.describe('slot interactions', () => {
     await b.locator('.time').click(); // open the inline editor
     await b.getByRole('button', { name: 'Tomorrow', exact: true }).click();
 
+    // moved to tomorrow -> no longer on today's list
     await expect(page.locator('#list').getByText('Move me')).toHaveCount(0);
   });
 
@@ -74,12 +77,15 @@ test.describe('slot interactions', () => {
     await addSlot(page, 'Keep me');
     await addSlot(page, 'Done one');
 
+    // mark one of the two slots done
     await block(page, 'Done one').getByRole('button', { name: 'Mark as done' }).click();
     await expect(block(page, 'Done one')).toHaveClass(/done/);
 
+    // enable the "hide completed" filter
     await page.getByRole('button', { name: 'Filters', exact: true }).click();
     await page.getByLabel('hide completed').check();
 
+    // the done slot is hidden, the open one stays
     await expect(page.locator('#list').getByText('Done one')).toHaveCount(0);
     await expect(page.locator('#list').getByText('Keep me')).toBeVisible();
   });
@@ -89,6 +95,7 @@ test.describe('slot interactions', () => {
     await addSlot(page, 'Sync A', { time: '10:00', dur: 60 }); // 10:00–11:00
     await addSlot(page, 'Sync B', { time: '10:30', dur: 60 }); // 10:30–11:30 (overlaps)
 
+    // the two overlapping slots form a single side-by-side cluster
     const cluster = page.locator('.cluster');
     await expect(cluster).toHaveCount(1);
     await expect(cluster.locator('.block')).toHaveCount(2);

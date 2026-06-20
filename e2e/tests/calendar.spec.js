@@ -19,11 +19,14 @@ test.describe('calendar', () => {
     await gotoApp(page);
     await openCalendar(page);
 
+    // default = the Month panel
     await expect(page.locator('#cal-month')).toBeVisible();
+    // selecting Year swaps to the Year panel
     await page.getByRole('button', { name: 'Year', exact: true }).click();
     await expect(page.locator('#cal-year')).toBeVisible();
     await expect(page.locator('#cal-month')).toBeHidden();
 
+    // selecting Month swaps back
     await page.getByRole('button', { name: 'Month', exact: true }).click();
     await expect(page.locator('#cal-month')).toBeVisible();
   });
@@ -32,11 +35,14 @@ test.describe('calendar', () => {
     await gotoApp(page);
     await openCalendar(page);
 
+    // capture the current month title, then go to the previous month
     const title = page.locator('#calTitle');
     const current = await title.textContent();
     await page.locator('#calPrev').click();
+    // the title changed (moved off the current month)
     await expect(title).not.toHaveText(current);
 
+    // Today returns to the current month
     await page.locator('#calToday').click();
     await expect(title).toHaveText(current);
   });
@@ -44,6 +50,7 @@ test.describe('calendar', () => {
   test('the month grid renders one cell per day of the month', async ({ page }) => {
     await gotoApp(page);
     await openCalendar(page);
+    // one non-empty day cell per day of the current month
     await expect(page.locator('#calGrid .cell.lens:not(.empty)')).toHaveCount(daysInThisMonth());
   });
 

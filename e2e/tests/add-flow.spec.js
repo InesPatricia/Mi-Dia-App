@@ -46,6 +46,7 @@ test.describe('add flow (composer)', () => {
     await expect(title).toHaveValue('');
     await expect(page.locator('#composer')).not.toHaveClass(/active/);
 
+    // persisted as an untimed block
     const blocks = await readBlocks(page);
     expect(blocks.map((b) => b.title)).toContain('Call mom');
     expect(blocks.find((b) => b.title === 'Call mom').time).toBe('');
@@ -55,12 +56,15 @@ test.describe('add flow (composer)', () => {
     await gotoApp(page);
     await page.getByPlaceholder(PH_TITLE).fill('Workout');
 
+    // selecting the 45-min duration chip marks it selected
     const dur45 = page.getByRole('button', { name: '45', exact: true });
     await dur45.click();
     await expect(dur45).toHaveClass(/sel/);
 
+    // commit via the "+" button
     await page.getByRole('button', { name: COMMIT, exact: true }).click();
 
+    // the slot is listed and the chosen duration persisted
     await expect(page.locator('#list').getByText('Workout')).toBeVisible();
     const block = (await readBlocks(page)).find((b) => b.title === 'Workout');
     expect(block.dur).toBe(45);
@@ -79,6 +83,7 @@ test.describe('add flow (composer)', () => {
 
     await page.getByRole('button', { name: COMMIT, exact: true }).click();
 
+    // the timed slot lands in the "Timed" group with the chosen time persisted
     await expect(page.getByText('Timed', { exact: true })).toBeVisible();
     await expect(page.locator('#list').getByText('Meeting')).toBeVisible();
     const block = (await readBlocks(page)).find((b) => b.title === 'Meeting');
@@ -98,6 +103,7 @@ test.describe('add flow (composer)', () => {
 
     await page.getByRole('button', { name: COMMIT, exact: true }).click();
 
+    // the slot is listed and the chosen area is persisted on it
     await expect(page.locator('#list').getByText('Coaching call')).toBeVisible();
     const block = (await readBlocks(page)).find((b) => b.title === 'Coaching call');
     expect(block.cat).toBe('relatii');

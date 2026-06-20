@@ -20,9 +20,11 @@ test.describe('journal + mood', () => {
     await gotoApp(page);
     await openJournal(page);
 
+    // pick the "Clear" mood disc
     const mood = page.locator('#mood');
     await mood.getByRole('button', { name: 'Clear', exact: true }).click();
 
+    // the mood word + selected-disc state both reflect the choice
     await expect(page.locator('#moodWord')).toHaveText('Clear');
     await expect(mood.getByRole('button', { name: 'Clear', exact: true })).toHaveClass(/sel/);
     // "Clear" (mood 5) is not a low mood -> the permission pause stays hidden
@@ -33,8 +35,10 @@ test.describe('journal + mood', () => {
     await gotoApp(page);
     await openJournal(page);
 
+    // pick a low mood ("Rainy")
     await page.locator('#mood').getByRole('button', { name: 'Rainy', exact: true }).click();
 
+    // the permission pause appears with a "one breath" link
     const pause = page.locator('#permPause');
     await expect(pause).toBeVisible();
     await expect(page.getByRole('button', { name: /breath|respira/i })).toBeVisible();
@@ -53,6 +57,7 @@ test.describe('journal + mood', () => {
     await gotoApp(page);
     await openJournal(page);
 
+    // set a mood + write some text
     await page.locator('#mood').getByRole('button', { name: 'Fair', exact: true }).click();
     await page.getByPlaceholder(PH_JOURNAL).fill('Reflection entry 123');
 
@@ -62,6 +67,7 @@ test.describe('journal + mood', () => {
     await page.waitForFunction(() => document.body.hasAttribute('data-view'));
     await openJournal(page);
 
+    // text + selected mood are restored from storage
     await expect(page.getByPlaceholder(PH_JOURNAL)).toHaveValue('Reflection entry 123');
     await expect(page.locator('#mood').getByRole('button', { name: 'Fair', exact: true })).toHaveClass(/sel/);
   });
@@ -69,6 +75,7 @@ test.describe('journal + mood', () => {
   test('export buttons are available', async ({ page }) => {
     await gotoApp(page);
     await openJournal(page);
+    // both export buttons are present
     // the buttons carry an emoji prefix ("📄 Word") -> substring match, not exact
     await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();

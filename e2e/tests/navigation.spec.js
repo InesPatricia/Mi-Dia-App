@@ -21,11 +21,13 @@ const PETALS = [
 test.describe('navigation', () => {
   test('each flower petal switches to its view', async ({ page }) => {
     await gotoApp(page);
-    // The flower lives inside #view-day, so it is only visible on the Day view.
-    // Return Home (bottom bar) between petals to reach the next one.
+    // The flower lives inside #view-day, so it is only visible on the Day view —
+    // return Home (bottom bar) between petals to reach the next one.
     for (const { name, v } of PETALS) {
+      // Tapping a petal should switch to its view
       await page.getByRole('button', { name, exact: true }).click();
       await expect(page.locator('body')).toHaveAttribute('data-view', v);
+      // Tapping Home should return to the Day view
       await page.getByRole('button', { name: 'Home', exact: true }).click();
       await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
     }
@@ -33,20 +35,22 @@ test.describe('navigation', () => {
 
   test('bottom bar routes Home and Profile', async ({ page }) => {
     await gotoApp(page);
+    // Tapping Profile should open the Profile view
     await page.getByRole('button', { name: 'Profile', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'profil');
 
+    // Tapping Home should return to the Day view
     await page.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
   });
 
   test('hero back arrow returns to the Day view from a secondary view', async ({ page }) => {
     await gotoApp(page);
+    // Open a secondary view (Journal)
     await page.getByRole('button', { name: 'Journal', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'journal');
 
-    // On secondary views the back affordance has its own accessible name (distinct from
-    // the bottom-bar "Home", so getByRole stays unambiguous).
+    // The hero back arrow (distinct name from the bottom-bar "Home") should go back to Day
     await page.getByRole('button', { name: 'Back to home', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
   });
@@ -56,12 +60,14 @@ test.describe('navigation', () => {
     const fab = page.getByRole('button', { name: 'Quick add', exact: true });
     const bloom = page.getByRole('dialog', { name: /add/i });
 
+    // Should start collapsed
     await expect(fab).toHaveAttribute('aria-expanded', 'false');
+    // Tapping + should open the bloom menu
     await fab.click();
     await expect(fab).toHaveAttribute('aria-expanded', 'true');
     await expect(bloom).toBeVisible();
 
-    // close via the scrim (structural overlay, no accessible name)
+    // Tapping the scrim should close it again
     await page.locator('#bloomScrim').click();
     await expect(fab).toHaveAttribute('aria-expanded', 'false');
     await expect(bloom).toBeHidden();
@@ -70,8 +76,10 @@ test.describe('navigation', () => {
   test('the flower centre opens the daily-intention modal', async ({ page }) => {
     await gotoApp(page);
     const modal = page.getByRole('dialog', { name: /intention/i });
+    // Should start hidden
     await expect(modal).toBeHidden();
 
+    // Tapping the flower centre should open the intention dialog with its text field
     await page.getByRole('button', { name: /intention/i }).click();
     await expect(modal).toBeVisible();
     await expect(modal.getByRole('textbox')).toBeVisible();

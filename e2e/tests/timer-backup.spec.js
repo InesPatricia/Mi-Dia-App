@@ -9,15 +9,18 @@ test.describe('focus timer', () => {
   test('the Focus button opens the timer overlay; a preset sets the time; it closes', async ({ page }) => {
     await gotoApp(page);
 
+    // the Focus button opens the timer overlay at the default time
     await page.locator('#focusBtn').click();
     const overlay = page.locator('#focusOverlay');
     await expect(overlay).toHaveClass(/show/);
     await expect(page.locator('#tTime')).toHaveText('25:00'); // default
 
+    // tapping the 45-minute preset updates the displayed time
     // presets are [15, 25, 45, 60] -> index 2 = 45
     await page.locator('#tPresets button').nth(2).click();
     await expect(page.locator('#tTime')).toHaveText('45:00');
 
+    // closing the overlay hides it again
     await page.locator('#focusClose').click();
     await expect(overlay).not.toHaveClass(/show/);
   });

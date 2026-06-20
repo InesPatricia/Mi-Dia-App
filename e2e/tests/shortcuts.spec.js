@@ -16,6 +16,7 @@ const pill = (page, label) => page.locator('.scpill', { hasText: label });
 test.describe('shortcuts', () => {
   test('the 3 curated defaults are shown', async ({ page }) => {
     await gotoApp(page);
+    // each of the 3 curated default shortcuts is shown
     for (const name of ['Coaching session', '4F reflection', 'Movement / walk']) {
       await expect(chips(page).getByRole('button', { name, exact: true })).toBeVisible();
     }
@@ -43,13 +44,16 @@ test.describe('shortcuts', () => {
 
   test('adding a new shortcut makes it appear in the grid', async ({ page }) => {
     await gotoApp(page);
+    // open the add-shortcut inline editor
     await chips(page).getByRole('button', { name: /Add a shortcut/ }).click();
 
+    // fill the name and submit
     const form = page.locator('#scForm');
     await expect(form).toBeVisible();
     await page.getByPlaceholder('Shortcut name…').fill('Morning pages');
     await form.getByRole('button', { name: 'Add', exact: true }).click();
 
+    // the new shortcut appears in the grid
     await expect(chips(page).getByRole('button', { name: 'Morning pages', exact: true })).toBeVisible();
   });
 
@@ -57,10 +61,12 @@ test.describe('shortcuts', () => {
     await gotoApp(page);
     await page.locator('#scEditBtn').click(); // enter edit mode -> pills show ✕
 
+    // two-tap the pill's ✕ to delete it
     const x = pill(page, 'Movement / walk').locator('.scp-x');
     await x.click(); // arms
     await x.click(); // confirms
 
+    // the deleted shortcut is gone from the grid
     await expect(chips(page).getByRole('button', { name: 'Movement / walk', exact: true })).toHaveCount(0);
   });
 });
