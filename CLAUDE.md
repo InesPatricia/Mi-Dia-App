@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v129.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v130.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -823,7 +823,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129). Current build **`mi-dia-v129.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).**
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130). Current build **`mi-dia-v130.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).**
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -958,6 +958,48 @@ and unifies the date card across Jurnal + Calendar.
   - **Lesson (for future asset work):** fabricating/compositing botanical art by hand or chroma-keying
     low-contrast assets (e.g. `olive4` — pale leaves blended with the checkerboard) is unreliable; a
     clean, high-contrast transparent source + CSS placement is the dependable path.
+
+## Changelog (v130) — Journal olive sprig swapped for the tall draping branch
+
+- **v130 — tall olive vine draping the full right edge of the writing card** (replaces the small v129
+  corner sprig). Ines supplied `TheOliveTall.png` (a long hanging watercolor olive branch, already on a
+  transparent bg, 1024×1536). Process: the real branch content was a narrow centered column
+  (bbox X 368..608, Y 0..1432, lots of transparent padding), so it was **cropped to its bounding box +
+  downscaled to 150×794** (base64 ~168KB — essentially the same weight as the old corner sprig's ~182KB,
+  so the file did NOT grow: 633KB → 622KB) and embedded as the new `:root` var **`--olive-tall`** (the
+  old `--olive-corner` var + sprig were removed).
+  - `.jwrite-card::after`: `top:0; right:2px; height:100%; aspect-ratio:150/794;
+    background:var(--olive-tall) top right/contain no-repeat; opacity:.82` — the branch **drapes the full
+    card height** from the top-right corner and **scales with the card** as it grows with text. **Variant A**
+    of a 4-option mockup (`mi-dia-jurnal-olive-tall-mockups.html`: A drape / B side gutter / C short top /
+    D faint watermark); Ines chose **A at 100% height, gutter 62px, no dedicated right band**.
+  - `.jtext` gutter `padding-right` 92px → **62px** so text/placeholder never touch the leaves.
+  - `.jfoot` got **`z-index:2`** (above the branch `z-index:1`) so the word-count + "Saved ✓" stay legible
+    where the branch tip reaches the bottom (matters in ES "Guardado ✓", which is longer).
+  - **Bug caught during integration (documented honestly):** the first PowerShell splice of the new base64
+    var dropped the trailing `;`, so the var value swallowed the next declaration and made the `background`
+    shorthand invalid → `background-image:none` (branch invisible in-app though it rendered in the static
+    mockup). Re-spliced with the `;`; computed `::after` background then resolved to the data URI.
+  - Validated (div 211/211, `node --check` OK on both script blocks) + rendered the real Journal view
+    (empty placeholder + a 37-word typed state) — branch full-height, no text/footer overlap. Headless
+    Chromium — re-confirm the olive tone + finesse on real Android.
+  - **Follow-ups in the same v130 session (Ines feedback):**
+    1. The stem poked above the gold frame's top line → looked like a cross. First aligned the vine to the
+       frame (top:9px / height:calc(100% − 18px)); then Ines asked to **remove the gold frame entirely**
+       (`.jwrite-frame` div + CSS) because the journal page felt **too segmented**. Vine restored to full
+       card height (top:0 / height:100%). Div balance 211 → **210** (one less div).
+    2. **Journal de-segmentation — "one sheet" (mockup A of 3: A one-sheet / B continuous column / C
+       writing-first; mockups in `mi-dia-jurnal-fluid-mockups.html`).** Root cause: the journal was a big
+       `.panel` box wrapping FOUR more bordered boxes (event input, writing card, dashed prompt, dashed 4F
+       button) + export buttons = box-in-box clutter. Fix = a CSS block **scoped to `#view-journal`** (so
+       shared `.panel`/`.jevent`/`.exp-*`/`.j4f-btn` are untouched in other views) that dissolves the inner
+       chrome: outer `.panel` → transparent (no border/shadow/bg, `padding:4px 0 10px` — the `#view-journal`
+       `.view` already gives 18px side padding, so content aligns with the date bar); `.jevent` → a quiet
+       bottom-hairline underline; `.jprompt.jolive` → a plain centered italic line (dashed box gone), shuffle
+       a borderless ghost; `.j4f-btn` → a centered underlined text-link (dashed lavender box gone); `.exp-btn`
+       → underlined text links. **Only the writing card stays an elevated surface.** Behaviour/IDs unchanged
+       (autosave, mood/permPause, 4F, export, i18n). Validated (div 210/210, `node --check` OK); rendered the
+       full Journal view (empty + typed) — one fluid warm page.
 
 ## Backlog (v129 → v130)
 
