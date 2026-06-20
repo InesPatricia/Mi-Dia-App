@@ -823,7 +823,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128). Current build **`mi-dia-v128.html`**.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129). Current build **`mi-dia-v129.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).**
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
