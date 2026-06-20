@@ -10,11 +10,14 @@ test.describe('persistence', () => {
   test('a created slot survives a page reload', async ({ page }) => {
     await gotoApp(page);
 
+    // create a slot via the fast path (type a title + Enter)
     const title = page.getByPlaceholder(PH_EN);
     await title.fill('Persisted task');
     await title.press('Enter');
+    // the new slot is on the Day list
     await expect(page.locator('#list').getByText('Persisted task')).toBeVisible();
 
+    // reload the page (forces a fresh render from localStorage)
     await page.reload();
     await page.waitForFunction(() => document.body.hasAttribute('data-view'));
 
@@ -25,13 +28,16 @@ test.describe('persistence', () => {
   test('the backup export produces a JSON download', async ({ page }) => {
     await gotoApp(page);
 
+    // open Profile -> Settings where the backup controls live
     await page.getByRole('button', { name: 'Profile', exact: true }).click();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
 
+    // tapping Export should trigger a file download
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       page.getByRole('button', { name: /export/i }).click(),
     ]);
+    // the download is a timestamped backup JSON
     expect(download.suggestedFilename()).toMatch(/^mi-dia-backup-.*\.json$/);
   });
 });
@@ -44,6 +50,7 @@ test.describe('i18n', () => {
     await expect(page.getByRole('button', { name: 'Journal', exact: true })).toBeVisible();
     await expect(page.getByPlaceholder(PH_EN)).toBeVisible();
 
+    // switch the UI language to Romanian
     await page.getByRole('button', { name: 'RO', exact: true }).click();
 
     // visible text + the petal's aria-label both follow the language (v126 a11y fix)

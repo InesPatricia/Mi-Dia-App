@@ -21,7 +21,7 @@ test.describe('cycle (opt-in)', () => {
     await expect(page.locator('#calLensWrap').getByRole('button', { name: 'Rhythm', exact: true })).toHaveCount(0);
     await expect(page.locator('#cycleSetupBtn')).toBeHidden();
 
-    // the Settings switch is off
+    // and the Settings opt-in switch is off
     await openSettings(page);
     await expect(page.getByRole('switch')).not.toBeChecked();
   });
@@ -30,6 +30,7 @@ test.describe('cycle (opt-in)', () => {
     await gotoApp(page);
     await openSettings(page);
 
+    // toggle the opt-in switch on
     const sw = page.getByRole('switch');
     await sw.click();
     await expect(sw).toBeChecked();
@@ -38,6 +39,7 @@ test.describe('cycle (opt-in)', () => {
     await page.getByRole('button', { name: 'Home', exact: true }).click();
     await openCalendar(page);
 
+    // the Rhythm lens now exists; selecting it reveals the "Ritmul meu" access
     const rhythm = page.locator('#calLensWrap').getByRole('button', { name: 'Rhythm', exact: true });
     await expect(rhythm).toBeVisible();
     await rhythm.click();
