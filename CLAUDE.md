@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v128.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v129.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v128.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v129.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
@@ -939,15 +939,30 @@ and unifies the date card across Jurnal + Calendar.
     done test upgraded to `getByRole('button', {name:'Mark as done'})` + asserts `aria-pressed`.
   - **Resolves the "Open a11y gap" backlog item** raised during testing.
 
-## Backlog (v128 → v129)
+## Changelog (v129) — Journal olive corner accent
+
+- **v129 — small watercolor olive sprig in the writing-card top-right corner.** After an extensive
+  design exploration (several source assets tried + a long chroma-key/composite iteration that DIDN'T
+  reach the bar — documented honestly), Ines sourced a watercolor olive sprig (`olive2.jpeg`, white/
+  checkerboard bg). It was **chroma-keyed cream/checkerboard→transparent in a browser canvas** and
+  embedded as a `:root` CSS var `--olive-corner` (the old `--olive-frame` jpeg var was removed).
+  - `.jwrite-card`: `overflow:hidden` + a `::after` painting `--olive-corner` `right top/contain` in the
+    **top-right corner**, `opacity:.72`, delicate. `.jtext` gets `padding-right:92px` so text/placeholder
+    **never overlap** the sprig (the hard requirement Ines repeated).
+  - Prompt restyled: `.jprompt.jolive` dropped its olive-image background → a subtle dashed cream box;
+    "+ reflecție ghidată" + shuffle + Word/PDF export stay below the card.
+  - Behaviour & IDs preserved (autosave, mood/permPause, `#jPrompt`/`#jShuffle`, `#j4f`, export, i18n).
+    Validated (div 211/211, `node --check` OK); journal + a11y + visual specs green.
+  - **Lesson (for future asset work):** fabricating/compositing botanical art by hand or chroma-keying
+    low-contrast assets (e.g. `olive4` — pale leaves blended with the checkerboard) is unreliable; a
+    clean, high-contrast transparent source + CSS placement is the dependable path.
+
+## Backlog (v129 → v130)
 
 - `[x]` **PROMOTE v125:** copy `mi-dia-v125.html` → `index.html` + bump `CACHE` in `sw.js` (done at deploy).
-- `[ ]` **Journal — IN PROGRESS** (approved mockup: `mi-dia-jsol2.html`): drop the separate olive ribbon;
-  put the olives as a **FRAME** in the writing card (cutouts from the right of OliveDetails, chroma-keyed
-  to transparent, small top-right/bottom-right corner accents that FRAME, not crowd); placeholder = the
-  original `ph_journal` text; move "+ reflecție ghidată" + Word/PDF export into a subtle row BELOW the
-  card. → becomes **v129** (shifted: v126/v127 = test instrumentation, v128 = slot a11y).
-- `[ ]` **Real Android QA on v125–v128:** mood-wash intensity + olive accents on a real screen.
+- `[x]` **Journal olive accent — DONE (v129):** small olive sprig in the writing-card top-right corner,
+  chroma-keyed transparent, no text overlap; prompt restyled subtle.
+- `[ ]` **Real Android QA on v125–v129:** mood-wash intensity + the olive corner on a real screen.
 
 ## Add flow — CURRENT (v112+ unified composer, supersedes the v23–v47 title-first flow)
 
