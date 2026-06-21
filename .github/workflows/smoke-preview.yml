@@ -1,0 +1,58 @@
+name: smoke-preview
+
+# PRE-MERGE gate: runs the 7-check smoke against the Cloudflare Pages PREVIEW deployment of a
+# PR, so a broken build can never reach production. Cloudflare Pages builds a unique preview URL
+# for every PR/branch push and fires a GitHub `deployment_status` event when it finishes — we
+# read that event's environment_url and smoke it. No polling, no third-party action.
+#
+# This is the "test before promoting" gate (vs smoke-prod.yml, which is the post-deploy net on
+# main). To make it block merges: after it has run once, add the check "smoke-preview / preview
+# smoke" to the branch-protection required checks on main. Preview deployments must be enabled
+# for all branches in the Cloudflare Pages project (the default).
+
+on:
+  deployment_status: {}
+
+permissions:
+  contents: read
+
+jobs:
+  preview-smoke:
+    name: preview smoke
+    # Only for SUCCESSFUL Cloudflare deployments that are NOT production (exclude the live URL).
+    # Filtering on the URL (not the environment label) is robust to Cloudflare's naming.
+    if: >
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment_url != '' &&
+      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev' &&
+      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev/'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    env:
+      # The spec + config read PROD_URL as baseURL — point it at the PR's preview deployment.
+      PROD_URL: ${{ github.event.deployment_status.environment_url }}
+    steps:
+      # Check out the exact commit that was deployed, so the smoke spec matches the built app.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Smoke the preview URL
+        run: |
+          echo "Smoking preview: $PROD_URL"
+          npx playwright test --config=playwright.prod.config.js
+      - name: Upload preview smoke report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-preview-report
+          path: e2e/playwright-report
+          retention-days: 7
