@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v130.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v131.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v129.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v131.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
@@ -823,7 +823,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130). Current build **`mi-dia-v130.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).**
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131). Current build **`mi-dia-v131.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).**
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -958,6 +958,27 @@ and unifies the date card across Jurnal + Calendar.
   - **Lesson (for future asset work):** fabricating/compositing botanical art by hand or chroma-keying
     low-contrast assets (e.g. `olive4` — pale leaves blended with the checkerboard) is unreliable; a
     clean, high-contrast transparent source + CSS placement is the dependable path.
+
+## Changelog (v131) — Journal olive branch at ~65% + auto-grow textarea (scrollbar bug fix)
+
+- **v131 — fixes the original scrollbar-over-the-vine bug + Ines's chosen branch framing.**
+  - **Bug (reported with a photo):** when a journal entry grew past the writing card's fixed height, the
+    textarea showed an internal **scrollbar** on the right edge that painted **over** the olive branch
+    (the branch `::after` is `z-index:1`, the textarea `z-index:2`, so the native scrollbar drew on top).
+  - **Fix = auto-grow.** New `growJ()` sets `#jText` height to its `scrollHeight` so the textarea has NO
+    internal scroll — the card grows with the text, the page scrolls instead. `.jtext` →
+    `resize:none;overflow:hidden`. Hooked in `loadJournal` (after value set), the `input` listener, and the
+    `#jPrompt` / `#j4f` auto-insert handlers (CSS `min-height:178px` keeps the empty-state size).
+  - **Branch framing (Ines's call, after a 4-variant mockup `mi-dia-jurnal-ramura-robust-mockup.html`):**
+    the branch is pushed ~half off the right edge — `::after{transform:translateX(35%)}` (~65% visible,
+    **whole leaf, no crop**), still `height:100%` full-height drape. `.jtext` gutter `padding-right`
+    62px → 46px. **Explicitly accepted trade-off:** at very long entries the branch widens and the text
+    reads softly *over* the leaves (a background effect) — Ines prefers this to cutting the leaf, so it is
+    NOT treated as a bug and there is NO dynamic clearance/crop. (Rejected alternatives in the same mockup:
+    constant fixed-width band via `cover`, and top-only fixed-size branch.)
+  - Validated (div 210/210, `node --check` OK on both scripts) + rendered the Journal view empty
+    (placeholder clears the leaves) and at ~100 words (branch full-height, text softly behind the leaves,
+    no scrollbar). Headless Chromium — olive tone + finesse still need a real-Android pass.
 
 ## Changelog (v130) — Journal olive sprig swapped for the tall draping branch
 
