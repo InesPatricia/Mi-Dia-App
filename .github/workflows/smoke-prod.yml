@@ -1,0 +1,47 @@
+name: smoke-prod
+
+# Post-deploy smoke against the LIVE production site (Cloudflare Pages).
+# Runs on push to main (i.e. after a merge): it waits for Cloudflare to publish the new build
+# (wait-for-deploy.js polls the live sw.js for the just-merged CACHE), then runs a small
+# Playwright smoke suite against https://mi-dia-app.pages.dev.
+#
+# Informational only: it triggers post-merge on main, so it NEVER gates a PR. It is separate
+# from e2e.yml (which tests the build in CI against a local http-server before merge) and from
+# the Cloudflare deploy itself. Can also be run on demand via the Actions tab (workflow_dispatch).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: e2e
+
+env:
+  PROD_URL: https://mi-dia-app.pages.dev
+
+jobs:
+  smoke:
+    name: production smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Wait for Cloudflare to publish the new build
+        run: node wait-for-deploy.js
+      - name: Run production smoke
+        run: npx playwright test --config=playwright.prod.config.js
+      - name: Upload smoke report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-prod-report
+          path: e2e/playwright-report
+          retention-days: 7
