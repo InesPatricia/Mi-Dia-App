@@ -14,6 +14,8 @@
     "validate": "node validate-build.js",
     "test:visual": "playwright test visual.spec.js --update-snapshots=missing",
     "test:report": "playwright show-report",
+    "wait:deploy": "node wait-for-deploy.js",
+    "smoke:prod": "playwright test --config=playwright.prod.config.js",
     "codegen": "playwright codegen http://localhost:5173"
   },
   "keywords": [],

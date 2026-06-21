@@ -119,6 +119,20 @@ Personal use for now (localStorage only). Future: public/subscription version.
   shards). **Test-independence (anti-bias):** `e2e/SPEC-TEMPLATE.md` drives a 2-isolated-agent flow — an
   *implementer* (app code) and a *tester* (black-box Playwright from the spec only) never see each other's
   code; they meet at the written contract (acceptance criteria + stable selector handles).
+- **Post-deploy smoke (prod, v131):** a SEPARATE workflow `.github/workflows/smoke-prod.yml` runs on
+  push to `main` (i.e. AFTER a merge). It first waits for Cloudflare to publish the new build
+  (`e2e/wait-for-deploy.js` polls the LIVE `/sw.js` until its `CACHE` matches the just-merged
+  `sw.js`, 5-min timeout), then runs a 7-test Playwright smoke against the LIVE site
+  `https://mi-dia-app.pages.dev` (`e2e/playwright.prod.config.js` → `e2e/tests-prod/smoke-prod.spec.js`:
+  home boots on the Day view + brand + no real console errors AND no same-origin 404s; `/sw.js` served
+  with a `mi-dia-` cache; the PWA manifest is linked; **all 7 views render** without console errors
+  (Day/Journal/Respiro/Calendar/Progress/Projects/Profile); the 5 flower petals present; the Journal
+  opens + writing card ready; switching EN→RO relabels the nav (i18n)). It is **informational only**
+  (post-merge, never gates a PR), is **separate from `e2e.yml`** (which tests the local build before
+  merge) and from the Cloudflare deploy itself, and is **read-only** (never writes user data). Run on
+  demand from the Actions tab (`workflow_dispatch`) or locally: `cd e2e && npm run wait:deploy &&
+  npm run smoke:prod` (override the target with `PROD_URL=…`). The real-Android device pass remains
+  Ines's manual step — this smoke only proves prod is up and the new build is healthy, not native UX.
 - The Calendar/Progress suites are **data-driven via `seedStorage`** + the `dayKey()` helper (writes
   `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
 - The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
