@@ -122,10 +122,12 @@ Personal use for now (localStorage only). Future: public/subscription version.
 - **Post-deploy smoke (prod, v131):** a SEPARATE workflow `.github/workflows/smoke-prod.yml` runs on
   push to `main` (i.e. AFTER a merge). It first waits for Cloudflare to publish the new build
   (`e2e/wait-for-deploy.js` polls the LIVE `/sw.js` until its `CACHE` matches the just-merged
-  `sw.js`, 5-min timeout), then runs a 4-test Playwright smoke against the LIVE site
+  `sw.js`, 5-min timeout), then runs a 7-test Playwright smoke against the LIVE site
   `https://mi-dia-app.pages.dev` (`e2e/playwright.prod.config.js` → `e2e/tests-prod/smoke-prod.spec.js`:
-  home boots on the Day view + brand + no real console errors, `/sw.js` served with a `mi-dia-` cache,
-  the 5 flower petals present, the Journal opens + writing card ready). It is **informational only**
+  home boots on the Day view + brand + no real console errors AND no same-origin 404s; `/sw.js` served
+  with a `mi-dia-` cache; the PWA manifest is linked; **all 7 views render** without console errors
+  (Day/Journal/Respiro/Calendar/Progress/Projects/Profile); the 5 flower petals present; the Journal
+  opens + writing card ready; switching EN→RO relabels the nav (i18n)). It is **informational only**
   (post-merge, never gates a PR), is **separate from `e2e.yml`** (which tests the local build before
   merge) and from the Cloudflare deploy itself, and is **read-only** (never writes user data). Run on
   demand from the Actions tab (`workflow_dispatch`) or locally: `cd e2e && npm run wait:deploy &&
