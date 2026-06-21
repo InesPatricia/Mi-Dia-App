@@ -1296,9 +1296,9 @@
 #view-journal .mood button.sel::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--rose-3);}
 #view-journal .jmoodword{text-align:center;font-family:'Fraunces',Georgia,serif;font-style:italic;color:var(--gold-deep);margin-top:13px;min-height:1.2em;font-size:1.02rem;}
 #view-journal .jwrite-card{position:relative;overflow:hidden;margin-top:16px;background:linear-gradient(var(--jwash2),var(--jwash2)),#FFFDF8;border-radius:20px;box-shadow:var(--shadow-soft);padding:18px 18px 12px;transition:background .45s ease;}
-/* v130: tall olive sprig (TheOliveTall) draping the full right edge of the card — accent only, never over text/placeholder. Gold frame removed (Ines: page felt too segmented). */
-#view-journal .jwrite-card::after{content:"";position:absolute;top:0;right:2px;height:100%;aspect-ratio:150/794;background:var(--olive-tall) top right/contain no-repeat;opacity:.82;pointer-events:none;z-index:1;}
-#view-journal .jtext{position:relative;z-index:2;min-height:178px;border:none;background:transparent;width:100%;resize:vertical;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:1.05rem;line-height:1.8;color:var(--ink);padding:6px 62px 6px 8px;}
+/* v131: tall olive sprig (TheOliveTall) pushed ~half off the right edge (translateX 35% -> ~65% visible, whole leaf, no crop), draping the full card height. Ines's call: she prefers the branch reading as a soft background under long text over cutting the leaf. The textarea auto-grows (JS growJ), so there is NO internal scrollbar overlapping the branch (the original v130 bug). */
+#view-journal .jwrite-card::after{content:"";position:absolute;top:0;right:2px;height:100%;aspect-ratio:150/794;background:var(--olive-tall) top right/contain no-repeat;opacity:.82;pointer-events:none;z-index:1;transform:translateX(35%);}
+#view-journal .jtext{position:relative;z-index:2;min-height:178px;border:none;background:transparent;width:100%;resize:none;overflow:hidden;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:1.05rem;line-height:1.8;color:var(--ink);padding:6px 46px 6px 8px;}
 #view-journal .jtext:focus{outline:none;background:transparent;border:none;}
 #view-journal .jtext::placeholder{color:var(--ink-faint,#BBA98C);font-style:italic;font-family:'Fraunces',Georgia,serif;font-size:1.02rem;}
 #view-journal .jwrite-card .jfoot{position:relative;z-index:2;padding:0 8px;}
@@ -3814,6 +3814,10 @@ Objective description, "just the facts".
   }
   function showPrompt(){ $("#jPrompt").textContent=jpromptText(JPROMPTS[jPromptIdx]); }
   function updateJCount(){ const v=$("#jText").value.trim(); const n=v? v.split(/\s+/).length:0; $("#jCount").textContent=n+" "+(n===1?t("word1"):t("words")); }
+  // v131: auto-grow the journal textarea so it never shows an internal scrollbar
+  // (the old scrollbar painted over the olive branch). The card grows with the
+  // text; the page scrolls instead. CSS min-height keeps the empty-state size.
+  function growJ(){ const el=$("#jText"); if(!el) return; el.style.height="auto"; el.style.height=el.scrollHeight+"px"; }
 
   async function loadJournal(){
     renderJournalHeader();
@@ -3823,7 +3827,7 @@ Objective description, "just the facts".
     if(raw){ try{ o=JSON.parse(raw)||o; }catch(e){} }
     jMood=o.mood||0; $("#jText").value=o.text||""; if($("#jEvent")) $("#jEvent").value=o.event||"";
     jEmotion=o.emotion||null; ppCore=null;
-    renderMood(); renderPermPause(); updateJCount();
+    renderMood(); renderPermPause(); updateJCount(); growJ();
     $("#jSaved").textContent=(o.text && o.text.trim())? t("saved"):"";
   }
   async function saveJournal(){
@@ -4484,13 +4488,13 @@ Objective description, "just the facts".
   document.querySelectorAll(".bloom-bud").forEach(b=>{ b.onclick=()=>bloomAction(b.getAttribute("data-add")); });
   document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeBloom(); });
   // journal
-  $("#jText").addEventListener("input",()=>{ updateJCount(); scheduleJSave(); });
+  $("#jText").addEventListener("input",()=>{ updateJCount(); growJ(); scheduleJSave(); });
   $("#jEvent").addEventListener("input", scheduleJSave);
   $("#jPrompt").onclick=()=>{ const t=$("#jText"); const p=JPROMPTS[jPromptIdx];
     const pre=t.value.trim().length? t.value.replace(/\s*$/,"")+"\n\n":""; t.value=pre+jpromptText(p)+"\n"; t.focus();
-    t.selectionStart=t.selectionEnd=t.value.length; updateJCount(); scheduleJSave(); };
+    t.selectionStart=t.selectionEnd=t.value.length; updateJCount(); growJ(); scheduleJSave(); };
   $("#jShuffle").onclick=()=>{ jPromptIdx=(jPromptIdx+1)%JPROMPTS.length; showPrompt(); };
-  $("#j4f").onclick=()=>{ const ta=$("#jText"); const pre=ta.value.trim().length? ta.value.replace(/\s*$/,"")+"\n\n":""; ta.value=pre+template4F(); ta.focus(); ta.selectionStart=ta.selectionEnd=ta.value.length; updateJCount(); scheduleJSave(); };
+  $("#j4f").onclick=()=>{ const ta=$("#jText"); const pre=ta.value.trim().length? ta.value.replace(/\s*$/,"")+"\n\n":""; ta.value=pre+template4F(); ta.focus(); ta.selectionStart=ta.selectionEnd=ta.value.length; updateJCount(); growJ(); scheduleJSave(); };
   $("#expWord").onclick=exportReflectionWord;
   $("#expPdf").onclick=exportReflectionPDF;
   $("#scAdd").onclick=()=>{ if(addShortcut($("#scName").value, $("#scArea").value, parseInt($("#scDur").value,10)||0)){ $("#scForm").classList.remove("show"); } };
