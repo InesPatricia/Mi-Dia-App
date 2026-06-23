@@ -133,6 +133,20 @@ Personal use for now (localStorage only). Future: public/subscription version.
   demand from the Actions tab (`workflow_dispatch`) or locally: `cd e2e && npm run wait:deploy &&
   npm run smoke:prod` (override the target with `PROD_URL=…`). The real-Android device pass remains
   Ines's manual step — this smoke only proves prod is up and the new build is healthy, not native UX.
+- **Pre-merge preview smoke (the GATE):** `.github/workflows/smoke-preview.yml` runs the SAME 7-test
+  smoke against the Cloudflare Pages **PREVIEW** deployment of a PR, BEFORE merge — so a broken build
+  can never reach prod (the "test before promoting" gate; smoke-prod.yml is the post-deploy net). It
+  triggers on the `deployment_status` event Cloudflare fires when a preview finishes, reads
+  `environment_url` and runs the smoke against it (no poller needed — success means it's already live).
+  It reuses `playwright.prod.config.js` + the spec verbatim by setting `PROD_URL` to the preview URL
+  (zero spec/config changes). The job filters to SUCCESSFUL, non-production deployments (it excludes the
+  live `mi-dia-app.pages.dev` URL — robust to Cloudflare's env naming) and checks out
+  `deployment.sha` so the spec matches the built app. **To actually block merges:** after it has run
+  once, add the check **`smoke-preview / preview smoke`** to `main`'s branch-protection required checks
+  (GitHub only offers a check as "required" once it has been seen). Requires Cloudflare **preview
+  deployments enabled for all branches** (the project default). Caveat: `deployment_status`-triggered
+  checks can occasionally be finicky to enforce as a hard gate; if so, keep it as a strong pre-merge
+  signal + the smoke-prod.yml net + the 1-command Cloudflare dashboard rollback.
 - The Calendar/Progress suites are **data-driven via `seedStorage`** + the `dayKey()` helper (writes
   `day:<key>` / `journal:<key>` exactly as `keyFor` does). None of these four suites needed app changes.
 - The journal + persistence/i18n + slot suites needed NO app changes — pure user-facing locators (mood
