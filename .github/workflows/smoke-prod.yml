@@ -14,6 +14,10 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+# Least privilege: read-only smoke against the live site, no repo writes needed.
+permissions:
+  contents: read
+
 defaults:
   run:
     working-directory: e2e

@@ -16,6 +16,16 @@ Thumbs.db
 # Backup-uri locale exportate din aplicație
 mi-dia-backup-*.json
 
+# Secrete / variabile de mediu (future-proofing pentru versiunea publica)
+.env
+.env.*
+
+# Note private + scratch de design — pastrate local, NU publice
+private/
+
+# Loc de joaca pentru invatat JS (local only — NU face parte din app, NU se deploye-aza)
+sandbox/
+
 # Dependențe / build (doar dacă adaugi mai târziu Node/Vite)
 node_modules/
 dist/
