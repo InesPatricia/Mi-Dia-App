@@ -39,6 +39,19 @@ the browser (localStorage); nothing is sent to any server.
 mood + emotion-wheel journaling with a 4F reflection scaffold · calendar "lenses" ·
 consolidated progress view · opt-in cycle/rhythm tracking · Word/PDF & JSON backup.
 
+### Screenshots
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/01-day.png" alt="Day view — flower navigation and day plan"><br><sub><b>Day</b> — flower navigation, daily phrase & plan</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/02-journal.png" alt="Journal — mood and reflective writing"><br><sub><b>Journal</b> — mood + reflective writing, autosave</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/04-calendar.png" alt="Calendar — Plan and Mood lenses"><br><sub><b>Calendar</b> — Plan / Mood lenses, completion rings</sub></td>
+    <td width="50%" valign="top"><img src="docs/screenshots/05-progress.png" alt="Progress — streak, hours by area, mood vs productivity"><br><sub><b>Progress</b> — streak, hours by area, mood ↔ productivity</sub></td>
+  </tr>
+</table>
+
 ### Run it locally
 It's a single file — just open [`index.html`](index.html) in your browser
 (double-click, or drag it into Chrome). No install, no build step.

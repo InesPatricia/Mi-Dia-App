@@ -6,7 +6,7 @@
  *
  * Bump CACHE on each new build so old caches are cleared on activate.
  */
-const CACHE = "mi-dia-v131";
+const CACHE = "mi-dia-v132";
 const APP_SHELL = "/";
 
 self.addEventListener("install", (event) => {

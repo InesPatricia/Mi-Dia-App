@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v131.html`**
+> Last updated: June 2026 · Current latest build: **`mi-dia-v132.html`**
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -24,7 +24,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 ## File / versioning workflow (IMPORTANT)
 
 - The app lives in **versioned files: `mi-dia-vNN.html`**. Each change increments `NN`.
-- **Current latest = `mi-dia-v131.html`.** Always start from the latest version.
+- **Current latest = `mi-dia-v132.html`.** Always start from the latest version.
 - **Strict rule: every new code file gets a NEW name.** Never overwrite an existing
   version in place — each iteration is a separate rollback point. (One change → one new file.)
 - **Working tree keeps ONLY the latest official `mi-dia-vNN.html` + `index.html`** (Ines's call,
@@ -1049,6 +1049,33 @@ and unifies the date card across Jurnal + Calendar.
        → underlined text links. **Only the writing card stays an elevated surface.** Behaviour/IDs unchanged
        (autosave, mood/permPause, 4F, export, i18n). Validated (div 210/210, `node --check` OK); rendered the
        full Journal view (empty + typed) — one fluid warm page.
+
+## Changelog (v132) — Journal: olive branch removed + caret-follow scroll (public-release polish)
+
+- **v132 — Journal de-clutter (Ines's call) + a real typing-visibility fix.** Two changes, validated
+  (div 210/210, `node --check` OK on both script blocks):
+  1. **Olive branch removed.** Ines found the journal page **too cluttered**, so the v130/v131 draping
+     olive branch was dropped: removed the `#view-journal .jwrite-card::after` rule and the now-unused
+     `:root` var **`--olive-tall`** (a ~168KB base64 PNG) → the file dropped **~640KB → ~468KB** (~26%
+     smaller). `.jtext` gutter restored from `padding:6px 46px 6px 8px` to symmetric `6px 8px` (text uses
+     the full width). The writing card is now a clean cream surface.
+  2. **Caret-follow scroll while typing (bug fix).** The textarea auto-grows with NO internal scrollbar
+     (v131 `growJ`), so when an entry grew past the viewport the line being written slid **behind the
+     fixed bottom bar** — you couldn't see what you were typing (reproduced in Playwright: caret line
+     bottom 737px vs bar top 656px). Fix: new `jCaretTop()` (hidden mirror div that matches the
+     textarea's wrapping → caret Y) + `keepJCaretVisible()` (scrolls so the caret line stays a full line
+     above the bottom bar), wired into the `#jText` input + `#jPrompt`/`#j4f` insert handlers (NOT on
+     load). Two subtleties found via the repro test: (a) `scrollBy({behavior:"auto"})` defers to CSS
+     `scroll-behavior:smooth` and lagged behind fast typing → use **`"instant"`**; (b) `.phone-scroll`
+     is **not always the scroller** (in some layouts the window scrolls) → new `jScrollParent()` walks up
+     to the element that actually scrolls (scrollHeight>clientHeight), falling back to the window. Verified
+     green: caret line now lands at 620px, comfortably above the 656px bar; last typed word + footer visible.
+- **Repo made PUBLIC + polished** (separate from the app change, same session): security-audited (no
+  secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/`
+  and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0
+  LICENSE added, CI workflows hardened (`permissions: contents: read`), 12 stale remote branches deleted.
+- Headless Chromium only — re-confirm the caret-follow scroll on real Android (native keyboard + the
+  fixed bottom bar) in the device QA pass.
 
 ## Backlog (v129 → v130)
 
