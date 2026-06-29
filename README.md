@@ -9,6 +9,7 @@
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
 ![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
+![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
 
 ---
 
@@ -94,6 +95,15 @@ proiecte, calendar, statistici și unelte de calm. Aplicația e un singur fișie
 `index.html` în browser. Toate datele se salvează local. Backup: tab-ul **Zi → Backup**
 (exportă/importă un `.json`).
 </details>
+
+---
+
+## License
+
+© 2026 Ines Patricia. Licensed under
+**[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)** — you may share and
+adapt this work for **non-commercial** purposes with attribution. Commercial use requires
+permission. See [`LICENSE`](LICENSE).
 
 ---
 
