@@ -3,7 +3,23 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v125 — Journal redesign + date-nav unificat (curent)
+## v126–v132 — teste/a11y, arcul olive in Jurnal, fix scriere + repo public (curent)
+- **Teste & CI/CD:** instrumentare pentru Playwright + fix a11y (aria-label care urmareste limba) (v126),
+  handle-uri de test pe composer (v127), a11y pe slot — tick „done" + pastila de ora ca butoane cu
+  tastatura/SR (v128).
+- **Arcul olive in Jurnal:** accent olive in coltul cardului (v129) → ramura inalta care drapeaza tot
+  cardul (v130) → ramura la ~65% + textarea care creste singur, fara scrollbar peste ramura (v131) →
+  **ramura SCOASA complet (v132)** fiindca pagina parea prea aglomerata (var base64 nefolosit eliminat,
+  fisier ~640KB→~468KB).
+- **Fix scriere lunga (v132):** la intrari lungi, randul scris dispărea sub bara fixa de jos; acum pagina
+  scroll-eaza dupa cursor (masurare cu div-oglinda + scroll „instant" pe scroller-ul real) → vezi mereu ce scrii.
+- **Repo făcut PUBLIC** (showcase CV, iun. 2026): audit de securitate (fără secrete în cod sau istoric),
+  strategia de monetizare + mockup-urile mutate în `private/` (gitignored) + curățate din istoric,
+  README rescris ca vitrină de inginerie/QA + screenshot-uri, licență **CC BY-NC 4.0**, workflow-uri CI
+  hardenuite, branch-uri vechi șterse.
+
+## v125 — Journal redesign + date-nav unificat
+- Jurnal: stare ca **discuri tonale** (nu emoji-vreme) + cuvantul starii (`#moodWord`).
 - Jurnal: stare ca **discuri tonale** (nu emoji-vreme) + cuvantul starii (`#moodWord`).
 - Stare = **lumina pe pagina**: `applyJWash()` incalzeste/raceste pagina + cardul de scris
   (`--jwash`/`--jwash2`, tranzitie .45s). Senin → auriu, Ploaie → albastru-gri.
