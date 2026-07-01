@@ -3,7 +3,34 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v126–v132 — teste/a11y, arcul olive in Jurnal, fix scriere + repo public (curent)
+## v133–v143 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art (curent)
+- **Temă dublă reală, comutabilă:** un switcher ☾/☀ în hero (lângă bara de limbi) + un toggle în Setări,
+  persistat în `settings.theme` și inclus în backup, condus de `<html data-theme>`. Default la prima
+  deschidere = **Light**.
+- **Fundație pe tokeni semantici (v133–v134):** Ephesis (font brand) + tokeni auriu/gilt + tokeni semantici
+  (`--bg/--surface/--text/--line/--brand/--accent`) în `:root` + un bloc `html[data-theme="dark"]` care îi
+  rescrie; plumbing-ul switcher-ului (fără flash la boot). `--rose-1..4` rămân LOCKED, totul aditiv.
+- **Dark-velvet (v135–v142):** hero cu „Día" în script auriu Ephesis + văl velvet per-temă + ramă hairline
+  gilt; floarea re-skinuită velvet + stroke gilt (geometria + coordonatele l1–l5 NEATINSE, cuvintele rămân
+  în petale); FAB gilt; toate cardurile/componentele + toate cele 7 view-uri tematizate dark (remap de tokeni
+  + `paleTint`/`applyJWash` theme-aware). Construit incremental, o felie per `vNN`, mult asistat de agenți.
+- **Polish + emoji (v140–v142):** casetă date-band Home făcută invizibilă pe dark, titluri secundare
+  champagne-gold, banner-ul de instalare (persist.js) tematizat; **toate emoji-urile pictografice înlocuite cu
+  SVG line-art** (inclusiv reflecția 4F, iconițele de arii, empty states, export, streak, scan, mutare,
+  shuffle) — păstrate doar marcajele tipografice ✓ ✕ ✎ ☾ ☀. Regresie prinsă + reparată onest: un `esc` cu
+  scope local a rupt randarea sloturilor (13 teste e2e) — fix cu un `esc` global; `node --check` trece
+  sintaxa, dar e2e a prins runtime-ul.
+- **Light-luxe (v143):** tema light repictată să corespundă mockup-ului — fundal champagne, hairline-uri
+  gold, ink luxe, iar acțiunile rose → **wine `#6E1334`** (centrul florii, butoane, toggles, TODAY, bare de
+  progres, Export/Import etc.); petalele rămân blush, culorile funcționale + delete-ul mauve păstrate.
+  Ambele teme sunt acum luxe complete.
+- **Testare:** suită e2e **68 teste** (adăugat `theme.spec.js` — switcher: default light, toggle hero+persist,
+  toggle Setări two-way, user revenit pe dark). Baseline-urile `@visual` regenerate. Skill-uri noi:
+  `/theme-qa` (grid dark×light pe toate view-urile + checklist lizibilitate + poartă e2e), `color-roles.md`
+  (harta rolurilor de culoare), `module-css.md` (inventar CSS injectat de module) + utilitarele
+  `e2e/shoot.js` / `e2e/theme-grid.js`.
+
+## v126–v132 — teste/a11y, arcul olive in Jurnal, fix scriere + repo public
 - **Teste & CI/CD:** instrumentare pentru Playwright + fix a11y (aria-label care urmareste limba) (v126),
   handle-uri de test pe composer (v127), a11y pe slot — tick „done" + pastila de ora ca butoane cu
   tastatura/SR (v128).

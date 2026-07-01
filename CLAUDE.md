@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: June 2026 · Current latest build: **`mi-dia-v132.html`**
+> Last updated: July 2026 · Current latest build: **`mi-dia-v143.html`** (promoted to `index.html`, sw CACHE `mi-dia-v143`)
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -18,6 +18,149 @@ A Mediterranean-themed daily planner PWA built as a **single self-contained HTML
 Personal use for now (localStorage only). Future: public/subscription version.
 
 **Owner:** Ines — QA/AI professional based in Spain. Comfortable with Node + GitHub.
+
+---
+
+## ⭐ Luxury "old rich" revamp: Light + Dark themes — ✅ BUILT (v133→v139) + QA GREEN (v142)
+
+> **Status: design APPROVED via mockup; revamp IN PROGRESS.** Faza 0 (v133) + Faza 1 (v134) + Faza 2 (v135)
+> Faza 0→5 DONE (v133–v139) + Faza 6 QA DONE: tokens + switcher + hero/brand + flower/bar + shared components
+> + ALL 7 views themed dark (Day/Journal/Respiro/Calendar/Progress/Projects/Profile+Settings) via agent teams
+> + theme-aware `paleTint`/`applyJWash` JS. **The luxe Light+Dark revamp is COMPLETE and VERIFIED in both
+> themes.** Current build `mi-dia-v139.html`, **promoted to `index.html`** (+ `sw.js` CACHE bumped to
+> `mi-dia-v139`). **QA green:** full e2e suite **68/68 pass** (incl. a new `theme.spec.js` — 4 tests: default
+> light, hero-glyph toggle+persist+reload, Settings toggle two-way, returning-user boots dark), the `@visual`
+> baselines **regenerated** (light flower + bottom bar changed: wine FAB, Ephesis "Día"), and `npm run
+> validate` OK. **Only remaining is Ines's step: the real-Android device pass, then git commit + push (which
+> auto-deploys to Cloudflare) — NOT done yet (awaiting go-ahead).** axe contrast on velvet is best-checked on
+> device.
+> **Start the revamp here next session.** Interactive mockup (open in a browser — has a live 3-way theme
+> switcher): **`private/mockups/mi-dia-luxe-mockup.html`**; PNG previews in `private/mockups/luxe-previews/`.
+
+**Origin.** Ines supplied a luxury-travel mood board (*BonVoyage Christine*): bordo/aubergine + magenta +
+taupe + cream + antique/polished gold; Butler serif + signature script + Open Sans; "old rich / quiet
+luxury". Goal: make Mi Día feel modern, premium, *wow* — **more shades of one color family + surprising
+gold accents** — without losing its gentleness.
+
+**Decisions LOCKED with Ines (this session):**
+- Ship **BOTH** as real themes, not either/or: **Light-luxe** (cream + wine + gilt) + **Dark-velvet · gold**
+  (aubergine/velvet + gold-leaf), with a **switcher**.
+- **Switcher** = a discreet **☾/☀ toggle in the hero** (next to the EN·ES·RO langbar) **AND** a toggle in
+  **Settings**. Persist in **`settings.theme`** (`light`|`dark`), **include in backup export**. An
+  `<html data-theme>` attribute drives the palette.
+- **Dark primary action = gilt GOLD** — chosen by Ines over a wine+gold-ring alternative (both were mocked;
+  she picked **dark · gold**). **Light primary action = WINE** `#6E1334`.
+- **Wordmark** = "Mi" Fraunces serif + **"Día" in a gold signature SCRIPT** → add ONE Google font
+  **Ephesis** (brand text only). Tagline UPPERCASE, letter-spaced.
+- **Typography stays Fraunces + Nunito Sans** (Fraunces = the free Butler-equivalent, already loaded). No
+  body-font change. Push Fraunces larger/tighter on headers.
+- **Signature accent = the gilt gold HAIRLINE** (gradient `linear-gradient(100deg,#E8D2A0,#C8A24C 45%,#9A6E2C)`)
+  used as divider / card top-edge / rule under the date — direct echo of the mood board's gold bar. Plus:
+  drop-cap on the Spanish phrase, candle-glow behind the flower centre, serif numerals for figures.
+- **Flower labels — HARD REQUIREMENT (Ines flagged this explicitly):** KEEP the app's EXACT label system —
+  the `.labels .lbl .l1–.l5` markup, the calibrated coordinates (`l1 170/78, l2 255/142, l3 222/244,
+  l4 118/244, l5 85/142`), the 5 line-icon SVGs, and the 9px UPPERCASE word. **Only re-skin the colors**
+  (gold line-icon; champagne text on dark / ink on light). **Do NOT reposition** — words must stay INSIDE
+  the petals. (My first mockup used custom positions that spilled out; reverted to the app's coords. The
+  mockup's flower now mirrors app geometry: 340 box, 128×149 petals, l1–l5 labels.)
+
+**Target palette tokens:**
+- Shared metal: `--gold-1:#E8D2A0` · `--gold-gilt:#C8A24C` · `--gold-antique:#B8893F` · `--gold-deep:#9A6E2C`;
+  taupe `#C9A99E` / `#A98A7E`.
+- **Light-luxe:** bg champagne `#F3ECE0` / pearl `#FBF6EC`; card `#FFFCF7` + ~30% gold hairline; brand/action
+  **wine `#6E1334`**; text `#3A2438`.
+- **Dark-velvet:** bg radial aubergine→night `#3E1326→#250b15`; card velvet `#4A1A30`/`#511D38`; text
+  champagne `#EFE2D0` / muted `#C9A99E`; action **gilt gold**.
+- **LOCKED `--rose-1..4` stay untouched; the revamp is ADDITIVE.**
+
+**Build plan — themeable refactor + per-view passes. One `vNN` per slice; after EACH: div-balance +
+`node --check`, then screenshot in BOTH themes:**
+- **v133 · Faza 0 — Foundation. ✅ DONE.** Added Ephesis (loaded, brand-only, not yet used) + metal tokens
+  (`--gold-1/--gold-gilt/--gold-antique`, taupe, `--gold-hair` gilt-hairline gradient). Introduced the
+  **semantic tokens** (`--bg / --surface / --surface-2 / --text / --text-soft / --line / --brand /
+  --brand-ink / --accent`) in `:root` mapped to TODAY's light values + an `html[data-theme="dark"]` override
+  block with the dark-velvet values. `--rose-1..4` LOCKED, purely additive; nothing consumes the semantic
+  tokens yet → **zero visual change** (verified: v133 light == v132 light pixel-identical; v133 with
+  `data-theme="dark"` also identical, proving the dark block is inert until v134 wires it). Validated:
+  div 210/210, `node --check` OK on both scripts.
+- **v134 · Faza 1 — Switcher plumbing. ✅ DONE.** `settings.theme` (`light`|`dark`, default light) drives
+  `<html data-theme>`; an early `<head>` inline script applies the saved theme before paint (no FOUC, via
+  localStorage on PWA; sandbox falls back to light). Switcher in TWO places: a discreet **☾/☀ glyph in the
+  hero langbar** (after EN·ES·RO, with a gilt divider — `#themeToggle`) + a **"Aspect / Appearance" panel
+  toggle in Settings** (`#themeToggleSet`); both call `toggleTheme()`. `theme` lives in the `settings`
+  object → already in backup export/import (import re-applies via `loadSettings`→`applyTheme`). i18n keys
+  `appearance/dark_theme/theme_help/theme_toggle` (EN/ES/RO). **Dark = rough:** the `.phone` surface (+ body
+  gutter) flip to the velvet `--bg` radial when dark is active; cards keep their light surfaces so text stays
+  readable until per-component velvet theming lands v135+. **Bug caught & fixed in-slice:** the hero langbar
+  wiring bound the lang handler to ALL `#langBar button`s (overwriting the toggle's `onclick`) → scoped it to
+  `button[data-l]`. Verified: hero toggle → `data-theme=dark` + persists across reload + glyph ☀; Settings
+  toggle two-way; light stays pixel-identical to v133 except the new glyph. Validated: div 213/213,
+  `node --check` OK on all 3 scripts.
+- **v135 · Faza 2 — Hero & brand. ✅ DONE.** "Día" wordmark now renders in the **Ephesis gold signature
+  script** (gilt-gradient clipped via `background-clip:text`; "Mi" stays Fraunces) — applied in BOTH themes.
+  A **delicate gilt hairline frame** (`rgba(200,162,76,.42)`) sits inside the hero photo (day view).
+  **Per-theme velvet veil:** a `html[data-theme="dark"]` hero block gives a stronger velvet veil + velvet
+  photo-bottom fade so the bright bougainvillea stays legible, with champagne brand/phrase/date ink, gilt
+  langbar/seed/nav accents, and a gilt date track. The **"gilt rule under the date"** = the day progress
+  track recolored to a faint gilt hairline (rose fill stays the action color). **Drop-cap DEFERRED:** the
+  Spanish phrase is wrapped in `«…»` in JS, so `::first-letter` would hit the guillemet — skipped to avoid an
+  ugly drop-cap on `«` (revisit by wrapping the first real letter in a span). Validated: div 213/213,
+  `node --check` OK on all 3 scripts; screenshots both themes (light = Ephesis brand + gold frame + gilt rule,
+  no flower/card regression; dark = legible velvet hero). Flower below still light (rough → v136/v137).
+- **v136 · Faza 3 — Flower + bottom bar. ✅ DONE** (agent-assisted: 2 worker agents proposed the flower CSS
+  and the bottom-bar/FAB CSS in parallel; Team Leader verified anchors + specificity, integrated, gated).
+  **Flower:** the petal fill/stroke/icon/word all flow through `.flower`-scoped CSS vars (`--petal-edge/-mid/
+  -cream/-active/-line`, `--pgold`, `--ptext`) read live by the inline SVG gradient — so a
+  `html[data-theme="dark"] .flower` override re-skins to **velvet wine petals + gilt stroke + gold icons +
+  champagne words**, with NO JS and an instant runtime flip. Center disc → velvet/wine radial + gilt ring +
+  candle-glow halo. Light petals unchanged (blush rose = the mockup's light variant). **Geometry + label
+  coords (l1 170/78 … l5 85/142) + petalPath/petalFill markup + icons UNTOUCHED — words stay inside petals,
+  confirmed on screenshots both themes.** **Bottom bar + FAB:** FAB action recolored rose→**WINE `#6E1334`**
+  in light (gilt ring), **GILT GOLD** in dark (dark "+" `#3A1020`); dark bar → velvet translucent; nav-active
+  → gold (`--gold-gilt`). No calm-mode conflict (v54 removed those overrides). Validated: div 213/213,
+  `node --check` OK on all 3 scripts. (Cards/slots below still light — v137.)
+- **v137 · Faza 4 — Cards & components. ✅ DONE** (agent-assisted: 5 worker agents themed 5 disjoint
+  component families in parallel; Team Leader added a foundation token-remap, integrated all 5, reconciled
+  overlaps + filled 2 gaps, gated). **Foundation:** the dark block now REMAPS the legacy neutral tokens
+  (`--cream→--surface`, `--sand→--surface-2`, `--sand-deep→#3c1528`, `--ink→--text`, `--ink-soft→--text-soft`,
+  `--page/-2→velvet`) — so every shared component that consumes them themes automatically in dark (borders
+  already flip via `--line`). **The gap the remap can't reach = HARDCODED light hexes** (`#fff`,
+  `#FFFBF4,#FCF5E9` card gradients, rose-token states that go invisible on velvet); the 5 agents found + fixed
+  those per family: (1) panels/cards/date-band cards/section headers/segmented → velvet + gilt hairline;
+  (2) composer (`#composer` shell, title, area/tag chips, duration chips, time-preview, area picker, `#addBtn`
+  → gilt gold commit); (3) day-plan slots + inline editor + empty state; (4) shortcuts (`.scpill` white→velvet,
+  `.scp-plus`/`.scp-x`/`.addnew`/`.sc-edit-btn`/`.sc-form` → gilt/accent) + the `.chip-add` "Add a shortcut"
+  card; (5) shared controls (`.testbtn`, `.toggle` ON-ring lifted to gilt + champagne knob, `.filtertoggle`,
+  generic `.chip:not(.scpill)`, `.focus-btn`, journal `.exp-btn`). All `html[data-theme="dark"]`-scoped,
+  consolidated last in `<style>` for source-order precedence. **Result: the entire Day view themes dark**
+  (cards velvet, gilt hairlines, champagne text, gilt-gold actions). Light pixel-identical (verified).
+  Validated: div 213/213, `node --check` OK on all 3 scripts; screenshots both themes (Home + expanded
+  composer + area picker).
+  **Deferred to v138+ (Faza 5, honestly flagged by the agents):** `paleTint` (JS) mixes area colors with
+  CREAM, so the slot **time pill** + the **selected area pill** still get cream-based tints in dark — needs a
+  theme-aware `paleTint` (mix toward velvet). Native `<select>`/`<input type=date/time>` OPEN popups are
+  OS-themed (device pass). Per-view functional colors (mood discs, calm, calendar cells, progress bars) =
+  per-view passes.
+- **v138–v141 · Faza 5 — Per-view passes (the bulk).** **v138 DONE** (5 views: Journal mood discs + writing
+  card; Respiro calm-mode wash + exercise cards; Calendar lens/cells/nav; Progress stat tiles/bars; Projects
+  idea chips — all velvet+gilt, agent-assisted) + the theme-aware `paleTint`/`applyJWash` JS fixes. **Remaining
+  → v139: Profile + Settings** (Profile's `.scard` stat tiles are scoped to `#view-stats` so Profile's tiles +
+  the "De când ești aici"/recent-intentions/recent-emotions cards still need theming; Settings mostly themes
+  via shared `.panel`/toggles from v137 — verify + fill gaps). Dark mode exposes EVERY hardcoded light color —
+  give functional colors (area/calm/mood) legible variants on velvet. **v139 DONE — Profile + Settings:**
+  `.pf-journey` journey card white→velvet, dim-gold headings (`.pf-hello`/`.pf-recent-h`) → champagne, stat
+  figures → accent; `.nameinput`/`.lead-chip`/Export-Import(inline rose, `!important`) → velvet+gilt; the cycle
+  opt-in card `.cy-tg` + off-switch (cycle.js) → velvet. **ALL 7 views now theme dark — Faza 5 COMPLETE.**
+- **v142 · Faza 6 — QA.** axe contrast on dark, **regenerate Playwright visual baselines** (they WILL change),
+  run e2e + prod smoke, then the real-Android device pass (Ines's step).
+
+**Risks to manage:** dark mode is a huge surface (every hardcoded color checked on velvet — Faza 5 ≈ 60% of
+effort); the bright bougainvillea hero photo needs a STRONGER dark veil for legibility; visual-regression
+baselines + prod-smoke expectations change; keep the app functional after every slice (no big-bang rewrite,
+per the incremental architecture rule).
+
+**Decided since:** **Default theme at first launch = LIGHT** (safe, matches today). New users only; a
+returning user keeps their saved `settings.theme`. (No open decisions remain before v133.)
 
 ---
 
@@ -77,7 +220,10 @@ Personal use for now (localStorage only). Future: public/subscription version.
   `npm run test:report`); raw PNGs land in `e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
-- Current coverage (**64 tests across 17 specs**): **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
+- Current coverage (**68 tests across 18 specs**): **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
+  + **theme switcher** (`theme.spec.js` — v139/QA: default light, hero ☾/☀ toggle → `<html data-theme>` +
+  persist across reload, Settings "Dark theme" toggle two-way, a returning user with `settings.theme=dark`
+  boots dark; theme state asserted on the `html[data-theme]` attribute + `localStorage.settings`)
   + **add-flow / composer** (`add-flow.spec.js` — expand-on-typing, fast Enter, duration, native time,
   area selection; asserts the DOM AND the stored block model via `readBlocks()`)
   + **journal + mood** (`journal.spec.js` — mood disc selection + word, low-mood permission pause +
@@ -851,12 +997,17 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). Current build **`mi-dia-v132.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 64 tests across 17 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.**
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). **Luxe Light+Dark revamp IN PROGRESS: Faza 0 (v133) — theme-token foundation (Ephesis + metal + semantic tokens + `data-theme="dark"` block), zero visual change; Faza 1 (v134) — theme switcher plumbing (settings.theme + `<html data-theme>` + hero ☾/☀ + Settings toggle + backup, dark works rough); Faza 2 (v135) — hero & brand luxe pass (Ephesis "Día" gold script + per-theme velvet veil + gilt hairline frame + dark hero legible); Faza 3 (v136) — flower nav + bottom bar/FAB re-skin (velvet/gilt petals + champagne labels, wine/gilt FAB, gold nav-active; agent-assisted, flower geometry/coords untouched); Faza 4 (v137) — shared cards & components dark theming (token remap + 5 parallel agents: panels/composer/slots/shortcuts/controls velvet+gilt; the whole Day view themes dark); Faza 5-part1 (v138) — the 5 secondary views (Journal/Respiro/Calendar/Progress/Projects) themed dark via 5 parallel agents + theme-aware paleTint/applyJWash JS (re-render on toggle); Faza 5-part2 (v139) — Profile + Settings themed dark. **The luxe Light+Dark revamp is now functionally COMPLETE across all 7 views; only v142 QA remains (axe/visual-baselines/e2e/device) + promote.** Current build **`mi-dia-v139.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 68 tests across 18 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.**
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
 > the permission-pause + wheel flow, Calendar emotion dot); **B6 duration "min" clip (open — needs Ines to pinpoint the screen)**; D13 menstrual cycle
 > tracker, D14 public/subscription version.
+>
+> **NEXT MAJOR WORK → the Luxury "old rich" Light+Dark revamp** — design approved via mockup (June 2026),
+> app NOT yet touched. Full decisions + phased build plan (v133→v142) are in the **"⭐ NEXT UP"** section
+> near the top of this file. Mockup: `private/mockups/mi-dia-luxe-mockup.html`. Default theme = **Light**
+> (decided); no open decisions remain before v133.
 
 
 ---
@@ -1049,6 +1200,287 @@ and unifies the date card across Jurnal + Calendar.
        → underlined text links. **Only the writing card stays an elevated surface.** Behaviour/IDs unchanged
        (autosave, mood/permPause, 4F, export, i18n). Validated (div 210/210, `node --check` OK); rendered the
        full Journal view (empty + typed) — one fluid warm page.
+
+## Changelog (v142) — Luxe revamp Faza 6: QA green + promote (revamp COMPLETE)
+
+- **v142 — QA gate for the whole Light+Dark revamp; everything works.** No app-code change beyond the build
+  already at v139; this slice is verification + promote:
+  - **Promoted** `mi-dia-v139.html` → `index.html`; bumped `sw.js` `CACHE` `mi-dia-v132`→`mi-dia-v139` (so old
+    PWA caches clear on activate). `npm run validate` (div-balance + `node --check`) → **OK on index.html**.
+  - **New `e2e/tests/theme.spec.js`** (4 tests) locks the new switcher: default light + moon glyph; hero glyph
+    → `data-theme="dark"` + glyph flips + `settings.theme` persisted + survives reload; the Settings "Dark
+    theme" toggle flips both ways; a returning user seeded with `settings.theme=dark` boots dark. Theme state
+    asserted on `html[data-theme]` + `localStorage` (no semantic locator for theme).
+  - **`@visual` baselines regenerated** (`playwright test visual.spec.js --update-snapshots`): the design-locked
+    flower-nav + bottom-bar snapshots changed in LIGHT too (wine FAB + Ephesis "Día"), so the win32 baselines
+    were rewritten — expected, not a failure.
+  - **Full suite: 68/68 pass** (62 functional across all views — no regression from the dark theming/JS fixes;
+    4 theme; 2 visual). The 62 functional tests run in the default LIGHT theme and confirm add-flow, journal,
+    persistence, i18n, nav, projects, respiro, progress, profile, shortcuts, slots, timer, backup all still work.
+- **Not done (Ines's call):** the real-Android device pass (native pickers, blur/backdrop on velvet, axe
+  contrast on device, the fonts incl. Ephesis + `background-clip:text` gilt), and **git commit + push** (which
+  auto-deploys to Cloudflare) — the working tree is staged (index.html + sw.js + v133–v139 + CLAUDE.md +
+  skills) but NOT committed/pushed, awaiting go-ahead. At commit time: `git rm` the superseded
+  `mi-dia-v133..v138.html` (keep v139 + index.html), per the working-tree rule.
+
+## Changelog (v143) — LIGHT-LUXE pass: light theme now matches the mockup (champagne + wine + gilt)
+
+- **v143 — the LIGHT theme is repainted into "Light-luxe"** (Ines: light hadn't really changed — most of the
+  revamp was the new dark theme + additive dark-only overrides, so light stayed close to the old cream/rose).
+  Now light matches the mockup's light variant. Agent-assisted (7 parallel agents by area) + Team-Leader
+  foundation/integration. All green: **68/68 e2e** (66 functional + 2 visual — the flower-nav `@visual`
+  baseline regenerated since the light flower CENTRE is now wine), div 213/213, `node --check` OK.
+  - **Foundation (`:root`, light-only — dark overrides all these so it's untouched):** `--sand`/`--sand-deep`
+    → champagne `#F3ECE0`/`#E7DCC4`; `--ink` → `#3A2438`, `--ink-soft` → `#8C6E72`; `--line` → **gold
+    hairline** `rgba(184,137,63,.30)`; `--page`/`--page-2` → champagne; body bg → champagne gradient. This
+    instantly gives champagne surfaces + gold hairlines + luxe ink across all of light.
+  - **Rose ACTIONS → WINE** (`html[data-theme="light"]`-scoped overrides, so DARK + base untouched;
+    `--rose-1..4` LOCKED, appearance-only): flower **centre** → wine radial (petals stay blush); composer
+    commit/chips-selected/time-preview; shortcut "+"; Focus; `.add-commit`/`.testbtn`/Export-Import(!important
+    for inline rose)/lead+tag+area add buttons; `.toggle.on` → wine + gilt ring; TODAY pills
+    (`.nav .today`/`.calTodayBtn`/hero); progress-bar fills → wine gradient; `.segmented .sel` → wine text;
+    Journal mood-ring + 4F link; Respiro Start + accent figures; Calendar lens-sel/today-cell/plan-ring-arc/
+    "Ritmul meu"; Progress stat figures (→ accent `#A8255B`)/streak/range-switch; Projects idea-chips/active/
+    focus rings; Profile journey card/greeting/figures; persist banner; cycle ON switch.
+  - **KEPT (not recolored):** the flower PETALS blush rose; functional area/mood/calm/cycle colors; the green
+    done-tick; the legacy mauve `--rose` on DELETE/danger affordances (kept distinct from the wine primary
+    action, on purpose); nav-active stays gilt (`--gold-deep`, avoids over-saturating next to the wine FAB).
+- **Both themes are now full luxe:** Light-luxe (champagne + wine + gilt) ⟷ Dark-velvet (aubergine + gilt),
+  switchable via the hero ☾/☀ + Settings toggle. **The revamp's original "two REAL themes" vision is met.**
+- **Honest limit:** headless Chromium — device pass (contrast of wine on champagne, gilt hairlines) stays
+  Ines's step. Not committed/deployed (awaiting go-ahead).
+
+## Changelog (v140 → v142) — dark-mode polish (Ines review) + full emoji → line-art sweep
+
+Live-review fixes on the luxe dark theme + a project-wide emoji→line-art conversion. All validated
+(div 213/213, `node --check` OK on all 3 scripts) and the **full e2e suite is green: 68/68** (66 functional +
+2 visual). Promoted to `index.html`, sw CACHE → `mi-dia-v142`.
+
+- **v140 — hero dark fixes.** (1) The Home **date-band card** (`.hero-day-card`) read as a hard velvet box
+  with a gilt border on dark; softened to a whisper, then (v142) made **fully transparent** (`background/
+  border/box-shadow:none !important`) so it doesn't read as a box at all — the date sits on the hero like in
+  light. (2) The **secondary-view hero title** (`.hsec-title` "Journal"/"Progress"/…) was dark ink →
+  invisible on the dark hero photo; → champagne-gold `--gold-1` + a soft text-shadow.
+- **v141 — Persistence banner (persist.js).** The install/backup banner `.pb` kept its pale-pink card while
+  `.pb-tx` (`--ink`) flipped to champagne → champagne-on-pink = invisible. Dark override: card → velvet
+  `--surface-2` + gilt hairline, text champagne, icon gilt (Install button stays rose = action).
+- **v142 — EVERY pictographic emoji replaced with line-art SVG** (Ines: "no emoji, use line-art, incl. the 4F
+  reflection"). Agent-proposed, Team-Leader-integrated (~40 edits):
+  - **New assets:** a `CAT_ICONS` map + `catIcon(id,color)` helper (built-in area icons: target/palette/
+    heart/books/herb), `MOOD_ICONS`+`moodIcon` (weather line-glyphs), `TRASH_ICON`, and inline SVGs for 4F
+    (sprout), Word/PDF (docs), scan tone/voice (bell/speech), calm/energy routing (leaf/sun), empty-day/
+    filter (sunrise/magnifier), streak (flame), move-day (calendar), projDel (trash), shuffle (refresh),
+    item-link (chain). Icon-sizing CSS added (SVGs carry no width/height).
+  - **Persistent buttons** restructured to `svg + span[data-i18n]` (so `applyI18n`'s `textContent` can't wipe
+    the icon) — the pattern already used by `#focusBtn`. Emoji stripped from those i18n strings.
+  - **Category glyphs:** `catIcon` used where the node takes innerHTML (Settings areas, Progress "Hours per
+    area" bars); dropped from `<option>`s and `textContent` string sites (options can't hold SVG). **The
+    `emoji:` data-model field is KEPT** (backward-compat / backup) but no longer displayed — no migration.
+  - **Toast/label emoji stripped** from ~18 i18n strings (all ro/es/en). The 4F **export document** body
+    (Word/PDF) also cleaned (🌱/✍️ removed).
+  - **Kept (typographic, not emoji):** `✓` tick, `✕` close/delete, `✎` edit, `☾`/`☀` theme toggle. Unused
+    `emoji:` fields on Respiro exercises (cards render `CALM_ICONS` line-icons) left as harmless dead data.
+  - **Regression caught + fixed (honest):** the first v142 e2e run had **13 failures** — day slots stopped
+    rendering (`ReferenceError: esc is not defined` in `blockEl`). Root cause: `esc()` is defined *locally*
+    in only 3 render fns, and the icon swaps added `esc()` calls in `blockEl`/`renderStats`/`renderProjects`
+    which had no local `esc`. Fix: a single **global `esc` helper** (the local ones shadow it harmlessly).
+    Re-run → 66/66 green. (node --check passes syntax but not runtime scope — the e2e caught it.)
+- **Not done (Ines's step):** real-Android device pass + git commit/push (deploy). Working tree staged
+  (index.html, sw.js, CLAUDE.md, v133–v142, theme.spec.js, skills) — not committed.
+
+## Changelog (v139) — Luxe revamp Faza 5 (part 2): Profile + Settings dark (revamp functionally complete)
+
+- **v139 — Profile + Settings themed dark; the luxe Light+Dark revamp is now functionally complete in both
+  themes across all 7 views.** Small CSS-only slice (div 213/213, `node --check` OK on all 3 scripts;
+  dark screenshots of both Profile + Settings segments + the earlier light spot-check). Most of Settings
+  already themed via the shared `.panel`/toggles from v137; the residual hardcoded LIGHT surfaces fixed:
+  - **Profile:** `.pf-journey` "De când ești aici" card (`#FBE9EC,#FFF7F3` white-pink → velvet + gilt
+    hairline); the dim dark-brown serif headings `.pf-hello` ("Your space") + `.pf-recent-h` (Recent
+    intentions/emotions) `#5a3f2c`/`#5B3A28` → champagne `--gold-1`; recent-intention text `#6E4631` →
+    champagne; stat figures `.pf-stat .pf-n` rose-4 → `--accent` (matches Progress). (The `.pf-stat` tiles
+    themselves already velvet via `--cream` remap.)
+  - **Settings:** the name input `.nameinput` (`#FFFCF7` → velvet, gilt focus); the reminder lead chips
+    `.lead-chip` (citrus-light → velvet); the **Export/Import** backup buttons carry an INLINE `--rose-1` bg,
+    so overridden with `!important` → velvet + gilt.
+  - **Cycle opt-in (cycle.js injected CSS):** the "Track your cycle" card `.cy-tg` (`#fff` → velvet), its
+    label/hint → champagne/taupe, the OFF switch track (`#D9CEBA` → velvet `#5a3247`), and the Calendar
+    `.cy-setup-link` access pill (rose-0/1 → gilt wash).
+- **Remaining (all): v142 QA only** — axe contrast on velvet, regenerate the `@visual` Playwright baselines
+  (design-locked flower + bottom bar changed), run e2e + prod smoke, Ines's real-Android pass; then promote
+  (`index.html` + bump `sw.js` CACHE). Tiny cosmetic leftovers acceptable for now: the small rose "+"/"Add"
+  action pills (`.leadadd button`, tag/area `+`) stay rose on velvet (readable accents). `--rose-1..4` LOCKED;
+  flower coords untouched throughout.
+
+## Changelog (v138) — Luxe revamp Faza 5 (part 1): the 5 secondary views themed dark (5 agents + JS)
+
+- **v138 — Journal, Respiro, Calendar, Progress, Projects all theme in dark.** Third agent-assisted slice:
+  the Team Leader generated a dark screenshot of each view, ran 5 worker agents in parallel (one per view,
+  each SEEING its screenshot + grepping the CSS), then integrated all 5 proposals + 2 cross-cutting JS fixes +
+  filled gaps. Validated: div 213/213, `node --check` OK on all 3 scripts; dark screenshots of all 5 views +
+  a light spot-check (no regression).
+  - **Cross-cutting JS (theme-aware):** (a) `paleTint(hex,amount)` now mixes the area color toward **velvet
+    `#3c1528` in dark** (was always cream) with a touch more saturation — so the slot **time pills** + any
+    area-tinted element read on velvet; (b) `applyJWash()` uses a much lower alpha in dark (mood "light" cue
+    becomes a faint glow, not a wash-out); (c) `toggleTheme()` now **re-renders the active view** so those
+    inline tints recompute live on toggle.
+  - **Journal:** writing card `.jwrite-card` cream→velvet + gilt hairline; champagne placeholders; event
+    underline gilt; prompt/4F link/permission-pause card/emotion-wheel sub-chips/routing chip → velvet/accent.
+  - **Respiro:** the load-bearing fix = the `body.calm-mode` LIGHT wash (`!important`) is overridden to velvet
+    in dark (`html[data-theme="dark"] body.calm-mode{…!important}`); cue line, the "Wake me up" energy pill,
+    the player overlay + breath label + scan word → velvet/champagne; exercise cards keep their functional
+    left-border accents.
+  - **Calendar:** lens toggle `.callens` cream→velvet, selected tab accent; the month-nav `‹ ›` chips
+    (`.calnav button:not(.calTodayBtn)`) cream→velvet+gilt (Team-Leader gap-fill — agent missed them); plan-ring
+    track → gilt; `.cell.full` mint→velvet; day-popup mood label → champagne; cycle moon disc + ribbon (opt-in,
+    hidden by default — CSS attempt, verify when cycle enabled).
+  - **Progress:** the 3 stat tiles `.scard` cream→velvet+gilt hairline, figures → `--accent` (rose that reads
+    on velvet); streak chip + balance-bar track → velvet/gilt.
+  - **Projects:** empty-state idea chips `.pe-chip` pale-rose→velvet+gilt (out-specifies the `calm-mode`
+    override); item tick/focus surfaces/link input → velvet.
+  - **Shared gap-fill:** the hero back button `.hsec-back` (white circle on every secondary view) → velvet+gilt.
+- **Still deferred:** Profile/Settings (v139 — Profile's `.scard` tiles are `#view-stats`-scoped so still light;
+  the journey/recent cards need theming). The cycle moon-disc dark CSS selector is best-effort (opt-in feature);
+  native `<select>`/date/time OPEN popups are OS-themed (device pass). `--rose-1..4` LOCKED; flower coords
+  untouched. Headless Chromium — device pass (axe contrast on velvet) stays Ines's step.
+
+## Changelog (v137) — Luxe revamp Faza 4: cards & components dark theming (token remap + 5 agents)
+
+- **v137 — the entire shared cards & components layer themes in dark.** Second agent-assisted slice, larger:
+  the Team Leader laid a foundation, ran 5 worker agents on 5 DISJOINT component families in parallel, then
+  integrated/reconciled/gated. Pure CSS (div 213/213, `node --check` OK on all 3 scripts; screenshots both
+  themes — Home full + expanded composer + area picker).
+  - **Foundation (token remap):** the `html[data-theme="dark"]` block now remaps the legacy neutral tokens to
+    velvet/champagne — `--cream:var(--surface)`, `--sand:var(--surface-2)`, `--sand-deep:#3c1528`,
+    `--ink:var(--text)`, `--ink-soft:var(--text-soft)`, `--page/-2`→velvet. Any component that already
+    consumes those tokens themes for free; borders flip via `--line` (gilt). Light is unaffected (no remap in
+    `:root`). This is the "components on the semantic tokens" core, done in ~6 lines.
+  - **The gap = hardcoded light hexes** the remap can't touch (white pills, `#FFFBF4,#FCF5E9` card gradients,
+    `--rose-0/1/4/5` states that vanish on velvet). 5 agents found + proposed fixes per family; integrated as
+    one consolidated dark block placed last in `<style>` (source-order precedence):
+    1. **Cards/panels:** `.panel`/`.progress-card`/`.datebar`/`.hero-day-card` → velvet + gilt hairline + champagne
+       headings; `.segmented` selected pill gilded (was velvet-on-velvet invisible); date-band nav chips velvet.
+    2. **Composer (`#composer`):** velvet shell + gilt active border; title/placeholder champagne; area/tag
+       chips + duration chips + time-preview pill → velvet/gilt; the inline AREA PICKER options → velvet with
+       champagne text (the colored area dot stays); `#addBtn` commit → GILT GOLD with `#3A1020` glyph.
+    3. **Slots + inline editor + empty state:** `.block`/`.block.done` cream gradients → velvet; tick/time/dur/
+       play, the editor selects/move-pills → velvet fields + gilt hairlines. (Empty state was just text, not a
+       card — themes via remap.)
+    4. **Shortcuts:** `.scpill` white→velvet, gilt icons; `.scp-plus`/`.scp-x`/`.addnew`/`.chip-add`/
+       `.sc-edit-btn`/`.sc-form` → gilt/accent.
+    5. **Shared controls:** `#fff` focus-flash inputs → velvet; `.testbtn`, `.toggle` (ON gold-ring lifted to
+       gilt, OFF track + champagne knob), `.filtertoggle.active`, generic `.chip:not(.scpill)`, `.focus-btn`,
+       journal `.exp-btn` → gilt.
+  - **Team-Leader reconciliation:** disjoint selector families (no `!important` battles); verified anchors +
+    specificity (e.g. the transparent hero d3bar is protected from the `.datebar` card rule by the higher-
+    specificity day-view rule); filled 2 gaps the agents flagged as out-of-their-scope (`.chip-add` card, the
+    `.catpick .cp`/`.cp.sel` area-picker surface — forced the selected pill to a gilt wash, ignoring the
+    cream `--ac-pale` inline var, via 2-ID specificity).
+- **Honestly deferred to Faza 5 (v138+):** `paleTint` (JS) mixes area colors with CREAM → the slot time pill
+  + selected area pill still show cream tints on velvet (readable but loud); fix = a theme-aware `paleTint`
+  (mix toward velvet) in the per-view pass. Native select/date/time OPEN popups are OS-themed (device pass).
+  Mood discs / calm / calendar cells / progress bars = per-view functional-color passes.
+- **Honest limit:** headless Chromium — backdrop blur + the gilt actions + native pickers need Ines's device
+  pass. `--rose-1..4` LOCKED; flower coords untouched.
+
+## Changelog (v136) — Luxe revamp Faza 3: flower nav + bottom bar/FAB (velvet/gilt, agent-assisted)
+
+- **v136 — the flower navigation + bottom bar/FAB re-skinned for both themes.** First **agent-assisted**
+  slice: the Team Leader (main chat) ran TWO worker agents in parallel — one proposed the flower CSS, one the
+  bottom-bar/FAB CSS — then verified the anchors + a specificity concern, integrated both, and ran the gate.
+  Pure CSS (div 213/213, `node --check` OK on all 3 scripts; screenshots both themes, flower labels confirmed
+  inside their petals).
+  - **Flower (key finding):** petal fill/stroke/icon/word all route through **`.flower`-scoped CSS vars**
+    (`--petal-cream/-mid/-edge/-active/-line`, `--pgold`, `--ptext` at ~line 985) that the inline SVG
+    `<linearGradient>` stops + stroke read live — so a `html[data-theme="dark"] .flower {…}` override re-skins
+    the petals to **velvet wine + gilt stroke + gold line-icons + champagne 9px words** with **NO JS and an
+    instant runtime flip** (the mockup's JS shim isn't needed because the real app already uses `var()` in the
+    gradient). The dark override MUST be `.flower`-scoped (a `:root` override is shadowed). Center disc →
+    velvet/wine radial + gilt ring + candle-glow halo (box-shadow, no new div). Active states given
+    champagne/gilt variants (the old `--rose-4` active is muddy on velvet). **Light flower unchanged** (blush
+    rose = the mockup's light variant). **Geometry, label coords (l1 170/78 … l5 85/142), petalPath/petalFill
+    markup, and the 5 icons are UNTOUCHED — only colors re-skinned. Words verified inside petals in both themes.**
+  - **Bottom bar + FAB:** the FAB action recolored rose → **WINE `#6E1334`** in light (gilt ring, the locked
+    light-action color) and **GILT GOLD** in dark (with a dark `#3A1020` "+" for contrast); the dark bar →
+    velvet translucent (`rgba(58,20,38,.85)→#34101e`, blur); dark nav idle/hover → champagne/taupe via the
+    semantic tokens, **nav-active → gold** (`--gold-gilt`). No `calm-mode` conflict (v54 already removed those
+    bar/FAB overrides). Light bar otherwise unchanged.
+- **Honest limit:** headless Chromium — the velvet-on-photo blur + the gilt FAB on a real device stay Ines's
+  pass. `--rose-1..4` LOCKED. (The day cards/slots/composer below are still light — v137 themes them.)
+
+## Changelog (v135) — Luxe revamp Faza 2: hero & brand (Ephesis "Día" + per-theme velvet)
+
+- **v135 — the hero & brand luxe pass, the first proper per-view dark treatment.** Pure CSS (no markup/JS
+  change; div 213/213, `node --check` OK on all 3 scripts; screenshots both themes at 412px). Changes:
+  1. **"Día" → Ephesis gold signature script.** `.hero .brand h1 .brand-accent` re-styled from italic Fraunces
+     to `font-family:'Ephesis'` at `1.3em`, painted with the gilt gradient `linear-gradient(100deg,#E8D2A0,
+     #C8A24C 45%,#9A6E2C)` via `background-clip:text` (`-webkit-text-fill-color:transparent`). "Mi" stays
+     Fraunces. Ephesis was loaded (unused) in v133 — now it earns its place. Applies in BOTH themes.
+  2. **Gilt hairline frame** inside the hero photo (day view): `body[data-view="day"] .hero::after{inset:8px;
+     border:1px solid rgba(200,162,76,.42);border-radius:20px;pointer-events:none}` — the mood-board's gold bar.
+  3. **Gilt rule under the date band:** the day progress-bar TRACK recolored from a rose tint to a faint gilt
+     `rgba(200,162,76,.24)` (the rose FILL stays — rose remains the action/progress color; gilt is metal only).
+  4. **Per-theme dark hero** (`html[data-theme="dark"]` block): a STRONGER velvet veil (`--hero-veil`-style
+     double gradient to `#2c0d1c`) + velvet photo-bottom fade so the bright bougainvillea photo doesn't wash
+     out champagne text; brand `#F1E5D4`, phrase `#F4E7D6` + ro `#C9A99E` (with dark text-shadows), date
+     champagne, prev/next velvet chips with gilt borders, count/`↩azi`/seed/langbar/theme-glyph in gilt, date
+     track gilt. The bright photo legibility risk flagged in the plan is handled by the stronger veil.
+- **Drop-cap DEFERRED (honest):** `renderHeader` builds the phrase as `"«"+p.es+"»"`, so `::first-letter`
+  would style the `«` guillemet, not the first letter. Skipped rather than ship an ugly drop-cap; revisit by
+  wrapping the first real letter in a span (small JS change) in a later polish.
+- **Rough state:** the flower nav + day cards below the hero are still LIGHT on the velvet page (v136 re-skins
+  the petals KEEPING geometry/label coords; v137 does cards). **Honest limit:** headless Chromium — the
+  `background-clip:text` Ephesis gilt + backdrop-filter on velvet need the real-Android pass. Flower label
+  coords untouched; `--rose-1..4` LOCKED.
+
+## Changelog (v134) — Luxe revamp Faza 1: theme switcher plumbing (dark works rough)
+
+- **v134 — Light/Dark switcher wired end-to-end.** Builds on the v133 token foundation. Validated
+  (div 213/213, `node --check` OK on all 3 script blocks; screenshots both themes at 412px + an interactive
+  toggle/persistence test). Changes:
+  1. **`settings.theme`** (`"light"`|`"dark"`, default light) — added to the `settings` object (`loadSettings`
+     reads it, `saveSettings` writes it). Because backup export already dumps the whole `settings` key, the
+     theme rides along in backups for free; import re-applies it (`loadSettings`→`applyTheme`).
+  2. **`<html data-theme>`** drives the palette. `applyTheme()` sets the attribute + the hero glyph (☾/☀) +
+     the Settings toggle state; `toggleTheme()` flips, applies, saves. An **early inline `<head>` script**
+     reads `localStorage.settings.theme` and sets `data-theme` BEFORE first paint (no flash on PWA; wrapped in
+     try/catch so the Claude.ai sandbox just falls back to light).
+  3. **Two switchers:** a discreet **☾/☀ glyph in the hero langbar** (`#themeToggle`, a compact gold glyph
+     after RO with a thin gilt divider) + a **Settings "Aspect/Appearance" panel** with a "Dark theme" toggle
+     (`#themeToggleSet`). New i18n `appearance/dark_theme/theme_help/theme_toggle` (EN/ES/RO).
+  4. **Rough dark baseline:** `html[data-theme="dark"] .phone` (and `body`) get the velvet `--bg` radial, so
+     flipping the toggle visibly turns the page aubergine→night. Cards/hero/petals keep their LIGHT surfaces
+     for now (readable) — full per-component velvet theming is v135+. Honest "rough", per the phase plan.
+- **Bug found & fixed in-slice:** the langbar wiring did `#langBar.querySelectorAll("button").forEach(...)`,
+  binding the language handler to EVERY button — including the new theme toggle — overwriting its `onclick`
+  (so the hero toggle silently did nothing). Scoped it to `button[data-l]`. (The Settings toggle was never
+  affected.) Caught by an interactive Playwright check, not by eyeballing.
+- **Honest limit:** headless Chromium only — the early-paint theme apply on a real PWA install, plus
+  blur/backdrop on the velvet, need the device pass. `--rose-1..4` LOCKED; flower coords untouched.
+
+## Changelog (v133) — Luxe revamp Faza 0: theme foundation (zero visual change)
+
+- **v133 — foundation tokens for the Light+Dark luxe revamp (first slice).** Purely additive scaffold; the
+  app still renders exactly as v132 in light. Three edits, validated (div 210/210, `node --check` OK on both
+  script blocks; screenshots in BOTH themes at 412px):
+  1. **Ephesis loaded** — added `&family=Ephesis` to the Google Fonts `<link>`. The font is fetched but NOT
+     yet referenced by any rule, so nothing changes; it's reserved for the "Día" gold script wordmark (v135).
+     Fraunces/Nunito Sans untouched (no `ital` axis added yet — that's v135 too).
+  2. **Metal accent tokens** added to `:root`: `--gold-1:#E8D2A0` (champagne), `--gold-gilt:#C8A24C`,
+     `--gold-antique:#B8893F`, `--taupe-1:#C9A99E`, `--taupe-2:#A98A7E`, and `--gold-hair` (the signature
+     gilt-hairline gradient `linear-gradient(100deg,#E8D2A0,#C8A24C 45%,#9A6E2C)`). `--gold-deep:#9A6E2C`
+     already existed. `--rose-1..4` LOCKED, untouched.
+  3. **Semantic theme tokens** introduced: `--bg / --surface / --surface-2 / --text / --text-soft / --line /
+     --brand / --brand-ink / --accent`. **Light values in `:root` mapped to TODAY's values** (`--surface`=
+     cream `#FFFCF7`, `--text`=ink `#3A2D21`, `--brand`/`--accent`=rose-4 `#B5495F`, `--line` kept at today's
+     `#E6DBC4`, etc.) + an **`html[data-theme="dark"]` override block** with the dark-velvet values (`--bg`
+     night `#250b15`, `--surface` velvet `#4A1A30`, `--text` champagne `#EFE2D0`, `--brand` gilt gold, …).
+- **Why zero visual change:** no component rule consumes the semantic tokens yet (they're consumed from v135),
+  and the dark block only activates when `data-theme="dark"` is set on `<html>` (v134 plumbing). Verified:
+  v133 light is **pixel-identical** to v132 light, AND v133 forced to `data-theme="dark"` renders identically
+  too — proving the dark override is defined-but-inert. The flower labels all stay inside their petals.
+- **Honest limit:** headless Chromium only. The real Ephesis render + the dark theme proper land in v134/v135;
+  device QA stays Ines's step. **Default theme decision = LIGHT** (first launch; returning users keep
+  `settings.theme`) — the last open revamp decision, now closed.
 
 ## Changelog (v132) — Journal: olive branch removed + caret-follow scroll (public-release polish)
 

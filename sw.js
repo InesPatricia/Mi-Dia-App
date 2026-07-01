@@ -1,4 +1,4 @@
-/* Mi Día — service worker (PWA offline support, introduced with v48)
+﻿/* Mi Día — service worker (PWA offline support, introduced with v48)
  *
  * Strategy: network-first with cache fallback.
  *   - Online: always fetch fresh (so a new deploy is picked up), and refresh the cache.
@@ -6,7 +6,7 @@
  *
  * Bump CACHE on each new build so old caches are cleared on activate.
  */
-const CACHE = "mi-dia-v132";
+const CACHE = "mi-dia-v143";
 const APP_SHELL = "/";
 
 self.addEventListener("install", (event) => {
