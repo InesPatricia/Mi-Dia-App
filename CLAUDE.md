@@ -1,7 +1,7 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v143.html`** (promoted to `index.html`, sw CACHE `mi-dia-v143`)
+> Last updated: July 2026 · Current latest build: **`mi-dia-v144.html`** (promoted to `index.html`, sw CACHE `mi-dia-v144`, live on Cloudflare)
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -21,21 +21,50 @@ Personal use for now (localStorage only). Future: public/subscription version.
 
 ---
 
-## ⭐ Luxury "old rich" revamp: Light + Dark themes — ✅ BUILT (v133→v139) + QA GREEN (v142)
+## ⭐ Luxury "old rich" Light + Dark revamp — ✅ DONE + SHIPPED (v133→v144, live)
 
-> **Status: design APPROVED via mockup; revamp IN PROGRESS.** Faza 0 (v133) + Faza 1 (v134) + Faza 2 (v135)
-> Faza 0→5 DONE (v133–v139) + Faza 6 QA DONE: tokens + switcher + hero/brand + flower/bar + shared components
-> + ALL 7 views themed dark (Day/Journal/Respiro/Calendar/Progress/Projects/Profile+Settings) via agent teams
-> + theme-aware `paleTint`/`applyJWash` JS. **The luxe Light+Dark revamp is COMPLETE and VERIFIED in both
-> themes.** Current build `mi-dia-v139.html`, **promoted to `index.html`** (+ `sw.js` CACHE bumped to
-> `mi-dia-v139`). **QA green:** full e2e suite **68/68 pass** (incl. a new `theme.spec.js` — 4 tests: default
-> light, hero-glyph toggle+persist+reload, Settings toggle two-way, returning-user boots dark), the `@visual`
-> baselines **regenerated** (light flower + bottom bar changed: wine FAB, Ephesis "Día"), and `npm run
-> validate` OK. **Only remaining is Ines's step: the real-Android device pass, then git commit + push (which
-> auto-deploys to Cloudflare) — NOT done yet (awaiting go-ahead).** axe contrast on velvet is best-checked on
-> device.
-> **Start the revamp here next session.** Interactive mockup (open in a browser — has a live 3-way theme
-> switcher): **`private/mockups/mi-dia-luxe-mockup.html`**; PNG previews in `private/mockups/luxe-previews/`.
+> **New here? Read this box, then "How the theme system works" below — the rest of this section is build
+> history.** The revamp is COMPLETE and LIVE on Cloudflare. The app has **two real luxe themes** you switch
+> with a ☾/☀ toggle in the hero (next to EN·ES·RO) + a toggle in Settings:
+> **Light-luxe** (champagne bg + **WINE `#6E1334`** actions + gilt hairlines) and **Dark-velvet** (aubergine
+> velvet + **GILT GOLD** actions). Both themes cover all 7 views. All emoji are **line-art SVG** (no emoji in
+> the UI). Current build **`mi-dia-v144.html`** = `index.html`, `sw.js` CACHE `mi-dia-v144`. e2e **68/68**.
+>
+> **What's still open (for the next agent):**
+> - **Ines's real-Android device pass** — the ONLY thing headless can't cover: native pickers, blur/
+>   backdrop-filter, fonts (Ephesis + `background-clip:text`), axe contrast on velvet. (Verified working live:
+>   add-activity + all views render both themes.)
+> - **Next planned feature:** "Ritualuri" (Atomic Habits — recurring identity habits + Home streak). Design
+>   done, not built; mockups in `private/mockups/`, next step = a `ritual.js` module plan.
+> - **Pre-existing backlog** (unrelated to the revamp): UX-coherence E1–E7, B6 duration "min" clip, D14 public
+>   version — see the backlog sections lower in this file.
+
+### How the theme system works (for making ANY theme/color change)
+
+- **`<html data-theme>`** (`light`|`dark`) drives everything; persisted in **`settings.theme`** (in backup);
+  an early `<head>` script applies it before paint (no FOUC). `toggleTheme()` re-renders the active view so
+  theme-aware inline tints (`paleTint`, `applyJWash`, `moonSVG`) recompute.
+- **Light values live in `:root`; dark values in an `html[data-theme="dark"]{…}` block** that remaps the same
+  tokens. Because each theme block overrides the other's neutrals, **changing `:root` neutrals is light-only**
+  and the dark block is dark-only — zero cross-contamination. Add per-theme tweaks as
+  `html[data-theme="light"] …` / `html[data-theme="dark"] …` scoped rules; never edit a base rule in a way
+  that leaks into the other theme.
+- **Semantic tokens:** `--bg --surface --surface-2 --text --text-soft --line --brand --brand-ink --accent`;
+  metals `--gold-1 --gold-gilt --gold-antique --gold-deep` + `--gold-hair`. **`--rose-1..4` are LOCKED** (the
+  flower petals + a few functional uses) — override a consuming selector's appearance, never the token.
+- **Before calling a theme change done:** run **`/theme-qa`** (`node e2e/theme-grid.js ../mi-dia-vNN.html` →
+  all 8 views × both themes as one review grid + a legibility checklist) + `/design-check`'s validation chain
+  (div-balance + `node --check`) + **e2e** (`cd e2e && npx playwright test --grep-invert @visual`). Which
+  color a thing should be: **`.claude/skills/theme-qa/color-roles.md`**. CSS injected by persist.js/cycle.js
+  (outside the main `<style>`): **`.claude/skills/theme-qa/module-css.md`**.
+
+---
+
+### Build history (how the revamp was made — reference)
+
+> Origin + locked decisions + the phased plan that produced v133→v144. Kept for context; the per-version
+> detail is in the Changelogs (v133 → v144) further down. Mockup: `private/mockups/mi-dia-luxe-mockup.html`
+> (live 3-way switcher) + PNG previews in `private/mockups/luxe-previews/`.
 
 **Origin.** Ines supplied a luxury-travel mood board (*BonVoyage Christine*): bordo/aubergine + magenta +
 taupe + cream + antique/polished gold; Butler serif + signature script + Open Sans; "old rich / quiet
@@ -997,7 +1026,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). **Luxe Light+Dark revamp IN PROGRESS: Faza 0 (v133) — theme-token foundation (Ephesis + metal + semantic tokens + `data-theme="dark"` block), zero visual change; Faza 1 (v134) — theme switcher plumbing (settings.theme + `<html data-theme>` + hero ☾/☀ + Settings toggle + backup, dark works rough); Faza 2 (v135) — hero & brand luxe pass (Ephesis "Día" gold script + per-theme velvet veil + gilt hairline frame + dark hero legible); Faza 3 (v136) — flower nav + bottom bar/FAB re-skin (velvet/gilt petals + champagne labels, wine/gilt FAB, gold nav-active; agent-assisted, flower geometry/coords untouched); Faza 4 (v137) — shared cards & components dark theming (token remap + 5 parallel agents: panels/composer/slots/shortcuts/controls velvet+gilt; the whole Day view themes dark); Faza 5-part1 (v138) — the 5 secondary views (Journal/Respiro/Calendar/Progress/Projects) themed dark via 5 parallel agents + theme-aware paleTint/applyJWash JS (re-render on toggle); Faza 5-part2 (v139) — Profile + Settings themed dark. **The luxe Light+Dark revamp is now functionally COMPLETE across all 7 views; only v142 QA remains (axe/visual-baselines/e2e/device) + promote.** Current build **`mi-dia-v139.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 68 tests across 18 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.**
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). **Luxe Light+Dark revamp SHIPPED (v133→v144, live on Cloudflare):** two real themes (Light-luxe champagne+wine+gilt · Dark-velvet aubergine+gilt) with a ☾/☀ switcher, across all 7 views; foundation semantic tokens + Ephesis "Día" gold script; dark-velvet (v135–v142) + light-luxe (v143) built incrementally, agent-assisted; **all emoji → line-art SVG** (v142); final accents drop-cap + candle-glow + theme-aware cycle-moon (v144). e2e 68/68. New project skills: `/theme-qa` (+ `e2e/theme-grid.js`/`shoot.js`), `color-roles.md`, `module-css.md`. Remaining: Ines's real-Android device pass. Current build **`mi-dia-v144.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 68 tests across 18 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.**
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -1222,6 +1251,26 @@ and unifies the date card across Jurnal + Calendar.
   auto-deploys to Cloudflare) — the working tree is staged (index.html + sw.js + v133–v139 + CLAUDE.md +
   skills) but NOT committed/pushed, awaiting go-ahead. At commit time: `git rm` the superseded
   `mi-dia-v133..v138.html` (keep v139 + index.html), per the working-tree rule.
+
+## Changelog (v144) — close the 3 deferred luxe accents (drop-cap · candle-glow light · cycle moon dark)
+
+- **v144 — the last polish, closing every item deferred during the revamp.** Verified with the new `/theme-qa`
+  grid (dogfooded — all 8 views × both themes) + e2e 68/68 + `@visual` regenerated. Three changes:
+  1. **Gilt drop-cap on the Spanish phrase** (was deferred in v135 because the phrase is wrapped `«…»` in JS,
+     so `::first-letter` hit the guillemet). `renderHeader` now builds `#phraseEs` via innerHTML wrapping the
+     first REAL letter in `<span class="phrase-dc">` (esc'd — the global `esc` from v142); CSS `.phrase-dc` =
+     a raised gilt-gradient initial (`background-clip:text`), inline (no float, so it never spills on the small
+     2-line home phrase). Gilt in BOTH themes.
+  2. **Candle-glow behind the flower centre in LIGHT** — dark already had the gilt halo; added a soft
+     `0 0 22px 4px rgba(200,162,76,.26)` glow to `html[data-theme="light"] .flower-center`.
+  3. **Cycle moon-disc theme-aware (dark)** — the v138 CSS override was mis-scoped (`#view-cal .cy-moon` — but
+     the "Luna ta" sheet/detail mounts on `body`, not in `#view-cal`) AND incomplete (the 4-phase arc has no
+     `.cy-moon` class). Fixed at the source: **`moonSVG` now reads `data-theme`** and paints the disc velvet
+     `#3c1528` + gilt stroke on dark (near-white `#F0E2E3` on light); the lit phase stays `--rose-2`
+     (functional). Themes every moon instance, any container. Removed the dead CSS override. Verified: with a
+     period logged, the dark moon disc renders `#3c1528` (velvet).
+- **Nothing else remains from the revamp plan** — every listed signature accent (gilt hairline, Ephesis "Día",
+  serif figures, drop-cap, candle-glow) is now in. Remaining is only Ines's device pass.
 
 ## Changelog (v143) — LIGHT-LUXE pass: light theme now matches the mockup (champagne + wine + gilt)
 

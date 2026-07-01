@@ -3,7 +3,7 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v133–v143 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art (curent)
+## v133–v144 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art (curent)
 - **Temă dublă reală, comutabilă:** un switcher ☾/☀ în hero (lângă bara de limbi) + un toggle în Setări,
   persistat în `settings.theme` și inclus în backup, condus de `<html data-theme>`. Default la prima
   deschidere = **Light**.
@@ -29,6 +29,9 @@
   `/theme-qa` (grid dark×light pe toate view-urile + checklist lizibilitate + poartă e2e), `color-roles.md`
   (harta rolurilor de culoare), `module-css.md` (inventar CSS injectat de module) + utilitarele
   `e2e/shoot.js` / `e2e/theme-grid.js`.
+- **Ultimele accente (v144):** drop-cap gilt pe fraza spaniolă (prima literă reală într-un span, „«" rămâne
+  plat), candle-glow în spatele centrului florii pe light, și discul-lună al ciclului făcut theme-aware în JS
+  (`moonSVG` → velvet pe dark, oriunde apare) — închide toate accentele-semnătură din plan.
 
 ## v126–v132 — teste/a11y, arcul olive in Jurnal, fix scriere + repo public
 - **Teste & CI/CD:** instrumentare pentru Playwright + fix a11y (aria-label care urmareste limba) (v126),

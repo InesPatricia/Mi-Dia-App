@@ -1664,7 +1664,6 @@
   html[data-theme="dark"] #view-cal .callens button.sel{ background:var(--surface); color:var(--accent); box-shadow:0 1px 0 rgba(232,210,160,.18), 0 6px 14px -8px rgba(0,0,0,.55); }
   html[data-theme="dark"] #view-cal .cell.full{ background:var(--surface-2); border-color:var(--gold-gilt); }
   html[data-theme="dark"] #view-cal .cell.lens .lring .trk{ stroke:var(--line); opacity:1; }
-  html[data-theme="dark"] #view-cal .cy-moon svg > circle:first-child{ fill:#3c1528; stroke:var(--line); }
   html[data-theme="dark"] .dayover .daypop .dpmood{ color:var(--gold-1); }
   html[data-theme="dark"] #view-cal .cell.lens .lribbon{ background:var(--accent); }
 
@@ -1732,6 +1731,12 @@
   .projdel svg{width:16px;height:16px;vertical-align:middle;}
   .cs-mood .mood-ic{width:15px;height:15px;vertical-align:middle;}
   .ilink svg{width:16px;height:16px;vertical-align:middle;}
+  /* v144: gilt drop-cap on the Spanish phrase (signature accent; both themes). Inline raised initial —
+     no float, so it never spills on the small 2-line home phrase. */
+  .hero .phrase .es .phrase-dc{ font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.5em;
+    line-height:.8; padding-right:.02em; text-shadow:none;
+    background:linear-gradient(100deg,#E8D2A0,#C8A24C 45%,#9A6E2C); -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent; }
 
   /* ==================================================================================
      v143 LIGHT-LUXE — recolor ROSE actions -> WINE #6E1334 / accent #A8255B + gilt, for the
@@ -1743,7 +1748,7 @@
      ================================================================================== */
 
   /* ---------- (1) Day view: flower centre + composer + shortcuts + Focus + bottom nav ---------- */
-  html[data-theme="light"] .flower-center{ background:radial-gradient(circle at 38% 30%,#8C1E40,#6E1334); box-shadow:0 8px 20px rgba(110,19,52,.34),inset 0 3px 8px rgba(255,255,255,.28),inset 0 -7px 14px rgba(84,16,42,.4); color:#FBEFD9; }
+  html[data-theme="light"] .flower-center{ background:radial-gradient(circle at 38% 30%,#8C1E40,#6E1334); box-shadow:0 0 22px 4px rgba(200,162,76,.26),0 8px 20px rgba(110,19,52,.34),inset 0 3px 8px rgba(255,255,255,.28),inset 0 -7px 14px rgba(84,16,42,.4); color:#FBEFD9; }
   html[data-theme="light"] .flower-center.tab.active{ background:radial-gradient(circle at 38% 32%,#8C1E40,#6E1334 70%) !important; color:#FBEFD9 !important; }
   html[data-theme="light"] .flower-center.active{ box-shadow:0 6px 18px rgba(110,19,52,.4),inset 0 2px 6px rgba(255,255,255,.22),0 0 0 4px var(--petal-edge),0 0 0 6px #8C1E40; }
   html[data-theme="light"] #composer .qa-go,
@@ -3170,7 +3175,8 @@
     const start = new Date(cur.getFullYear(),0,0);
     const doy = Math.floor((cur-start)/86400000);
     const p = PHRASES[doy % PHRASES.length];
-    $("#phraseEs").textContent = "«"+p.es+"»";
+    // v144: gilt drop-cap on the Spanish phrase's first REAL letter (the « guillemet stays plain).
+    { const _es=""+p.es; $("#phraseEs").innerHTML = "«<span class=\"phrase-dc\">"+esc(_es.charAt(0))+"</span>"+esc(_es.slice(1))+"»"; }
     $("#phraseRo").textContent = (lang==="es") ? "" : ((p.tr&&(p.tr[lang]||p.tr.en))||"");
     { const me=$("#phraseMiniEs"), mr=$("#phraseMiniRo");
       if(me) me.textContent="«"+p.es+"»";
@@ -5485,7 +5491,10 @@ const Cycle = (function () {
    *  dreapta cand creste (foliculara→ovulatie), pe stanga cand descreste (luteala). */
   function moonSVG(frac, waxing, size) {
     const r = size * 0.42, cx = size / 2, cy = size / 2;
-    const disc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#F0E2E3" stroke="#DFC9CB" stroke-width="0.9"/>`;
+    // v144: theme-aware disc — velvet + gilt stroke on dark, near-white on light. The lit phase stays
+    // --rose-2 (functional). Themes ALL moon instances (strip + "Luna ta" detail arc), any container.
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const disc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${dark ? '#3c1528' : '#F0E2E3'}" stroke="${dark ? 'rgba(200,162,76,.5)' : '#DFC9CB'}" stroke-width="0.9"/>`;
     let lit = '';
     if (frac <= 0.03) { lit = ''; }
     else if (frac >= 0.97) { lit = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--rose-2,#E58699)"/>`; }
