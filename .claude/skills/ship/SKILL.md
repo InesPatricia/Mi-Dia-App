@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Ritualul complet de release pentru Mi Día — promoveaza cel mai nou mi-dia-vNN.html in index.html, bumpeaza CACHE in sw.js, ruleaza validari deterministe (validate.mjs: sync versiune + node --check + echilibru div) + suita e2e, actualizeaza CHANGELOG + CLAUDE.md, apoi commit + tag vNN + push DIRECT pe main cu confirmare (push = auto-deploy Cloudflare). Foloseste cand Ines spune "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
+description: Ritualul complet de release pentru Mi Día — promoveaza cel mai nou mi-dia-vNN.html in index.html, bumpeaza CACHE in sw.js, ruleaza validari deterministe (validate.mjs: sync versiune + node --check + echilibru div) + suita e2e, apoi la Pas 4 **sincronizeaza PROACTIV si COMPLET toata documentatia + memoria + skill-urile** (CHANGELOG, CLAUDE.md — data model/features/module/test-count/status/changelog, README, toate fisierele de memorie + MEMORY.md, skill-urile afectate; consecventa versiune + numar teste peste tot; nu astepta ca Ines sa ceara), apoi commit + tag vNN + push DIRECT pe main cu confirmare (push = auto-deploy Cloudflare). Foloseste cand Ines spune "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
 ---
 
 # /ship — release ritual Mi Día
@@ -48,16 +48,43 @@ Cu confirmarea lui Ines pe `vNEW`:
 - WARN-urile `[5]` (docs) le rezolvi la Pas 4; WARN `[6]` (build-uri vechi) la Pas 5 (`git rm`).
 - Daca a aparut vreun FAIL, repara inainte sa continui.
 
-## Pas 4 — Actualizeaza documentatia INAINTE de commit (regula permanenta a lui Ines)
-Din diff-ul REAL (`git diff`, nu din memorie):
-1. **`CHANGELOG.md`** — adauga intrarea `vNEW` (ce s-a facut, pe scurt, in stilul de acolo,
-   RO fara diacritice).
-2. **`CLAUDE.md`** — actualizeaza linia "Current latest build: **`mi-dia-vNEW.html`**" +
-   blocul de status/changelog daca s-a schimbat ceva durabil.
-3. **Memoria** (`~/.claude/.../memory/`) — daca s-a schimbat ceva durabil (roadmap, status),
-   actualizeaza fisierul relevant + `MEMORY.md`.
-Ruleaza din nou `node .claude/skills/ship/validate.mjs` — WARN-urile `[5]` trebuie sa dispara.
-Daca livrarea e doar promovarea unei versiuni deja documentate, sari peste ce e la zi si spune asta.
+## Pas 4 — Sincronizeaza COMPLET documentatia + memoria + skill-urile (regula permanenta, PROACTIVA)
+**Fa asta INTOTDEAUNA la /ship, din proprie initiativa — Ines nu trebuie sa-ti spuna sa updatezi.**
+La finalul unui arc, TOT ce descrie aplicatia trebuie sa fie adevarat: complet, corect, consecvent, si
+**in spiritul viziunii** (Mediterranean quiet-luxury; onest despre limite; „living doc" — se editeaza in
+loc, nu se versioneaza; **RO fara diacritice in proza**, comentarii cod in engleza). Lucreaza din diff-ul
+REAL (`git diff` + `git log`), NU din memorie. Parcurge FIECARE dintre acestea si actualizeaza ce s-a
+schimbat (sari doar ce e demonstrabil deja la zi — si spune ca ai sarit):
+
+1. **`CHANGELOG.md`** — intrarea de arc `vOLD→vNEW` (in stilul de acolo, marcheaza „(curent)" pe noua,
+   scoate-l de pe cea veche).
+2. **`CLAUDE.md`** (docul canonic — cauta TOATE locurile stale, nu doar unul):
+   - linia „Current latest build" + `sw` CACHE;
+   - **Data model** — orice cheie noua de `localStorage` (structura, migratii, ce e in backup);
+   - **App features (implemented)** — feature-urile noi, ce fac, in ce view;
+   - **lista de module de referinta** — orice fisier-sursa nou la root (ex. `ritual.js`/`onboard.js`);
+   - **sectiunea Test harness** — numarul de teste + specuri + spec-urile noi + orice helper/conventie noua;
+   - **blocul de status final** + caseta „⭐ NEXT UP" / „NEXT MAJOR WORK" — marcheaza arcul livrat, seteaza
+     urmatoarea lucrare, muta „next feature" din „in design" in „done";
+   - **un nou „## Changelog (vOLD→vNEW)"** concis (pointer la `CHANGELOG.md` + planul, o linie/felie);
+   - **Backlog / decizii** — bifeaza ce s-a rezolvat, noteaza decizii luate (inclusiv cele revizuite).
+3. **`README.md`** (vitrina publica) — badge-uri (numar de teste), **Highlights/features**, lista de module,
+   descrierea RO, orice numar sau versiune care apare.
+4. **Memoria** (`~/.claude/.../memory/`) — actualizeaza FIECARE fisier ale carui fapte s-au schimbat
+   (numar de teste, build curent, status feature, arc) + pointer-ele din **`MEMORY.md`**. Daca un feature a
+   trecut din „in design" in „livrat", rescrie fisierul (nu doar descrierea).
+5. **Skill-urile** (`.claude/skills/*`) — daca arcul a introdus/schimbat un flux, o poarta sau o conventie
+   (ex. un helper e2e nou, o regula de validare, un pas de QA), actualizeaza skill-ul relevant
+   (`design-check`, `theme-qa`, chiar acest `ship`) ca sa ramana adevarat. Inclusiv `validate.mjs` daca a
+   aparut o verificare noua.
+6. **Consecventa** (verific-o explicit): acelasi string de versiune peste tot
+   (`sw.js` CACHE ↔ `index.html` ↔ `CLAUDE.md` ↔ badge-ul README); acelasi numar de teste peste tot
+   (`CLAUDE.md` ↔ `README.md` ↔ memoria e2e). Fara nepotriviri.
+
+Ruleaza din nou `node .claude/skills/ship/validate.mjs` — WARN-urile `[5]` trebuie sa dispara. (Memoria +
+README + skill-urile nu sunt prinse de validator — le verifici MANUAL, e responsabilitatea ta la fiecare
+ship.) Daca livrarea e doar promovarea unei versiuni deja documentate complet, spune explicit ce ai
+verificat si ca era la zi.
 
 ## Pas 5 — Commit + tag + push (CERE CONFIRMARE INAINTE DE PUSH)
 Livrarea e **direct pe main** (ca ultimele commit-uri ale lui Ines). Arata-i comenzile EXACTE
