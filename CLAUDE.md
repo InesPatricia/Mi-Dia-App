@@ -38,12 +38,24 @@ Personal use for now (localStorage only). Future: public/subscription version.
 > **`mi-dia-v156.html`** = `index.html`, `sw.js` CACHE `mi-dia-v156`. See the "Changelog (v145→v155)" +
 > `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
-> **What's still open (for the next agent):**
+> **What's still open (for the next agent) — updated after the v156 Coerență arc:**
+> - **Navigația tip iOS (așteaptă decizia lui Ines A/B).** Un audit multi-agent (raport în
+>   `private/audit-coerenta-2026-07.md`) a arătat că navigația actuală (floare-meniu + bară jos + bloom +
+>   centru-intenție, ~11 concepte) e sursa #1 de „făcut din bucăți". Mockup interactiv gata în
+>   **`private/mockups/mi-dia-nav-tabbar-mockup.html`**: floarea → DECOR pe Home, tab-bar clasic jos vizibil
+>   peste tot, fără bloom. **Varianta A** (5 taburi Azi·Jurnal·Respiro·Calendar·Tu, adăugare în conținut) =
+>   recomandarea; **Varianta B** („+" central, o destinație retrogradată). **Ines nu a decis încă** — NU
+>   construi până nu alege A sau B.
+> - **Faza 3 profund** (continuă unificarea design din v156): inputs/butoane pe scara `--r-*`/`--sp-*` (deja
+>   definită în `:root`) + un `.card`/`.btn--primary` unic (acum 10+ variante de buton). Pur CSS, low-risk.
+> - **Idei de retenție din audit** (opționale, pe brand, non-anxioase): ritual de seară (închidere zi),
+>   notificări locale reale via `sw.js` (opt-in, ton blând), arhivă/recitire în Jurnal, legare Ritual↔Respiro
+>   (`calmId` + „Respiră acum").
 > - **Ines's real-Android device pass** — the ONLY thing headless can't cover: native pickers, blur/
 >   backdrop-filter, fonts (Ephesis + `background-clip:text`), axe contrast on velvet, long-press on touch,
->   chime. (Verified working live via prod smoke: all 7 views render, both themes.)
-> - **Pre-existing backlog** (unrelated to the revamp): UX-coherence E1–E7, B6 duration "min" clip, D14 public
->   version — see the backlog sections lower in this file.
+>   chime, **drop-cap „P" pe device** (fix v156). (Verified working live via prod smoke: all 7 views render.)
+> - **Pre-existing backlog:** UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156** via `.calnav`=`.datebar`),
+>   B6 duration "min" clip, D14 public version — see the backlog sections lower in this file.
 
 ### How the theme system works (for making ANY theme/color change)
 
