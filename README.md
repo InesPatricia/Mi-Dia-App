@@ -5,7 +5,7 @@
 **🔗 Live app:** https://mi-dia-app.pages.dev &nbsp;·&nbsp; **📱 Installable PWA** (works offline)
 
 ![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20offline-5a8a5a)
-![Tests](https://img.shields.io/badge/e2e-64%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
 ![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
@@ -17,7 +17,7 @@
 
 I'm a **QA / AI professional**, and I built this as a real, shipped product to practise engineering and quality end-to-end — not a toy. The interesting part isn't just the app; it's **how it's tested and shipped**:
 
-- ✅ **64 end-to-end tests across 17 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
+- ✅ **83 end-to-end tests across 20 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
 - ♿ **Accessibility audited** with axe-core on a curated rule set across all 7 views; semantic locators (`getByRole`/`getByLabel`) drive the suite — testing the app the way a screen-reader user experiences it.
 - 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation.
 - 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**.
@@ -36,8 +36,9 @@ and energy awareness. Fully **trilingual (EN · ES · RO)**. All data stays **lo
 the browser (localStorage); nothing is sent to any server.
 
 **Highlights:** radial "flower" navigation · day planner with overlap-aware time slots ·
-mood + emotion-wheel journaling with a 4F reflection scaffold · calendar "lenses" ·
-consolidated progress view · opt-in cycle/rhythm tracking · Word/PDF & JSON backup.
+identity-based **habit rituals** with streaks + habit-stacking (Atomic Habits) · a **guided
+onboarding** carousel · mood + emotion-wheel journaling with a 4F reflection scaffold ·
+calendar "lenses" · consolidated progress view · opt-in cycle/rhythm tracking · Word/PDF & JSON backup.
 
 ### Screenshots
 
@@ -76,9 +77,10 @@ npm run test:report # interactive HTML report
   browsers require to be a separate file).
 - **Deployed on Cloudflare Pages**, auto-deploying from `main` on every push; `index.html`
   is the promoted build. One-click dashboard rollback as a safety net.
-- **New features as self-contained modules** (e.g. [`cycle.js`](cycle.js)) following a
-  clean 5-layer pattern (data / calc / i18n / view / wiring) with pure, testable calc
-  functions — an incremental-migration approach over the single file, no big-bang rewrite.
+- **New features as self-contained modules** (e.g. [`cycle.js`](cycle.js),
+  [`ritual.js`](ritual.js), [`onboard.js`](onboard.js)) following a clean 5-layer pattern
+  (data / calc / i18n / view / wiring) with pure, testable calc functions — an
+  incremental-migration approach over the single file, no big-bang rewrite.
 
 ### Data model (short)
 - **Area** (`cat`): the life-area of an activity. One per slot. Editable, max 8.
@@ -103,8 +105,9 @@ Copia de seguridad: pestaña **Día → Backup** (exporta/importa un `.json`).
 <details>
 <summary><b>Română</b></summary>
 
-Un planner și jurnal mediteranean: planificarea zilei pe sloturi orare, jurnal ghidat,
-proiecte, calendar, statistici și unelte de calm. Aplicația e un singur fișier — deschide
+Un planner și jurnal mediteranean: planificarea zilei pe sloturi orare, **ritualuri** (obiceiuri
+cu serie, în stil Atomic Habits) + un **onboarding ghidat**, jurnal ghidat, proiecte, calendar,
+statistici și unelte de calm. Aplicația e un singur fișier — deschide
 `index.html` în browser. Toate datele se salvează local. Backup: tab-ul **Zi → Backup**
 (exportă/importă un `.json`).
 </details>
