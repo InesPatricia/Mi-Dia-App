@@ -1,7 +1,8 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v144.html`** (promoted to `index.html`, sw CACHE `mi-dia-v144`, live on Cloudflare)
+> Last updated: July 2026 · Current latest build: **`mi-dia-v155.html`** (promoted to `index.html`, sw CACHE `mi-dia-v155`, live on Cloudflare)
+> Latest arc: **Ritualuri (Atomic Habits) + Onboarding ghidat (v145→v155)** — modul `ritual.js` (secțiune Home + serie + sheet creare + never-miss-twice + identitate + seed + Progres cu backfill; bifare pe AZI) + `onboard.js` (carusel 6 pași, pasul „Floarea" = o poezie cu sămânță-glow). e2e 81/81. Rămâne: device-pass Android (Ines).
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of

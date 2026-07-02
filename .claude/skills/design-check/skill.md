@@ -1,9 +1,18 @@
 ---
 name: design-check
-description: Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change to the Mi Día PWA (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make it look…".
+description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change INSIDE the Mi Día PWA file (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches the app's CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make the app look…". For a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription version, App Store / social / promo, onboarding/paywall) use /marketing-design instead — this skill does NOT cover new brand surfaces.
 ---
 
 # Revamp — Mi Día luxe design check
+
+> **Scope: IN-APP ONLY.** This skill governs changes INSIDE the app file `mi-dia-vNN.html` — it VERIFIES an
+> existing, locked design system and gates it (nothing regresses). It does NOT design new pages. If the task
+> is a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription
+> version, App Store / social / promo, onboarding/paywall), STOP and use **`/marketing-design`** — that skill
+> CREATES from the brand DNA; this one CHECKS the app against it.
+>
+> One-line split: **`/marketing-design` = architect of new brand surfaces · `/design-check` = QA inspector of
+> the app.** Shared palette, opposite jobs.
 
 **Read the "⭐ NEXT UP" section of `CLAUDE.md` first** — it holds the full locked decisions + the phased
 build plan (v133→v142). Mi Día is ONE self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every

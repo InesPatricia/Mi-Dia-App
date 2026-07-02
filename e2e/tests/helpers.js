@@ -13,9 +13,14 @@
  * @param {Record<string, any>} entries  key -> value (objects are JSON-stringified)
  */
 async function seedStorage(page, entries = {}) {
+  // addInitScript runs on EVERY navigation (incl. reloads), so seed idempotently — only when
+  // the key is absent. Otherwise a reload would clobber changes the app persisted (e.g. a ritual
+  // checked in-app then reloaded to prove persistence). Mirrors real localStorage semantics.
   await page.addInitScript((data) => {
     for (const [k, v] of Object.entries(data)) {
-      localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
+      if (localStorage.getItem(k) === null) {
+        localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
+      }
     }
   }, entries);
 }
@@ -24,7 +29,20 @@ async function seedStorage(page, entries = {}) {
  * Load the app and wait until it has booted (body[data-view] is set by setView()).
  * @param {import('@playwright/test').Page} page
  */
-async function gotoApp(page) {
+async function gotoApp(page, opts = {}) {
+  // v150: the guided onboarding overlay auto-runs for NEW users (no settings.onboarded).
+  // The functional suite tests a RETURNING user, so default to marking onboarded=true
+  // (merged into any settings a prior seedStorage set). The onboarding spec opts out
+  // with gotoApp(page, { onboarded: false }) to exercise the fresh-launch flow.
+  if (opts.onboarded !== false) {
+    await page.addInitScript(() => {
+      try {
+        const raw = localStorage.getItem('settings');
+        const s = raw ? JSON.parse(raw) : {};
+        if (s.onboarded !== true) { s.onboarded = true; localStorage.setItem('settings', JSON.stringify(s)); }
+      } catch (e) { /* ignore */ }
+    });
+  }
   await page.goto('/');
   // setView() sets data-view on <body> once the app initialises.
   await page.waitForFunction(() => document.body.hasAttribute('data-view'));
@@ -50,6 +68,52 @@ async function readBlocks(page) {
 }
 
 /**
+ * Read the rituals the app has persisted (localStorage "rituals" JSON array).
+ * Lets tests assert on the ritual data model (log, cue, streak-derivation) directly.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<Array<object>>}
+ */
+async function readRituals(page) {
+  return page.evaluate(() => {
+    try { return JSON.parse(localStorage.getItem('rituals') || '[]'); } catch (e) { return []; }
+  });
+}
+
+/**
+ * Read the settings object (localStorage "settings" JSON). Handy for asserting
+ * settings.onboarded / settings.identity after onboarding flows.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<object>}
+ */
+async function readSettings(page) {
+  return page.evaluate(() => {
+    try { return JSON.parse(localStorage.getItem('settings') || '{}'); } catch (e) { return {}; }
+  });
+}
+
+/**
+ * Build a ritual object for seeding, with a `log` of consecutive days ending YESTERDAY
+ * (so today is left un-checked — the common "streak of N, today pending" setup, which lets
+ * tests then tap the check for today). Pass an explicit `over.log` to control it precisely.
+ * @param {object} over  fields to override (id, name, color, icon, cue, log, ...)
+ * @param {number} logDays  streak length ending yesterday (today NOT included)
+ */
+function ritual(over = {}, logDays = 0) {
+  const log = [];
+  const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 1); // start yesterday
+  for (let i = 0; i < logDays; i++) { log.push(keyForLocal(d)); d.setDate(d.getDate() - 1); }
+  return Object.assign({
+    id: 'r_seed_' + Math.random().toString(36).slice(2, 7),
+    name: 'Test ritual', identity: '', color: '--sea', icon: 'breath',
+    twoMin: '2-min version', cue: { type: 'time', value: '08:00' },
+    freq: 'daily', area: '', createdAt: '2026-01-01', log,
+  }, over);
+}
+function keyForLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/**
  * Storage date key, mirroring the app's keyFor(): "YYYY-MM-DD" (zero-padded).
  * @param {Date} d
  */
@@ -69,4 +133,4 @@ function dayKey(offset = 0) {
   return keyFor(d);
 }
 
-module.exports = { seedStorage, gotoApp, readBlocks, keyFor, dayKey };
+module.exports = { seedStorage, gotoApp, readBlocks, readRituals, readSettings, ritual, keyFor, dayKey };

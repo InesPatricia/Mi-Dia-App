@@ -3,7 +3,38 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v133–v144 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art (curent)
+## v145–v155 — modul „Ritualuri" (Atomic Habits) + Onboarding ghidat (curent)
+- **Modul Ritualuri (`ritual.js`, inlinat, tokens-only → temă automată):** secțiune „Ritualurile mele" pe
+  Home cu card per ritual (icon line-art + accent per ritual, versiunea de 2 min, **serie derivată din log**
+  — nu stocată — + 7 puncte-săptămână, bifă), rezumat „N/M azi". Bifă = mică sărbătoare (umplere + halo gilt
+  + chime) + toast „+1 vot: <identitate>". **Never-miss-twice** (stare caldă terracotta când ai ratat ziua
+  anterioară) + **long-press pe bifă = versiunea de 2 min** (tot bifă validă pt serie).
+- **Sheet de creare** (bottom-sheet peste Home estompat): drumul A (chip-uri sugestii, 2 taps) / drumul B
+  (scris) + **habit stacking** („După un ritual"), oră nativă vizibilă (desktop+mobil), arie funcțională.
+- **Identitate** (motorul voturilor): câmp `settings.identity` în Setări + **card pe Home** (design
+  card-bijuterie cu muchie gilt + sigiliu + „N voturi azi", tapabil → editare).
+- **Seed 2 ritualuri default** la prima rulare (blânde, cu habit stacking). **Backup:** `rituals` în export +
+  `Ritual.refresh()` la import. **Progres:** bloc „Ritualurile mele" cu serie curentă + record + mini-calendar
+  28 zile — **celule tapabile pt backfill** (completezi o zi uitată).
+- **Bifare pe AZI (v154):** ritualurile se bifează mereu pe azi (nu pe ziua vizualizată din day-nav) — zero
+  bifare silențioasă a zilei greșite; backfill-ul e explicit în mini-calendarul din Progres.
+- **Onboarding ghidat (`onboard.js`, modul separat):** carusel luxe de 6 carduri (bun venit + limbă →
+  „Cine vrei să devii?" identitate → planul zilei cu input real → **Floarea = o poezie** cu sămânță-glow →
+  ritualurile + „Creează primul ritual" → ține-le în siguranță). Rulează la prima deschidere
+  (`settings.onboarded`), re-rulabil din Setări; „Sari peste" + „Înapoi".
+- **Polish (feedback Ines):** crenguța de măslin scoasă de pe Home; bife **quiet-luxury** (hairline fină +
+  umplere șoptită + bifă gilt, nu bloc strident); scrollbar luxe gilt; **fix drop-cap „P" tăiat** (v155:
+  `background-clip:text` + `line-height:.8` tăia vârful literei → `line-height:1` + inline-block).
+- **Ton poetic:** pasul „Floarea" din onboarding = o poezie (RO/ES/EN, rimă „-ine": mă ține → mă susține →
+  spre mine) sub floarea reală line-art cu sămânța aurie în centru.
+- **Testare:** suită e2e **81 teste** (66 + `ritual.spec.js` 9 + `onboarding.spec.js` 6; `seedStorage`
+  idempotent, helperi `readRituals`/`readSettings`/`ritual()`). div 218/218, `node --check` 3/3, `/theme-qa`
+  curat. Mult asistat de agenți (identitate/seed în Faza 3; Progres/audit i18n/review adversarial/a11y în
+  Faza 4). Surse curate `ritual.js` + `onboard.js` la root (ca `cycle.js`).
+- **Onest:** headless Chromium ≠ Android real — pickere native, long-press touch, blur velvet, Ephesis gilt,
+  chime rămân device-pass-ul lui Ines.
+
+## v133–v144 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art
 - **Temă dublă reală, comutabilă:** un switcher ☾/☀ în hero (lângă bara de limbi) + un toggle în Setări,
   persistat în `settings.theme` și inclus în backup, condus de `<html data-theme>`. Default la prima
   deschidere = **Light**.
