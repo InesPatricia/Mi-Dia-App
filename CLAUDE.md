@@ -1,8 +1,8 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v155.html`** (promoted to `index.html`, sw CACHE `mi-dia-v155`, live on Cloudflare)
-> Latest arc: **Ritualuri (Atomic Habits) + Onboarding ghidat (v145→v155)** — modul `ritual.js` (secțiune Home + serie + sheet creare + never-miss-twice + identitate + seed + Progres cu backfill; bifare pe AZI) + `onboard.js` (carusel 6 pași, pasul „Floarea" = o poezie cu sămânță-glow). e2e 81/81. Rămâne: device-pass Android (Ines).
+> Last updated: July 2026 · Current latest build: **`mi-dia-v156.html`** (promoted to `index.html`, sw CACHE `mi-dia-v156`, live on Cloudflare)
+> Latest arc: **Coerență cap-coadă (v156)** — audit multi-agent (5 avatare + 3 experți) → **gestionare ritualuri** (delete + edit; rezolvă „nu se putea șterge niciun ritual, nici cele default") + fix-uri i18n + **unificare design** (titluri hardcodate → tokeni semantice; `.panel h2` → Fraunces; `.calnav`=`.datebar`; colaps tokeni legacy→semantic; scară de radius/spacing) + **fix drop-cap „P" tăiat** (`background-clip:text` headroom, desktop+mobil). e2e 85/85. Rămâne din plan: Faza 3 profund (`.card`/`.btn` unic) + navigația tip iOS (mockup în `private/mockups/`); device-pass Android (Ines).
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -34,8 +34,8 @@ Personal use for now (localStorage only). Future: public/subscription version.
 > **Ritualuri (Atomic Habits) + Onboarding — ✅ DONE + SHIPPED (v145→v155, live).** The "next planned feature"
 > above is now built and live: `ritual.js` (Home section + streak + creation sheet + never-miss-twice +
 > identity card + seed + Progress backfill; check marks TODAY) + `onboard.js` (6-step guided carousel, the
-> "Floarea" step = a poem with a candle-glow seed). e2e **83** (81 functional + 2 `@visual`). Current build
-> **`mi-dia-v155.html`** = `index.html`, `sw.js` CACHE `mi-dia-v155`. See the "Changelog (v145→v155)" +
+> "Floarea" step = a poem with a candle-glow seed). e2e **85** (83 functional + 2 `@visual`). Current build
+> **`mi-dia-v156.html`** = `index.html`, `sw.js` CACHE `mi-dia-v156`. See the "Changelog (v145→v155)" +
 > `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
 > **What's still open (for the next agent):**
@@ -255,10 +255,11 @@ returning user keeps their saved `settings.theme`. (No open decisions remain bef
   `npm run test:report`); raw PNGs land in `e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
-- Current coverage (**83 tests across 20 specs** — 81 functional + 2 `@visual`): **rituals** (`ritual.spec.js`,
-  v155 — the Home section + check/streak, "check marks TODAY not the viewed day", the creation sheet
+- Current coverage (**85 tests across 20 specs** — 83 functional + 2 `@visual`): **rituals** (`ritual.spec.js`,
+  v155/v156 — the Home section + check/streak, "check marks TODAY not the viewed day", the creation sheet
   suggestion-chip / written + habit-stacking `cue.type`, never-miss-twice, the Progress history block +
-  tappable-cell backfill, backup export/import roundtrip incl. `rituals`, RO relabel) + **onboarding**
+  tappable-cell backfill, backup export/import roundtrip incl. `rituals`, RO relabel, **v156: Edit-mode
+  two-tap delete + tap-a-card-to-edit-in-place**) + **onboarding**
   (`onboarding.spec.js`, v155 — fresh-launch overlay, Skip marks `settings.onboarded` + doesn't return,
   identity chip writes `settings.identity`, Back nav, the "Create your first ritual" CTA drops into the sheet,
   returning-user boots clean + re-run from Settings) + **smoke** (`smoke.spec.js`) + **navigation** (`navigation.spec.js`)
@@ -591,6 +592,10 @@ duplicated Acasă). Now there is ONE primary navigation:
   as a keepsake **card on Home** (tap → edit) with "N votes today". **Seed** 2 gentle defaults on first run.
   **Progress** block: current streak + record + a 28-day mini-calendar whose **cells are tappable to backfill**
   a forgotten day. Checking always marks **TODAY** (not the day-nav's viewed day). Backup includes `rituals`.
+  **Manage (v156):** an "Edit" toggle (`.r-editbtn`) turns each card into a **two-tap delete** (`.r-del`,
+  terracotta) — works on ANY ritual, default or custom (fixes the "can't delete the seeded ones" frustration
+  Ines flagged) — + **tap a card body = edit** (reopens the creation sheet prefilled via `openEdit`, `commit`
+  updates in place; id + log + streak preserved). New i18n `rit_edit`/`rit_del_confirm`/`rit_updated` etc.
 - **Onboarding ghidat (v150→v155, `onboard.js`, inlined module):** a luxe 6-step carousel for a new user
   (`settings.onboarded`, re-runnable from Settings): welcome + language → "Who do you want to become?"
   (identity) → the day's plan (real input) → **the Flower step = a poem** (RO/ES/EN) under the real line-art
@@ -1059,7 +1064,7 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > consolidation, Profil "Călătoria ta" + name field (v68 area); **Backlog A1 (CSS unification) DONE
 > (v86–v89).** Energizer/feel-better arc COMPLETE: **F1 (v90), F2 (v91), body scan (v92), permission
 > pause + emotion wheel (v93), F3 routing (v94), wheel expanded to 77 (v95), "Emoții recente" in Profil
-> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). **Luxe Light+Dark revamp SHIPPED (v133→v144, live on Cloudflare):** two real themes (Light-luxe champagne+wine+gilt · Dark-velvet aubergine+gilt) with a ☾/☀ switcher, across all 7 views; foundation semantic tokens + Ephesis "Día" gold script; dark-velvet (v135–v142) + light-luxe (v143) built incrementally, agent-assisted; **all emoji → line-art SVG** (v142); final accents drop-cap + candle-glow + theme-aware cycle-moon (v144). e2e 68/68. New project skills: `/theme-qa` (+ `e2e/theme-grid.js`/`shoot.js`), `color-roles.md`, `module-css.md`. Remaining: Ines's real-Android device pass. Current build **`mi-dia-v144.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 68 tests across 18 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.** **Ritualuri (Atomic Habits) + Onboarding arc SHIPPED (v145→v155, live on Cloudflare):** `ritual.js` (Home "My rituals" section + streak DERIVED from log + creation sheet with suggestion-chip/written + habit stacking + never-miss-twice + long-press 2-min + identity card B+C + first-run seed of 2 defaults + backup + Progress history block with tappable-cell backfill; **check marks TODAY, not the viewed day**) + `onboard.js` (6-step guided carousel, "Floarea" step = a poem RO/ES/EN with a candle-glow seed). Feedback polish: olive sprig removed, quiet-luxury ticks, drop-cap "P"-clip fix. **e2e now 83 (81 functional + 2 @visual): new `ritual.spec.js` + `onboarding.spec.js`, `seedStorage` idempotent + `readRituals`/`readSettings`/`ritual()` helpers.** Agent-assisted (identity/seed Faza 3; Progress/i18n-audit/adversarial/a11y Faza 4). **Current build `mi-dia-v155.html` = `index.html`, sw CACHE `mi-dia-v155`.** Remaining: Ines's real-Android device pass.
+> (v96), sun cue icon + Calendar emotion dot (v97).** Cycle/Respiro/persistence arc COMPLETE (v98–v110). Add-flow redesign + in-app start-time memento arc COMPLETE (v112–v119). Calendar redesign + Journal redesign arc COMPLETE (v120–v125). Test instrumentation + a11y aria-label fix (v126), composer test handles (v127), slot a11y (v128), Journal olive corner accent (v129), Journal tall olive vine draping the writing card (v130), Journal olive branch at ~65% + auto-grow textarea / scrollbar-over-vine fix (v131), Journal olive branch REMOVED + caret-follow scroll while typing (v132). **Luxe Light+Dark revamp SHIPPED (v133→v144, live on Cloudflare):** two real themes (Light-luxe champagne+wine+gilt · Dark-velvet aubergine+gilt) with a ☾/☀ switcher, across all 7 views; foundation semantic tokens + Ephesis "Día" gold script; dark-velvet (v135–v142) + light-luxe (v143) built incrementally, agent-assisted; **all emoji → line-art SVG** (v142); final accents drop-cap + candle-glow + theme-aware cycle-moon (v144). e2e 68/68. New project skills: `/theme-qa` (+ `e2e/theme-grid.js`/`shoot.js`), `color-roles.md`, `module-css.md`. Remaining: Ines's real-Android device pass. Current build **`mi-dia-v144.html`**. **Playwright e2e harness + CI/CD arc COMPLETE: 68 tests across 18 specs (all 7 views + deep flows + a11y/axe + visual), CI sharding workflow, build-validation gate, main branch-protected (PR → CI → merge → Cloudflare deploy).** **Repo is PUBLIC (CV/portfolio showcase, June 2026): security-audited (no secrets in tree or history), monetization roadmap + design mockups moved to a gitignored `private/` and purged from git history, README rewritten as an engineering/QA showcase + screenshots, CC BY-NC 4.0 license.** **Ritualuri (Atomic Habits) + Onboarding arc SHIPPED (v145→v155, live on Cloudflare):** `ritual.js` (Home "My rituals" section + streak DERIVED from log + creation sheet with suggestion-chip/written + habit stacking + never-miss-twice + long-press 2-min + identity card B+C + first-run seed of 2 defaults + backup + Progress history block with tappable-cell backfill; **check marks TODAY, not the viewed day**) + `onboard.js` (6-step guided carousel, "Floarea" step = a poem RO/ES/EN with a candle-glow seed). Feedback polish: olive sprig removed, quiet-luxury ticks, drop-cap "P"-clip fix. **e2e now 83 (81 functional + 2 @visual): new `ritual.spec.js` + `onboarding.spec.js`, `seedStorage` idempotent + `readRituals`/`readSettings`/`ritual()` helpers.** Agent-assisted (identity/seed Faza 3; Progress/i18n-audit/adversarial/a11y Faza 4). **Current build `mi-dia-v156.html` = `index.html`, sw CACHE `mi-dia-v156`.** **Coerență cap-coadă arc SHIPPED (v156):** multi-agent audit (5 personas + 3 experts) → ritual **delete + edit** (fixes "can't delete default rituals"), i18n fixes, design unification (hardcoded title colors → semantic tokens, `.panel h2` → Fraunces, `.calnav`=`.datebar`, legacy→semantic token collapse, radius/spacing scale), **drop-cap "P"-clip fix** (background-clip:text headroom, desktop+mobile). e2e now **85** (83 functional + 2 visual; +2 ritual delete/edit tests). Remaining: Ines's real-Android device pass.
 > Remaining: B6 (duration "min" clipping), B8 (long-press on real Android); real-device validation on
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
@@ -1067,16 +1072,58 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > tracker, D14 public/subscription version.
 >
 > **DONE since:** the Luxe Light+Dark revamp (v133→v144) AND the **Ritualuri (Atomic Habits) + Onboarding**
-> arc (v145→v155) are both **SHIPPED + live**. Current build **`mi-dia-v155.html`** (sw CACHE `mi-dia-v155`),
-> e2e **83/83**, prod smoke green. Ritualuri = `ritual.js` (Home section + streak + creation sheet + habit
+> arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)** on top. Current build **`mi-dia-v156.html`** (sw CACHE `mi-dia-v156`),
+> e2e **85/85**, prod smoke green. Ritualuri = `ritual.js` (Home section + streak + creation sheet + habit
 > stacking + never-miss-twice + identity card + seed + Progress backfill; check marks TODAY, backfill explicit)
 > + Onboarding = `onboard.js` (6-step carousel, "Floarea" step = a poem with candle-glow). Detail in the
 > "Changelog (v145→v155)" + `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
-> **NEXT WORK →** Ines's **real-Android device pass** (native pickers, long-press touch, blur velvet, Ephesis
-> gilt, chime, axe contrast). Then the **pre-existing backlog** (UX-coherence E1–E7, B6 "min" clip, D14
-> public/subscription version). Possible future: extend `freq` beyond "daily" (the model already leaves room).
+> **NEXT WORK →** continuarea arcului de coerență: **Faza 3 profund** (inputs/butoane pe scara `--r-*`/`--sp-*`
+> + un `.card`/`.btn--primary` unic — acum sunt 10+ variante de buton) și **navigația tip iOS** (tab-bar în
+> locul florii-meniu + bloom; mockup aprobabil în `private/mockups/mi-dia-nav-tabbar-mockup.html`, în
+> așteptarea deciziei lui Ines varianta A/B). Plus Ines's **real-Android device pass** (native pickers,
+> long-press, blur velvet, Ephesis gilt, chime, axe, **verificare drop-cap pe device**). Pre-existing
+> backlog: UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156** via `.calnav`=`.datebar`), B6 "min" clip,
+> D14 public/subscription. Possible future: extend `freq` beyond "daily" (the model already leaves room).
 
+
+---
+
+## Changelog (v156) — coerență cap-coadă: gestionare ritualuri + unificare design + drop-cap fix
+
+Pornit de la un **audit multi-agent** cerut de Ines (5 avatare de utilizatoare + 3 experți — coerență design,
+i18n, retenție — fiecare a citit codul real). Raport în `private/audit-coerenta-2026-07.md`. Livrat incremental
+într-un singur `v156`, validat după fiecare felie (div + `node --check` + `/theme-qa` + e2e).
+
+- **Gestionare ritualuri (Faza 0 — rezolvă problema #1 semnalată de Ines: NU se putea șterge niciun ritual,
+  nici cele seed default → intrau permanent în starea „miss" și te certau zilnic).** Buton „Editează"
+  (`.r-editbtn`) lângă titlul secțiunii → mod editare: fiecare card arată un **✕ two-tap delete** (`.r-del`,
+  terracotta, consecvent cu Scurtături) + **tap pe corpul cardului = editare** (`openEdit` redeschide sheet-ul
+  precompletat, `commit` actualizează în place; id + log + serie păstrate; ancora habit-stacking orfană era
+  deja tratată). Chei i18n noi (RO/ES/EN). `ritual.js` sincronizat cu blocul inlinat.
+- **i18n (Faza 0b — datoria reală era în codul VECHI, nu la Ritualuri, care erau 8.5/10):** `onb_es_tr` gol nu
+  mai lasă rând mort pe ES (ascuns pe spaniolă, ca `renderHeader`); 4 aria-label vechi reparate
+  (`Anadir`→`Añadir`, `rapido`→`rápido`, diacritice RO); 7 chei orfane `onb_pet_*`/`onb_flower_t/sub` șterse.
+- **Faza 1 — un singur limbaj vizual:** familia de maro-uri hardcodate pe titluri (`#5B3A28`/`#7A4A33`/
+  `#9A6A4A`/`#6E4631`/`#5a3f2c`) → tokeni semantice (`--text`/`--text-soft`, **0 rămase**); `.panel h2` →
+  Fraunces; `.calnav` (Calendar) aliniat la `.datebar` (Home) — **rezolvă UX-coherence E6**.
+- **Faza 2 + 2b — o singură sursă de adevăr (tokeni):** legacy (`--ink`/`--cream`/`--ink-soft`/`--sand`/
+  `--page`/`--surface-2`) → **alias-uri** către semantic, canonicalizat pe valorile luxe (majoritatea le
+  folosea deja prin `--ink`). Zero schimbare vizuală în light (alias-uri către valori identice + token fără
+  consumator în light); dark neatins (schimbări light-only). `--sand-deep`/`--page-2` rămân tinte distincte.
+- **Faza 3 (start) — scară de design:** tokeni `--r-sm/md/lg/xl` + `--sp-1..6`; cardurile de conținut
+  (`.block`/`.itemrow`/`.cell`) încadrate pe o **ierarhie curată** (conținut 16 / panou 20 / modal 26).
+  Rămâne (Faza 3 profund): inputs/butoane pe scară + un `.card`/`.btn--primary` unic.
+- **Fix drop-cap „P" tăiat (raportat de Ines; vizibil la desktop, unde litera e mai mare).** Cauza:
+  `background-clip:text` NU pictează porțiunea de literă care iese peste cutia elementului → vârful capitalei
+  italice mari rămânea nepictat. Fix-ul din v155 (`line-height:1`) fusese verificat doar la mobil. Fix robust
+  v156: `padding-top:.5em` dă cutiei spațiu de pictură deasupra literei + `margin-top:-.5em` anulează
+  deplasarea (litera rămâne pe loc). **Verificat headless la desktop ȘI mobil.** Aplicat și la `.onb-dc`
+  (poemul onboarding) în `mi-dia-v156.html` + `onboard.js`.
+- **Testare:** e2e **85** (83 funcțional + 2 `@visual`) — 2 teste noi în `ritual.spec.js` (two-tap delete +
+  tap-to-edit-in-place). div 218/218, `node --check` 3/3, `/theme-qa` ambele teme, prod smoke la deploy.
+- **Rămas din plan (mockup/aprobat separat):** Faza 3 profund + **navigația tip iOS** (mockup interactiv A/B
+  în `private/mockups/mi-dia-nav-tabbar-mockup.html` — floarea devine decor, tab-bar clasic, fără bloom).
 
 ---
 

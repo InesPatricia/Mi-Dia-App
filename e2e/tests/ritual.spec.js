@@ -126,4 +126,40 @@ test.describe('rituals', () => {
     await page.locator('#langBar button[data-l="ro"]').click();
     await expect(page.locator('#ritualMount .r-t')).toHaveText('Ritualurile mele');
   });
+
+  // v156: manage rituals — the Edit toggle turns each card into a two-tap delete; tapping a card
+  // body opens the creation sheet prefilled and saves the edit in place (id + log preserved).
+  test('edit mode: two-tap delete removes a ritual (default or custom) and persists', async ({ page }) => {
+    await seedStorage(page, { rituals: [
+      ritual({ id: 'r_x', name: 'Remove me' }, 2),
+      ritual({ id: 'r_y', name: 'Keep me' }, 1),
+    ] });
+    await gotoApp(page);
+    await page.locator('#ritualMount .r-editbtn').click();
+    await card(page, 'Remove me').locator('.r-del').click();               // first tap arms
+    await expect(card(page, 'Remove me').locator('.r-del.arm')).toBeVisible();
+    await card(page, 'Remove me').locator('.r-del').click();               // second tap deletes
+    await expect(card(page, 'Remove me')).toHaveCount(0);
+    await expect(card(page, 'Keep me')).toBeVisible();
+    const rits = await readRituals(page);
+    expect(rits.map((r) => r.name)).toEqual(['Keep me']);
+  });
+
+  test('edit mode: tapping a card opens the sheet prefilled and saves in place', async ({ page }) => {
+    await seedStorage(page, { rituals: [ritual({ id: 'r_e', name: 'Old name' }, 4)] });
+    await gotoApp(page);
+    await page.locator('#ritualMount .r-editbtn').click();
+    await card(page, 'Old name').locator('.r-body').click();
+    await expect(page.locator('#ritSheet')).toHaveClass(/show/);
+    await expect(page.locator('#rsName')).toHaveValue('Old name');
+    await page.locator('#rsName').fill('New name');
+    await page.locator('#rsSave').click();
+    await expect(page.locator('#ritSheet')).not.toHaveClass(/show/);
+    await expect(card(page, 'New name')).toBeVisible();
+    await expect(card(page, 'Old name')).toHaveCount(0);
+    const rits = await readRituals(page);
+    expect(rits.length).toBe(1);
+    expect(rits[0].id).toBe('r_e');       // edited in place, not recreated
+    expect(rits[0].log.length).toBe(4);    // streak/log preserved
+  });
 });

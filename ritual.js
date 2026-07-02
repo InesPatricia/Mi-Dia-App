@@ -17,6 +17,7 @@ const Ritual = (function () {
   let _cache = [];          // sincron; reincarcat de loadCache()/refresh()
   const _cbs = [];          // onChange listeners
   const _busy = new Set();  // M4: guard anti-dublu-fire per ritual (dublu-tap rapid)
+  let _editMode = false, _armDel = null;   // Faza 0 v156: edit-mode (sterge/gestioneaza ritualuri)
 
   const ICONS = {
     breath:  '<path d="M4 12c4-6 12-6 16 0M8 12c2-3 6-3 8 0"/>',
@@ -169,11 +170,14 @@ const Ritual = (function () {
       }
     }
 
-    return '<div class="'+cls+'" '+ac+' data-id="'+escA(r.id)+'">'+
+    const rightCtl = _editMode
+      ? '<button class="r-del'+(_armDel===r.id?' arm':'')+'" type="button" data-del="'+escA(r.id)+'" aria-label="'+escA(t('aria_rit_del'))+'">'+(_armDel===r.id?esc(t('rit_del_confirm')):'✕')+'</button>'
+      : '<div class="r-tick" role="button" tabindex="0" aria-pressed="'+(done?'true':'false')+'" aria-label="'+escA(t('aria_rit_check'))+'">'+CHECK+'</div>';
+    return '<div class="'+cls+(_editMode?' editing':'')+'" '+ac+' data-id="'+escA(r.id)+'">'+
              '<div class="r-ic">'+iconSvg(r.icon)+'</div>'+
              '<div class="r-body">'+body+'</div>'+
-             streakBlock+
-             '<div class="r-tick" role="button" tabindex="0" aria-pressed="'+(done?'true':'false')+'" aria-label="'+escA(t('aria_rit_check'))+'">'+CHECK+'</div>'+
+             (_editMode?'':streakBlock)+
+             rightCtl+
            '</div>';
   }
 
@@ -189,10 +193,13 @@ const Ritual = (function () {
 
     let html = '<div class="r-rule"></div>';
     html += '<div class="r-sec"><span class="r-t">'+esc(t('rit_section'))+'</span>'+
-            '<span class="r-sum">'+FLAME+' '+esc(t('rit_summary').replace('{n}',doneN).replace('{m}',dueN))+'</span></div>';
+            '<span class="r-secr">'+
+              (_editMode?'':'<span class="r-sum">'+FLAME+' '+esc(t('rit_summary').replace('{n}',doneN).replace('{m}',dueN))+'</span>')+
+              '<button class="r-editbtn'+(_editMode?' on':'')+'" type="button" aria-label="'+escA(t('aria_rit_edit'))+'">'+esc(_editMode?t('rit_edit_done'):t('rit_edit'))+'</button>'+
+            '</span></div>';
     list.forEach(r=>{ html += cardHTML(r, today); });
-    html += '<button class="r-add" type="button" aria-label="'+esc(t('aria_rit_add'))+'">'+PLUS+esc(t('rit_add'))+'</button>';
-    html += '<div class="r-hint">'+esc(t('rit_hint'))+'</div>';
+    if(!_editMode) html += '<button class="r-add" type="button" aria-label="'+esc(t('aria_rit_add'))+'">'+PLUS+esc(t('rit_add'))+'</button>';
+    html += '<div class="r-hint">'+esc(_editMode?t('rit_edit_hint'):t('rit_hint'))+'</div>';
 
     mount.innerHTML = html;
     wire(mount);
@@ -220,6 +227,31 @@ const Ritual = (function () {
     });
     const add = mount.querySelector('.r-add');
     if(add) add.onclick = ()=> openCreate();
+    // Faza 0 v156: edit-mode toggle + two-tap delete (consecvent cu Scurtaturi)
+    const eb = mount.querySelector('.r-editbtn');
+    if(eb) eb.onclick = ()=>{ _editMode = !_editMode; _armDel = null; render(); };
+    mount.querySelectorAll('.r-del[data-del]').forEach(el=>{
+      el.onclick = ()=>{ const id = el.getAttribute('data-del');
+        if(_armDel===id){ deleteRitual(id); } else { _armDel = id; render(); } };
+    });
+    // in edit-mode, tap pe corpul cardului = editare (✕ ramane stergere)
+    if(_editMode){
+      mount.querySelectorAll('.r-card').forEach(cardEl=>{
+        const id = cardEl.getAttribute('data-id');
+        cardEl.addEventListener('click', (e)=>{ if(e.target.closest('.r-del')) return; openEdit(id); });
+      });
+    }
+  }
+
+  // sterge un ritual (default sau custom). Ancora orfana (habit stacking) e deja tratata in cardHTML (M3).
+  async function deleteRitual(id){
+    _cache = _cache.filter(r=>r.id!==id);
+    _armDel = null;
+    if(!_cache.length) _editMode = false;
+    await save();
+    render();
+    try{ toast(t('rit_deleted')); }catch(e){}
+    emit();
   }
 
   async function toggleCheck(id){
@@ -277,6 +309,7 @@ const Ritual = (function () {
   /* ─── SHEET DE CREARE (Faza 2 / v147) ──────────────────────────────── */
   // stare selectie (drumul A chip / drumul B scris)
   let _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' };
+  let _editId = null;   // v156: id ritual in curs de editare (null = creare)
   let _cueType = 'time', _cueTime = '07:00', _cueAfter = '';
   let _lastFocus = null;   // controlul care a deschis sheet-ul (focus-return la inchidere)
 
@@ -362,7 +395,7 @@ const Ritual = (function () {
     const typed = nm && nm.value.trim().length>0;
     // M6: cand userul scrie nume propriu (drumul B), reseteaza selectia de chip la neutru
     // ca sa nu lipim icon/identity de la un chip abandonat pe un ritual custom.
-    if(typed && _sel.key===null && (_sel.identity || _sel.icon!=='leaf')){ _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' }; }
+    if(!_editId && typed && _sel.key===null && (_sel.identity || _sel.icon!=='leaf')){ _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' }; }
     document.getElementById('rsChips').style.display = typed ? 'none' : '';
     document.getElementById('rsSub').textContent = typed ? t('rit_what_sub_written') : t('rit_what_sub');
     if(typed){ renderSugChips(); }   // clears the .sel highlight
@@ -392,8 +425,50 @@ const Ritual = (function () {
     v.innerHTML = CHECK + esc(id ? t('rit_vote_foot').replace('{x}', id) : t('rit_vote_foot_neutral'));
   }
 
+  // v156: comuta sheet-ul intre "creare" si "editare" (titlu + eticheta buton salvare)
+  function setSheetMode(editing){
+    const h = document.querySelector('#ritSheet .rs-head h2'); if(h) h.textContent = t(editing?'rit_edit_title':'rit_new_title');
+    const sv = document.querySelector('#ritSheet #rsSave span'); if(sv) sv.textContent = t(editing?'rit_save_edit':'rit_save');
+  }
+
+  // v156: deschide sheet-ul precompletat cu un ritual existent (editare, nu creare)
+  function openEdit(id){
+    const r = _cache.find(x=>x.id===id); if(!r) return;
+    buildSheet();
+    _editId = id; setSheetMode(true);
+    _sel = { key:null, icon:r.icon||'leaf', color:r.color||'--olive', identity:r.identity||'', two:r.twoMin||'' };
+    _cueType = (r.cue && r.cue.type==='after') ? 'after' : 'time';
+    _cueTime = (r.cue && r.cue.type==='time') ? (r.cue.value||'07:00') : '07:00';
+    const others = _cache.filter(x=>x.id!==id);
+    _cueAfter = (r.cue && r.cue.type==='after') ? (r.cue.value||'') : (others.length?others[0].id:'');
+    const nm=document.getElementById('rsName'); if(nm) nm.value = r.name||'';
+    const tw=document.getElementById('rsTwo');  if(tw) tw.value = r.twoMin||'';
+    { const rt=document.getElementById('rsTime'); if(rt) rt.value = _cueTime; }
+    // ancora habit-stacking: exclude ritualul insusi (nu se poate stivui pe sine)
+    const af=document.getElementById('rsAfter');
+    if(af){ af.innerHTML = others.map(x=>'<option value="'+escA(x.id)+'">'+esc(x.name)+'</option>').join('');
+      if(_cueType==='after' && _cueAfter) af.value=_cueAfter; }
+    const afterBtn=document.querySelector('#rsSeg button[data-cue="after"]');
+    if(afterBtn) afterBtn.disabled = !others.length;
+    const ar=document.getElementById('rsArea');
+    if(ar){ let opts='<option value="">'+esc(t('rit_area_none'))+'</option>';
+      try{ (areas||[]).forEach(c=>{ opts+='<option value="'+escA(c.id)+'">'+esc(areaLabel(c))+'</option>'; }); }catch(e){}
+      ar.innerHTML=opts; ar.value=r.area||''; }
+    document.getElementById('rsMorePanel').style.display = r.area ? 'block' : 'none';
+    renderSugChips(); setCue(_cueType);
+    // nume precompletat -> ascunde chip-urile fara sa resetezi _sel (nu apela onNameTyped, care ar sterge icon/identity)
+    document.getElementById('rsChips').style.display = 'none';
+    document.getElementById('rsSub').textContent = t('rit_what_sub_written');
+    updateVote();
+    const w=document.getElementById('ritSheet');
+    _lastFocus = document.activeElement;
+    w.classList.add('show'); w.setAttribute('aria-hidden','false');
+    setTimeout(()=>{ const n=document.getElementById('rsName'); if(n) n.focus(); }, 60);
+  }
+
   function openCreate(prefill){
     buildSheet();
+    _editId = null; setSheetMode(false);
     // reset stare
     _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' };
     _cueType='time'; _cueTime='07:00'; _cueAfter = _cache.length ? _cache[0].id : '';
@@ -429,6 +504,7 @@ const Ritual = (function () {
     // focus-return: intoarce focusul pe controlul care a deschis sheet-ul (ex. .r-add)
     try{ if(_lastFocus && _lastFocus.focus){ _lastFocus.focus(); } }catch(e){}
     _lastFocus = null;
+    _editId = null;
   }
 
   function areaLabel(c){
@@ -449,6 +525,14 @@ const Ritual = (function () {
     let color = _sel.color || '--olive';
     if(area){ const ca=colorOfArea(area); if(ca) color=ca; }
     const cue = (_cueType==='after' && _cueAfter) ? { type:'after', value:_cueAfter } : { type:'time', value:_cueTime||'07:00' };
+    if(_editId){
+      const ex = _cache.find(x=>x.id===_editId);
+      if(ex){ ex.name=name; ex.identity=_sel.identity||ex.identity||userIdentity||''; ex.cue=cue;
+        ex.twoMin=(''+two).trim(); ex.area=area; ex.color=color; ex.icon=_sel.icon||ex.icon||'leaf'; }
+      _editId=null;
+      await save(); closeSheet(); render(); try{ toast(t('rit_updated')); }catch(e){} emit();
+      return;
+    }
     const r = {
       id: 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),  // M7: sufix random -> fara coliziune la acelasi ms
       name: name,
@@ -622,6 +706,14 @@ const Ritual = (function () {
 #ritualMount .r-add{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border:1px dashed var(--line);background:transparent;border-radius:16px;padding:11px;color:var(--text-soft);font-weight:700;font-size:.82rem;margin-bottom:4px;cursor:pointer;font-family:inherit}
 #ritualMount .r-add svg{width:15px;height:15px;stroke:var(--gold-gilt);fill:none;stroke-width:1.7}
 #ritualMount .r-hint{font-size:.7rem;color:var(--text-soft);opacity:.85;margin:6px 2px 0}
+/* v156 Faza 0: edit-mode (sterge/gestioneaza ritualuri) */
+#ritualMount .r-secr{display:flex;align-items:center;gap:10px}
+#ritualMount .r-editbtn{background:transparent;border:none;color:var(--text-soft);font-family:inherit;font-weight:700;font-size:.72rem;cursor:pointer;padding:4px 6px;text-decoration:underline;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+#ritualMount .r-editbtn.on{color:var(--accent)}
+#ritualMount .r-del{min-width:28px;height:28px;flex:none;padding:0 10px;border-radius:9px;border:1px solid color-mix(in srgb,var(--terra) 40%,var(--line));background:color-mix(in srgb,var(--terra) 8%,var(--surface));color:var(--terra);font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;display:grid;place-items:center;transition:transform .12s ease}
+#ritualMount .r-del.arm{background:var(--terra);color:#fff;padding:0 12px;font-size:.72rem}
+#ritualMount .r-del:active{transform:scale(.94)}
+#ritualMount .r-card.editing{cursor:pointer}
 /* ===== sheet de creare ===== */
 .rs-wrap{position:fixed;inset:0;z-index:1200;display:none}
 .rs-wrap.show{display:block}

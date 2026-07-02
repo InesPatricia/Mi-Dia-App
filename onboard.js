@@ -44,7 +44,7 @@ const Onboard = (function(){
   function stepWelcome(){
     return '<div class="onb-brand">Mi <span class="onb-dia">Día</span></div>'+
            '<div class="onb-phrase"><div class="onb-es">'+esc(t('onb_es_phrase'))+'</div>'+
-             '<div class="onb-tr">'+esc(t('onb_es_tr'))+'</div></div>'+
+             (lang==='es'?'':'<div class="onb-tr">'+esc(t('onb_es_tr'))+'</div>')+'</div>'+
            '<h2 class="onb-t">'+esc(t('onb_welcome_t'))+'</h2>'+
            '<p class="onb-p">'+esc(t('onb_welcome_sub'))+'</p>'+
            '<div class="onb-lang" id="onbLang" role="group" aria-label="'+ea(t('onb_lang_q'))+'">'+
@@ -212,7 +212,7 @@ const Onboard = (function(){
 .onb-flower{position:absolute;inset:0;width:100%;height:100%}
 .onb-seed{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,var(--gold-1),var(--gold-deep));box-shadow:0 0 12px 2px rgba(200,162,76,.6)}
 .onb-poem{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.14rem;line-height:1.72;color:var(--text);margin:4px 4px 2px}
-.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;line-height:1;display:inline-block;vertical-align:-.04em;background:var(--gold-hair);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-right:.02em}
+.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;line-height:1.1;display:inline-block;vertical-align:-.06em;background:var(--gold-hair);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding:.5em .02em 0 0;margin-top:-.5em}
 /* plan step: real input + commit */
 .onb-planrow{display:flex;align-items:center;gap:9px;margin:2px 0 4px}
 .onb-planinput{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;

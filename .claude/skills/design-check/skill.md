@@ -69,6 +69,12 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
    - hero text stays legible over the bougainvillea photo (the dark veil must be strong enough);
    - text/figure contrast is OK on the velvet surfaces (no muddy gold-on-wine or low-contrast functional
      colors — area/calm/mood tints need legible variants on dark).
+   - **Also spot-check a DESKTOP width (e.g. 1280px) for hero / phrase / drop-cap / type changes.** The
+     `/theme-qa` grid + Playwright run at MOBILE (412px, Pixel 5) only, so a size-dependent bug can pass there
+     and still ship. Real case (v156): the gilt drop-cap "P" clipped only at desktop — `background-clip:text`
+     does NOT paint the part of a glyph that exceeds the element's box, and the larger desktop font exposed it;
+     a mobile-only check declared it fixed while it was still broken. Fix pattern for a raised/gilt initial:
+     give the box headroom with `padding-top` and cancel the shift with an equal negative `margin-top`.
 4. **Run it, don't just parse it.** `node --check` catches SYNTAX, not runtime — a locally-scoped `esc()`
    called from a scope without it passed `node --check` but crashed at runtime and stopped slots rendering
    (13 e2e failures). So after the checks, exercise the app: `cd e2e && npx playwright test --grep-invert

@@ -3,7 +3,35 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v145–v155 — modul „Ritualuri" (Atomic Habits) + Onboarding ghidat (curent)
+## v156 — coerență cap-coadă: gestionare ritualuri + unificare design + fix drop-cap (curent)
+- **Gestionare ritualuri (rezolvă frustrarea semnalată de Ines — nu se putea șterge NICIUN ritual, nici
+  cele default):** buton „Editează" lângă titlul secțiunii → mod editare în care fiecare card arată un **✕
+  cu two-tap delete** (terracotta cald, consecvent cu Scurtături) + **tap pe card = editare** (redeschide
+  sheet-ul precompletat, salvează în place — id + serie + log păstrate). Merge pe orice ritual, default sau
+  creat. Chei i18n noi (`rit_edit`/`rit_edit_done`/`rit_del_confirm`/`rit_deleted`/`rit_edit_title`/
+  `rit_save_edit`/`rit_updated`/`aria_rit_edit`/`aria_rit_del`/`rit_edit_hint`) în RO/ES/EN.
+- **i18n (datoria reală era în codul vechi, nu la Ritualuri):** `onb_es_tr` gol nu mai lasă rând mort pe ES
+  (se ascunde pe spaniolă); 4 aria-label vechi reparate (`Añadir`/`rápido` + diacritice RO); 7 chei orfane
+  `onb_pet_*`/`onb_flower_*` (resturi din pasul „Floarea" vechi) șterse.
+- **Faza 1 — un singur limbaj vizual:** toate maro-urile hardcodate pe titluri (`#5B3A28`/`#7A4A33`/`#9A6A4A`/
+  `#6E4631`/`#5a3f2c`) → tokeni semantice (`--text`/`--text-soft`, 0 rămase); `.panel h2` → Fraunces (titluri
+  de secțiune serif); `.calnav` (Calendar) aliniat la `.datebar` (Home) — același „TODAY" wine + săgeți.
+- **Faza 2 + 2b — o singură sursă de adevăr (tokeni):** legacy (`--ink`/`--cream`/`--ink-soft`/`--sand`/
+  `--page`/`--surface-2`) devin **alias-uri** către semantic; canonicalizat pe valorile luxe (majoritatea le
+  folosea deja). Zero schimbare vizuală în light (alias-uri către valori identice), dark neatins.
+- **Faza 3 (start) — scară de design:** tokeni `--r-sm/md/lg/xl` + `--sp-1..6`; cardurile de conținut
+  încadrate pe o **ierarhie curată** (conținut 16 / panou 20 / modal 26), nu valori aleatorii.
+- **Fix drop-cap „P" tăiat (raportat de Ines, vizibil la desktop):** `background-clip:text` nu pictează
+  porțiunea de literă care iese peste cutia elementului → vârful capitalei italice mari rămânea nepictat.
+  Fix robust: `padding-top` dă cutiei spațiu de pictură deasupra literei, `margin-top` negativ egal anulează
+  deplasarea (litera rămâne pe loc). Verificat la desktop ȘI mobil. Aplicat și la `.onb-dc` (poemul onboarding).
+- **Testare:** suită e2e **85** (83 funcțional + 2 `@visual`; 2 teste noi în `ritual.spec.js` pentru
+  delete/edit). div 218/218, `node --check` 3/3, `/theme-qa` ambele teme. Surse `ritual.js`/`onboard.js`
+  sincronizate cu blocul inlinat.
+- **Onest:** headless Chromium ≠ Android real — device-pass-ul rămâne al lui Ines. Rămâne din plan: Faza 3
+  profund (inputs/butoane pe scară + `.card`/`.btn` unic) + navigația tip iOS (mockup în `private/mockups/`).
+
+## v145–v155 — modul „Ritualuri" (Atomic Habits) + Onboarding ghidat
 - **Modul Ritualuri (`ritual.js`, inlinat, tokens-only → temă automată):** secțiune „Ritualurile mele" pe
   Home cu card per ritual (icon line-art + accent per ritual, versiunea de 2 min, **serie derivată din log**
   — nu stocată — + 7 puncte-săptămână, bifă), rezumat „N/M azi". Bifă = mică sărbătoare (umplere + halo gilt

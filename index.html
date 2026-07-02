@@ -19,8 +19,8 @@
     
     /* base surfaces & ink */
     /* v143 Light-luxe: champagne surfaces + luxe ink + gold hairline (dark overrides all these, so light-only) */
-    --sand:#F3ECE0; --sand-deep:#E7DCC4; --cream:#FFFCF7;
-    --ink:#3A2438; --ink-soft:#8C6E72; --line:rgba(184,137,63,.30);
+    --sand:var(--surface-2); --sand-deep:#E7DCC4; --cream:var(--surface);   /* v156 Faza 2/2b: legacy -> alias catre semantic (o singura sursa de adevar); --sand-deep ramane tinta distincta */
+    --ink:var(--text); --ink-soft:var(--text-soft); --line:rgba(184,137,63,.30);
     /* category / functional colors (+ light variants) */
     --terracotta:#C16B4C; --terracotta-l:#EBCBBA;
     --olive:#8B9A6C; --olive-l:#E2E7D4;
@@ -41,9 +41,12 @@
     /* surprise accent 1 — metallic gold (discreet) */
     --gold-deep:#9A6E2C;
     /* redesign surfaces / accents */
-    --page:#F3ECE0; --page-2:#FBF3E6; --petal-edge:#F3E8D4; --gold:#B8893F;
+    --page:var(--surface-2); --page-2:#FBF3E6; --petal-edge:#F3E8D4; --gold:#B8893F;   /* --page -> alias; --page-2 pearl ramane distinct */
     /* shape & elevation tokens */
     --radius:20px;
+    /* v156 Faza 3: scara de radius + spacing (design system — o ierarhie, nu valori aleatorii) */
+    --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
     --shadow:0 10px 30px -12px rgba(120,90,60,.28);
     --shadow-sm:0 4px 14px -6px rgba(120,90,60,.25);
     --shadow-soft:0 6px 18px -10px rgba(150,120,90,.30);
@@ -61,9 +64,9 @@
     /* consumed by later phases (v135+); --rose-1..4 stay LOCKED, this is purely additive */
     --bg:#F6EFDF;              /* page base (today --sand) */
     --surface:#FFFCF7;         /* card (today --cream) */
-    --surface-2:#F6EFDF;       /* recessed surface (today --sand) */
-    --text:#3A2D21;            /* (today --ink) */
-    --text-soft:#897662;       /* (today --ink-soft) */
+    --surface-2:#F3ECE0;       /* recessed champagne surface — canonic pt legacy --sand/--page (Faza 2b) */
+    --text:#3A2438;            /* primary ink — unificat cu legacy --ink (luxe) */
+    --text-soft:#8C6E72;       /* secondary ink — unificat cu legacy --ink-soft (luxe) */
     /* --line:#E6DBC4 already defined above — today's value kept */
     --brand:#B5495F;           /* primary action (today --rose-4) */
     --brand-ink:#FFFCF7;       /* ink on the brand action */
@@ -114,11 +117,11 @@
 
   .brand{display:flex;align-items:baseline;gap:12px;position:relative;z-index:2;}
   .brand h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:2.5rem;margin:0;
-    color:#7A4A33;letter-spacing:-.5px;line-height:1;}
-  .brand .tag{font-size:.95rem;color:#9A6A4A;font-weight:600;}
+    color:var(--text-soft);letter-spacing:-.5px;line-height:1;}
+  .brand .tag{font-size:.95rem;color:var(--text-soft);font-weight:600;}
   .phrase{position:relative;z-index:2;margin-top:14px;max-width:560px;}
-  .phrase .es{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.15rem;color:#6E4631;}
-  .phrase .ro{font-size:.85rem;color:#9A6A4A;margin-top:2px;}
+  .phrase .es{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.15rem;color:var(--text);}
+  .phrase .ro{font-size:.85rem;color:var(--text-soft);margin-top:2px;}
 
   /* ---------- date bar ---------- */
   .datebar .day{display:flex;flex-direction:column;}
@@ -165,7 +168,7 @@
   /* blocks */
   .group-label{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
     color:var(--ink-soft);margin:16px 0 8px;}
-  .block{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:10px 12px;border-radius:14px;margin-bottom:8px;
+  .block{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:10px 12px;border-radius:var(--r-md);margin-bottom:8px;
     background:linear-gradient(180deg,#FFFBF4,#FCF5E9);border:1px solid rgba(184,137,63,.16);
     border-left:3px solid var(--cat-accent,var(--terracotta));
     position:relative;transition:.18s;animation:pop .3s ease;}
@@ -386,7 +389,7 @@
   .projdel:hover{background:var(--rose-l);color:var(--rose);}
   .projdel.armed{background:var(--rose);color:#fff;}
 
-  .itemrow{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:14px;margin-bottom:8px;
+  .itemrow{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:var(--r-md);margin-bottom:8px;
     background:var(--sand);border:1px solid var(--line);animation:pop .3s ease;}
   .itemrow.done{opacity:.7;}
   .itick{width:23px;height:23px;border-radius:7px;border:2px solid var(--ink-soft);flex:none;cursor:pointer;display:grid;place-items:center;background:#fff;margin-top:1px;transition:.15s;}
@@ -437,7 +440,7 @@
 
   .calm-player{position:fixed;inset:0;background:rgba(74,59,47,.45);display:none;place-items:center;z-index:80;padding:18px;}
   .calm-player.show{display:grid;}
-  .cp-card{background:var(--cream);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--shadow);position:relative;text-align:center;max-height:90vh;overflow:auto;}
+  .cp-card{background:var(--cream);border-radius:var(--r-xl);padding:24px;max-width:430px;width:100%;box-shadow:var(--shadow);position:relative;text-align:center;max-height:90vh;overflow:auto;}
   .cp-close{position:absolute;top:12px;right:14px;border:none;background:transparent;font-size:1.1rem;color:var(--ink-soft);cursor:pointer;border-radius:8px;padding:4px 7px;}
   .cp-close:hover{background:var(--sand-deep);}
   .cp-title{font-family:'Nunito Sans',system-ui,sans-serif;font-weight:600;font-size:1.3rem;color:var(--ink);padding-right:24px;}
@@ -479,11 +482,11 @@
 
   /* calendar */
   .calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .calnav button{border:1px solid rgba(184,137,63,.28);background:rgba(255,251,243,.9);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.15rem;cursor:pointer;transition:.16s;color:#7A4A33;}
+  .calnav button{border:1px solid rgba(184,137,63,.28);background:rgba(255,251,243,.9);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:.98rem;cursor:pointer;transition:.18s;color:var(--text-soft);}
   .calnav button:hover{background:#fff;transform:translateY(-1px);}
-  .calnav .calTodayBtn{width:auto;padding:0 18px;border-radius:22px;font-weight:800;font-size:.85rem;
+  .calnav .calTodayBtn{width:auto;height:38px;padding:0 16px;border-radius:20px;font-weight:800;font-size:.78rem;
     background:linear-gradient(180deg,var(--rose-2),var(--rose-4));color:#fff;border:none;
-    text-transform:uppercase;letter-spacing:.04em;box-shadow:0 5px 12px -6px rgba(165,97,126,.7);}
+    text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;box-shadow:0 5px 12px -6px rgba(165,97,126,.7);}
   .calnav .calTodayBtn:hover{filter:brightness(1.04);background:linear-gradient(180deg,var(--rose-2),var(--rose-4));}
   .cyRhythmBtn{display:inline-flex;align-items:center;gap:7px;margin:12px 0 2px;padding:9px 16px;border-radius:30px;background:transparent;border:1.5px solid var(--rose-1);color:var(--rose-4);font-family:inherit;font-weight:700;font-size:.84rem;letter-spacing:.01em;cursor:pointer;transition:.16s;}
   .cyRhythmBtn::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rose-2);opacity:.85;}
@@ -492,7 +495,7 @@
   .caldow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;}
   .caldow span{text-align:center;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);}
   .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
-  .cell{min-height:76px;border-radius:14px;border:1px solid var(--line);background:var(--sand);padding:7px 8px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:4px;}
+  .cell{min-height:76px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--sand);padding:7px 8px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:4px;}
   .cell:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);border-color:var(--terracotta);}
   .cell.empty{background:transparent;border:none;cursor:default;pointer-events:none;}
   .cell .num{font-weight:800;font-size:.95rem;color:var(--ink);}
@@ -554,7 +557,7 @@
   .scard .big{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.9rem;font-weight:600;color:var(--terracotta);line-height:1;}
   .scard .lbl{font-size:.8rem;color:var(--ink-soft);font-weight:700;margin-top:6px;}
   /* ---- P0-4 consolidated Progres ---- */
-  .prog-title{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.4rem;color:#5B3A28;margin:0 0 12px;}
+  .prog-title{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.4rem;color:var(--text);margin:0 0 12px;}
   #statCards{grid-template-columns:repeat(3,1fr);gap:10px;}
   #statCards .scard{padding:15px 6px;}
   #statCards .scard .big{font-family:'Fraunces',Georgia,serif;font-size:1.4rem;color:var(--rose-4);}
@@ -803,19 +806,19 @@
   .hero .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
   .hero .hero-mark{position:relative;z-index:2;margin-bottom:6px;}
   .hero .hero-mark .seed svg{width:26px;height:26px;display:block;}
-  .hero .brand h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:2.95rem;line-height:.95;margin:0;color:#5B3A28;letter-spacing:-.022em;}
+  .hero .brand h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:2.95rem;line-height:.95;margin:0;color:var(--text);letter-spacing:-.022em;}
   /* v135: "Día" wordmark in gold signature script (Ephesis), gilt-gradient clipped */
   .hero .brand h1 .brand-accent{font-family:'Ephesis',cursive;font-style:normal;font-weight:400;font-size:1.3em;line-height:.86;
     background:linear-gradient(100deg,#E8D2A0,#C8A24C 45%,#9A6E2C);-webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;color:transparent;padding-left:.05em;}
-  .hero .brand .tag{font-size:.74rem;color:var(--ink-3,#9A6A4A);font-weight:700;max-width:230px;line-height:1.3;
+  .hero .brand .tag{font-size:.74rem;color:var(--ink-3,var(--text-soft));font-weight:700;max-width:230px;line-height:1.3;
     letter-spacing:.14em;text-transform:uppercase;}
   .hero .phrase{margin-top:18px;max-width:320px;position:relative;}
   .hero .phrase::before{content:"";position:absolute;inset:-6px -40px -6px -22px;z-index:-1;
     background:linear-gradient(90deg,var(--cream,#FDFAF3) 0%,rgba(253,250,243,.92) 45%,rgba(253,250,243,.55) 72%,transparent 100%);
     border-radius:14px;}
   .hero .phrase .es{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;font-size:1.32rem;color:#6B4632;line-height:1.36;}
-  .hero .phrase .ro{font-size:.92rem;color:#9A6A4A;margin-top:7px;line-height:1.44;}
+  .hero .phrase .ro{font-size:.92rem;color:var(--text-soft);margin-top:7px;line-height:1.44;}
 
   /* ---- DAY BAND inside hero (date + progress in ONE card), warm tone ---- */
   /* bougainvillea pinks sampled from the header bloom */
@@ -836,7 +839,7 @@
   body[data-view="day"] .hero .brand .tag{display:none;}
   body[data-view="day"] .hero .hero-mark{display:none;}
   .hero-intent{margin-top:14px;}
-  .hero-greet{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.5rem;line-height:1.15;color:#5B3A28;}
+  .hero-greet{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.5rem;line-height:1.15;color:var(--text);}
   .hero-greet .gold{font-style:italic;color:var(--gold-deep);}
   .hero-intent-card{display:block;width:100%;text-align:left;cursor:pointer;margin-top:12px;
     background:linear-gradient(180deg,var(--rose-0),rgba(255,252,247,.85));
@@ -845,14 +848,14 @@
   .hero-intent-card:hover{transform:translateY(-1px);}
   .hero-intent-card:active{transform:scale(.995);}
   .hii-lab{display:block;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose-4);}
-  .hii-q{display:block;font-family:'Fraunces',Georgia,serif;font-size:1.16rem;color:#6E4631;margin-top:5px;line-height:1.3;}
+  .hii-q{display:block;font-family:'Fraunces',Georgia,serif;font-size:1.16rem;color:var(--text);margin-top:5px;line-height:1.3;}
   .hii-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px;}
   .hii-chips.hide{display:none;}
   .hii-chips button{font-family:inherit;font-size:.8rem;font-weight:600;color:var(--rose-4);
     background:#fff;border:1px solid rgba(209,94,120,.28);border-radius:16px;padding:6px 12px;cursor:pointer;transition:.14s;}
   .hii-chips button:hover{background:var(--rose-0);transform:translateY(-1px);}
   .hii-chips.answered{align-items:center;gap:10px;}
-  .hii-chips .hii-val{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.12rem;color:#6E4631;border:none;background:none;padding:0;}
+  .hii-chips .hii-val{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.12rem;color:var(--text);border:none;background:none;padding:0;}
   .hii-chips .hii-change{font-family:inherit;font-size:.72rem;font-weight:700;color:var(--rose-3);background:none;border:none;cursor:pointer;padding:4px 2px;align-self:center;}
   .hii-chips .hii-change:hover{background:none;transform:none;text-decoration:underline;}
   /* ---- P0-2 (v69): compact mini photo-strip header on secondary views — variant C ---- */
@@ -869,7 +872,7 @@
     background:rgba(255,252,247,.88);color:var(--rose-3);font-size:1.05rem;line-height:1;cursor:pointer;
     display:grid;place-items:center;box-shadow:0 4px 10px -6px rgba(120,90,60,.4);transition:.15s;}
   .hsec-back:hover{background:#fff;transform:translateY(-1px);}
-  .hsec-title{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.55rem;color:#5B3A28;letter-spacing:-.01em;line-height:1;}
+  .hsec-title{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.55rem;color:var(--text);letter-spacing:-.01em;line-height:1;}
   body[data-view]:not([data-view="day"]) .viewback{display:none;}
   /* ---- P0-1c (v72): A2 — airy/boxless Home opening; phrase = catch on the photo; no label; fine fade ---- */
   body[data-view="day"] .hero-day{margin-top:8px;padding:0;border:none;background:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;}
@@ -908,7 +911,7 @@
     background:rgba(255,251,243,.85);color:#9A5E72;font-size:.92rem;display:grid;place-items:center;flex:none;cursor:pointer;transition:.15s;}
   body[data-view="day"] .hero-day .d3bar #prev:hover,
   body[data-view="day"] .hero-day .d3bar #next:hover{background:#fff;transform:translateY(-1px);}
-  body[data-view="day"] .hero-day .d3bar .d3date{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;color:#5B3A28;white-space:nowrap;letter-spacing:-.005em;}
+  body[data-view="day"] .hero-day .d3bar .d3date{font-family:'Fraunces',Georgia,serif;font-size:1.08rem;color:var(--text);white-space:nowrap;letter-spacing:-.005em;}
   body[data-view="day"] .hero-day .d3bar .today{flex:none;background:none;border:none;box-shadow:none;
     color:var(--rose-4);font-weight:800;font-size:.74rem;letter-spacing:.02em;text-transform:none;
     width:auto;height:auto;padding:3px 4px;border-radius:10px;cursor:pointer;}
@@ -964,8 +967,8 @@
     box-shadow:0 3px 12px -9px rgba(140,80,100,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
   .hero-day .datebar{margin:0;background:transparent;border:none;border-radius:0;
     box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:13px 16px 10px;}
-  .hero-day .datebar .day .d1{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:#5B3A28;line-height:1.05;letter-spacing:-.01em;}
-  .hero-day .datebar .day .d2{font-size:.8rem;color:#9A6A4A;font-weight:600;}
+  .hero-day .datebar .day .d1{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:var(--text);line-height:1.05;letter-spacing:-.01em;}
+  .hero-day .datebar .day .d2{font-size:.8rem;color:var(--text-soft);font-weight:600;}
   .hero-day .nav{gap:7px;}
   .hero-day .nav button{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
     border:1px solid rgba(190,120,150,.28);background:rgba(255,251,243,.8);color:#9A5E72;font-size:.98rem;}
@@ -978,9 +981,9 @@
   .hero-day .progress-card{margin:0;background:transparent;border:none;border-radius:0;
     box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
     padding:0 16px 14px;}
-  .hero-day .progress-top b{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.1rem;font-weight:600;color:#5B3A28;}
+  .hero-day .progress-top b{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.1rem;font-weight:600;color:var(--text);}
   .hero-day .progress-top{justify-content:flex-end;margin-bottom:7px;}
-  .hero-day .progress-top span{font-size:.82rem;color:#9A6A4A;font-weight:700;}
+  .hero-day .progress-top span{font-size:.82rem;color:var(--text-soft);font-weight:700;}
   .hero-day .bar{height:9px;background:rgba(190,120,150,.16);border-radius:30px;}
   /* progress fill: crescendo from light to deep bougainvillea pink */
   .hero-day .bar>i{background:linear-gradient(90deg,var(--bloom-pink-light),var(--bloom-pink) 55%,var(--bloom-pink-dark));}
@@ -1105,10 +1108,10 @@
     box-shadow:0 8px 20px -14px rgba(120,80,50,.4);}
   .datebar .day{min-width:0;flex:1;}
   .datebar .nav{flex:none;}
-  .datebar .day .d1{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:#5B3A28;line-height:1.05;letter-spacing:-.01em;}
-  .datebar .day .d2{font-size:.8rem;color:#9A6A4A;font-weight:600;}
+  .datebar .day .d1{font-family:'Nunito Sans',system-ui,sans-serif;font-size:1.4rem;font-weight:600;color:var(--text);line-height:1.05;letter-spacing:-.01em;}
+  .datebar .day .d2{font-size:.8rem;color:var(--text-soft);font-weight:600;}
   .nav button{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-    border:1px solid rgba(184,137,63,.28);background:rgba(255,251,243,.9);color:#7A4A33;
+    border:1px solid rgba(184,137,63,.28);background:rgba(255,251,243,.9);color:var(--text-soft);
     font-size:.98rem;cursor:pointer;transition:.18s;}
   .nav button:not(.today):hover{background:#fff;}
   .nav .today{width:auto;height:38px;padding:0 16px;border-radius:20px;
@@ -1121,7 +1124,7 @@
   .progress-card{padding:18px 20px;border-radius:var(--radius);margin-bottom:18px;
     background:linear-gradient(180deg,#FFFBF4,#FCF5E9);border:1px solid rgba(184,137,63,.18);
     box-shadow:0 8px 20px -14px rgba(120,80,50,.4);}
-  .progress-top b{font-family:'Nunito Sans',system-ui,sans-serif;color:#5B3A28;font-size:1.32rem;}
+  .progress-top b{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--text);font-size:1.32rem;}
   .bar{height:13px;background:var(--sand-deep);border-radius:30px;overflow:hidden;}
   .bar>i{background:linear-gradient(90deg,var(--rose-0),var(--rose-1) 28%,var(--rose-2) 60%,var(--rose-4) 88%,var(--rose-5));}
 
@@ -1130,7 +1133,7 @@
   .grid > div[style]{display:flex;flex-direction:column;gap:16px;}
   .panel{background:linear-gradient(180deg,#FFFBF4,#FCF5E9);border:1px solid rgba(184,137,63,.18);
     border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-soft);margin-bottom:0;}
-  .panel h2{font-family:'Nunito Sans',system-ui,sans-serif;font-weight:600;font-size:1.14rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;color:#5B3A28;}
+  .panel h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.18rem;margin:0 0 16px;display:flex;align-items:center;gap:8px;color:var(--text);letter-spacing:-.005em;}
   .panel h2:before{content:"";width:23px;height:23px;flex:none;display:inline-block;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B8893F' stroke-width='1.3' stroke-linejoin='round'%3E%3Cg transform='translate(12 12)'%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(30)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(90)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(150)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(210)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(270)'/%3E%3Cpath d='M0 0C-2.4-3.5-2.4-7.5 0-9.5 2.4-7.5 2.4-3.5 0 0Z' transform='rotate(330)'/%3E%3Ccircle r='1.4' fill='%23B8893F' stroke='none'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;}
 
@@ -1276,12 +1279,12 @@
     cursor:pointer;-webkit-tap-highlight-color:transparent;}
   .focus-btn svg{width:15px;height:15px;}
   .focus-btn:active{transform:scale(.97);}
-  .pf-hello{font-family:'Fraunces',Georgia,serif;font-size:1.7rem;color:#5a3f2c;margin:4px 2px 2px;}
+  .pf-hello{font-family:'Fraunces',Georgia,serif;font-size:1.7rem;color:var(--text);margin:4px 2px 2px;}
   .pf-hello b{font-style:italic;font-weight:600;color:var(--rose-4);}
   .pf-sub{color:var(--ink-soft);font-size:.9rem;margin:0 2px 18px;}
   .pf-journey{background:linear-gradient(180deg,#FBE9EC,#FFF7F3);border:1px solid rgba(209,94,120,.18);border-radius:var(--radius);padding:15px 17px;margin-bottom:18px;box-shadow:var(--shadow-soft);}
   .pf-journey-h{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose-3);margin-bottom:7px;}
-  .pf-journey-line{font-family:'Fraunces',Georgia,serif;font-size:1.04rem;color:#5B3A28;line-height:1.5;}
+  .pf-journey-line{font-family:'Fraunces',Georgia,serif;font-size:1.04rem;color:var(--text);line-height:1.5;}
   .pf-journey-line b{color:var(--rose-4);font-weight:600;}
   .pf-intent{background:linear-gradient(180deg,#FFF6F1,#FCEAEA);border:1px solid #F1D9DC;border-radius:var(--radius);
     padding:15px 17px;margin-bottom:16px;box-shadow:var(--shadow-soft);}
@@ -1294,11 +1297,11 @@
   .pf-stat .pf-ic svg{width:24px;height:24px;}
   .pf-stat .pf-n{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.4rem;color:var(--rose-4);}
   .pf-stat .pf-l{font-size:.68rem;color:var(--ink-soft);margin-top:2px;}
-  .pf-recent-h{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.12rem;color:#5B3A28;margin:24px 0 8px;}
+  .pf-recent-h{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:1.12rem;color:var(--text);margin:24px 0 8px;}
   .pf-recent{list-style:none;margin:0;padding:0;}
   .pf-recent li{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid rgba(184,137,63,.14);}
   .pf-recent li:last-child{border-bottom:none;}
-  .pf-recent .rw{flex:1;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.02rem;color:#6E4631;}
+  .pf-recent .rw{flex:1;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.02rem;color:var(--text);}
   .pf-recent .rd{font-size:.74rem;color:var(--ink-soft);font-weight:600;white-space:nowrap;}
   .pf-recent .pf-recent-empty{justify-content:center;color:var(--ink-soft);font-size:.9rem;border-bottom:none;}
   .pf-emo-sub{font-size:.82rem;color:var(--ink-soft);margin:-2px 0 6px;}
@@ -1739,9 +1742,12 @@
   .ilink svg{width:16px;height:16px;vertical-align:middle;}
   /* v144: gilt drop-cap on the Spanish phrase (signature accent; both themes). Inline raised initial —
      no float, so it never spills on the small 2-line home phrase. */
-  /* v155: drop-cap incape MEREU in propria cutie (line-height:1 + inline-block) — nu se mai taie varful literei */
-  .hero .phrase .es .phrase-dc{ font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.34em;
-    line-height:1; display:inline-block; vertical-align:-.03em; padding-right:.02em; text-shadow:none;
+  /* v156: background-clip:text nu picteaza portiunea de litera care iese peste cutia elementului, deci
+     varful capitalei italice mari (P) aparea taiat la orice dimensiune. Fix robust: padding-top da cutiei
+     spatiu de pictura DEASUPRA literei, iar margin-top negativ egal anuleaza deplasarea (litera ramane pe loc).
+     Verificat la mobil SI desktop (litera mai mare la desktop expunea taierea). */
+  .hero .phrase .es .phrase-dc{ font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.3em;
+    line-height:1.15; display:inline-block; vertical-align:-.05em; padding:.5em .02em 0 0; margin-top:-.5em; text-shadow:none;
     background:linear-gradient(100deg,#E8D2A0,#C8A24C 45%,#9A6E2C); -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent; }
   /* headroom pt fraza, ca varful literei mari sa aiba mereu loc (indiferent de font/device) */
@@ -2435,10 +2441,10 @@
     tab_calm:{ro:"Respiro",es:"Respiro",en:"Respiro"},
     tab_home:{ro:"Acasă",es:"Inicio",en:"Home"},
     tab_profil:{ro:"Profil",es:"Perfil",en:"Profile"},
-    aria_back:{ro:"Inapoi acasa",es:"Volver al inicio",en:"Back to home"},
-    aria_quickadd:{ro:"Adaugare rapida",es:"Anadir rapido",en:"Quick add"},
-    aria_addslot:{ro:"Adauga activitate",es:"Anadir actividad",en:"Add activity"},
-    aria_done:{ro:"Marcheaza ca facut",es:"Marcar como hecho",en:"Mark as done"},
+    aria_back:{ro:"Înapoi acasă",es:"Volver al inicio",en:"Back to home"},
+    aria_quickadd:{ro:"Adăugare rapidă",es:"Añadir rápido",en:"Quick add"},
+    aria_addslot:{ro:"Adaugă activitate",es:"Añadir actividad",en:"Add activity"},
+    aria_done:{ro:"Marchează ca făcut",es:"Marcar como hecho",en:"Mark as done"},
     intent_k:{ro:"intenție",es:"intención",en:"intention"},
     intent_title:{ro:"Intenția zilei",es:"La intención del día",en:"Today's intention"},
     intent_sub:{ro:"Un cuvânt sau o frază care să-ți coloreze ziua.",es:"Una palabra o frase que dé color a tu día.",en:"A word or phrase to color your day."},
@@ -2785,18 +2791,11 @@
     onb_plan_t:{ro:"Planul zilei",es:"El plan del día",en:"Your day's plan"},
     onb_plan_sub:{ro:"Aici îți adaugi activitățile zilei — scrie ce vrei să faci și apasă „+”. Simplu, fără presiune.",es:"Aquí añades las actividades del día — escribe qué quieres hacer y pulsa «+». Sencillo, sin presión.",en:"Here you add your day's activities — write what you want to do and tap “+”. Simple, no pressure."},
     onb_plan_field:{ro:"Ce vrei să faci azi?",es:"¿Qué quieres hacer hoy?",en:"What do you want to do today?"},
-    onb_flower_t:{ro:"Floarea ta",es:"Tu flor",en:"Your flower"},
-    onb_flower_sub:{ro:"Cinci petale te duc oriunde ai nevoie. În centru — intenția zilei.",es:"Cinco pétalos te llevan a donde necesites. En el centro — la intención del día.",en:"Five petals take you wherever you need. At the centre — the day's intention."},
     onb_flower_poem:{
       ro:"Un loc de liniște, care mă ține:\nscriu, respir, privesc, mă-nalț și cresc;\nun loc de creat, ce mă susține,\nun pas, în fiecare zi, spre mine.",
       es:"Un lugar de calma que me sostiene:\nescribo, respiro, miro y crezco;\nun lugar para crear, que me mantiene,\nun paso, cada día, hacia mí.",
       en:"A place of quiet that holds me:\nI write, I breathe, I look, I grow;\na place to create, that upholds me,\na step, each day, closer to me."
     },
-    onb_pet_journal:{ro:"gândurile și starea ta",es:"tus pensamientos y tu ánimo",en:"your thoughts and mood"},
-    onb_pet_respiro:{ro:"un moment să respiri",es:"un momento para respirar",en:"a moment to breathe"},
-    onb_pet_cal:{ro:"zilele tale dintr-o privire",es:"tus días de un vistazo",en:"your days at a glance"},
-    onb_pet_stats:{ro:"cum crește ritmul tău",es:"cómo crece tu ritmo",en:"how your rhythm grows"},
-    onb_pet_proj:{ro:"ideile și listele tale",es:"tus ideas y listas",en:"your ideas and lists"},
     onb_ritual_t:{ro:"Ritualurile tale",es:"Tus rituales",en:"Your rituals"},
     onb_ritual_sub:{ro:"Obiceiuri mici, cu o serie zilnică. Le bifezi în fiecare zi — nu rupe lanțul. Ți-am pregătit deja două.",es:"Pequeños hábitos, con una racha diaria. Los marcas cada día — no rompas la cadena. Ya te preparamos dos.",en:"Small habits, with a daily streak. You check them each day — don't break the chain. We've set up two for you."},
     onb_ritual_cta:{ro:"Creează primul tău ritual",es:"Crea tu primer ritual",en:"Create your first ritual"},
@@ -2823,6 +2822,16 @@
     rit_2min_do:{ro:"↻ versiunea de 2 min",es:"↻ la versión de 2 min",en:"↻ the 2-min version"},
     rit_hint:{ro:"apasă bifa = gata pe azi · ține apăsat = versiunea de 2 minute",es:"marca = hecho hoy · mantén pulsado = versión de 2 min",en:"tap the check = done today · hold = the 2-minute version"},
     aria_rit_add:{ro:"Adaugă un ritual",es:"Añade un ritual",en:"Add a ritual"},
+    rit_edit:{ro:"Editează",es:"Editar",en:"Edit"},
+    rit_edit_done:{ro:"Gata",es:"Listo",en:"Done"},
+    rit_del_confirm:{ro:"Șterg?",es:"¿Borrar?",en:"Delete?"},
+    rit_deleted:{ro:"Ritual șters",es:"Ritual borrado",en:"Ritual deleted"},
+    aria_rit_edit:{ro:"Editează ritualurile",es:"Editar rituales",en:"Edit rituals"},
+    aria_rit_del:{ro:"Șterge ritualul",es:"Borrar ritual",en:"Delete ritual"},
+    rit_edit_title:{ro:"Editează ritualul",es:"Editar el ritual",en:"Edit ritual"},
+    rit_save_edit:{ro:"Salvează",es:"Guardar",en:"Save"},
+    rit_updated:{ro:"Ritual actualizat",es:"Ritual actualizado",en:"Ritual updated"},
+    rit_edit_hint:{ro:"apasă un ritual ca să-l editezi · ✕ ca să-l ștergi",es:"toca un ritual para editarlo · ✕ para borrarlo",en:"tap a ritual to edit it · ✕ to delete it"},
     aria_rit_check:{ro:"Bifează ritualul",es:"Marca el ritual",en:"Check the ritual"},
     /* ----- sheet de creare ----- */
     rit_new_title:{ro:"Un ritual nou",es:"Un ritual nuevo",en:"A new ritual"},
@@ -6166,6 +6175,7 @@ const Ritual = (function () {
   let _cache = [];          // sincron; reincarcat de loadCache()/refresh()
   const _cbs = [];          // onChange listeners
   const _busy = new Set();  // M4: guard anti-dublu-fire per ritual (dublu-tap rapid)
+  let _editMode = false, _armDel = null;   // Faza 0 v156: edit-mode (sterge/gestioneaza ritualuri)
 
   const ICONS = {
     breath:  '<path d="M4 12c4-6 12-6 16 0M8 12c2-3 6-3 8 0"/>',
@@ -6318,11 +6328,14 @@ const Ritual = (function () {
       }
     }
 
-    return '<div class="'+cls+'" '+ac+' data-id="'+escA(r.id)+'">'+
+    const rightCtl = _editMode
+      ? '<button class="r-del'+(_armDel===r.id?' arm':'')+'" type="button" data-del="'+escA(r.id)+'" aria-label="'+escA(t('aria_rit_del'))+'">'+(_armDel===r.id?esc(t('rit_del_confirm')):'✕')+'</button>'
+      : '<div class="r-tick" role="button" tabindex="0" aria-pressed="'+(done?'true':'false')+'" aria-label="'+escA(t('aria_rit_check'))+'">'+CHECK+'</div>';
+    return '<div class="'+cls+(_editMode?' editing':'')+'" '+ac+' data-id="'+escA(r.id)+'">'+
              '<div class="r-ic">'+iconSvg(r.icon)+'</div>'+
              '<div class="r-body">'+body+'</div>'+
-             streakBlock+
-             '<div class="r-tick" role="button" tabindex="0" aria-pressed="'+(done?'true':'false')+'" aria-label="'+escA(t('aria_rit_check'))+'">'+CHECK+'</div>'+
+             (_editMode?'':streakBlock)+
+             rightCtl+
            '</div>';
   }
 
@@ -6338,10 +6351,13 @@ const Ritual = (function () {
 
     let html = '<div class="r-rule"></div>';
     html += '<div class="r-sec"><span class="r-t">'+esc(t('rit_section'))+'</span>'+
-            '<span class="r-sum">'+FLAME+' '+esc(t('rit_summary').replace('{n}',doneN).replace('{m}',dueN))+'</span></div>';
+            '<span class="r-secr">'+
+              (_editMode?'':'<span class="r-sum">'+FLAME+' '+esc(t('rit_summary').replace('{n}',doneN).replace('{m}',dueN))+'</span>')+
+              '<button class="r-editbtn'+(_editMode?' on':'')+'" type="button" aria-label="'+escA(t('aria_rit_edit'))+'">'+esc(_editMode?t('rit_edit_done'):t('rit_edit'))+'</button>'+
+            '</span></div>';
     list.forEach(r=>{ html += cardHTML(r, today); });
-    html += '<button class="r-add" type="button" aria-label="'+esc(t('aria_rit_add'))+'">'+PLUS+esc(t('rit_add'))+'</button>';
-    html += '<div class="r-hint">'+esc(t('rit_hint'))+'</div>';
+    if(!_editMode) html += '<button class="r-add" type="button" aria-label="'+esc(t('aria_rit_add'))+'">'+PLUS+esc(t('rit_add'))+'</button>';
+    html += '<div class="r-hint">'+esc(_editMode?t('rit_edit_hint'):t('rit_hint'))+'</div>';
 
     mount.innerHTML = html;
     wire(mount);
@@ -6369,6 +6385,31 @@ const Ritual = (function () {
     });
     const add = mount.querySelector('.r-add');
     if(add) add.onclick = ()=> openCreate();
+    // Faza 0 v156: edit-mode toggle + two-tap delete (consecvent cu Scurtaturi)
+    const eb = mount.querySelector('.r-editbtn');
+    if(eb) eb.onclick = ()=>{ _editMode = !_editMode; _armDel = null; render(); };
+    mount.querySelectorAll('.r-del[data-del]').forEach(el=>{
+      el.onclick = ()=>{ const id = el.getAttribute('data-del');
+        if(_armDel===id){ deleteRitual(id); } else { _armDel = id; render(); } };
+    });
+    // in edit-mode, tap pe corpul cardului = editare (✕ ramane stergere)
+    if(_editMode){
+      mount.querySelectorAll('.r-card').forEach(cardEl=>{
+        const id = cardEl.getAttribute('data-id');
+        cardEl.addEventListener('click', (e)=>{ if(e.target.closest('.r-del')) return; openEdit(id); });
+      });
+    }
+  }
+
+  // sterge un ritual (default sau custom). Ancora orfana (habit stacking) e deja tratata in cardHTML (M3).
+  async function deleteRitual(id){
+    _cache = _cache.filter(r=>r.id!==id);
+    _armDel = null;
+    if(!_cache.length) _editMode = false;
+    await save();
+    render();
+    try{ toast(t('rit_deleted')); }catch(e){}
+    emit();
   }
 
   async function toggleCheck(id){
@@ -6426,6 +6467,7 @@ const Ritual = (function () {
   /* ─── SHEET DE CREARE (Faza 2 / v147) ──────────────────────────────── */
   // stare selectie (drumul A chip / drumul B scris)
   let _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' };
+  let _editId = null;   // v156: id ritual in curs de editare (null = creare)
   let _cueType = 'time', _cueTime = '07:00', _cueAfter = '';
   let _lastFocus = null;   // controlul care a deschis sheet-ul (focus-return la inchidere)
 
@@ -6511,7 +6553,7 @@ const Ritual = (function () {
     const typed = nm && nm.value.trim().length>0;
     // M6: cand userul scrie nume propriu (drumul B), reseteaza selectia de chip la neutru
     // ca sa nu lipim icon/identity de la un chip abandonat pe un ritual custom.
-    if(typed && _sel.key===null && (_sel.identity || _sel.icon!=='leaf')){ _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' }; }
+    if(!_editId && typed && _sel.key===null && (_sel.identity || _sel.icon!=='leaf')){ _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' }; }
     document.getElementById('rsChips').style.display = typed ? 'none' : '';
     document.getElementById('rsSub').textContent = typed ? t('rit_what_sub_written') : t('rit_what_sub');
     if(typed){ renderSugChips(); }   // clears the .sel highlight
@@ -6541,8 +6583,50 @@ const Ritual = (function () {
     v.innerHTML = CHECK + esc(id ? t('rit_vote_foot').replace('{x}', id) : t('rit_vote_foot_neutral'));
   }
 
+  // v156: comuta sheet-ul intre "creare" si "editare" (titlu + eticheta buton salvare)
+  function setSheetMode(editing){
+    const h = document.querySelector('#ritSheet .rs-head h2'); if(h) h.textContent = t(editing?'rit_edit_title':'rit_new_title');
+    const sv = document.querySelector('#ritSheet #rsSave span'); if(sv) sv.textContent = t(editing?'rit_save_edit':'rit_save');
+  }
+
+  // v156: deschide sheet-ul precompletat cu un ritual existent (editare, nu creare)
+  function openEdit(id){
+    const r = _cache.find(x=>x.id===id); if(!r) return;
+    buildSheet();
+    _editId = id; setSheetMode(true);
+    _sel = { key:null, icon:r.icon||'leaf', color:r.color||'--olive', identity:r.identity||'', two:r.twoMin||'' };
+    _cueType = (r.cue && r.cue.type==='after') ? 'after' : 'time';
+    _cueTime = (r.cue && r.cue.type==='time') ? (r.cue.value||'07:00') : '07:00';
+    const others = _cache.filter(x=>x.id!==id);
+    _cueAfter = (r.cue && r.cue.type==='after') ? (r.cue.value||'') : (others.length?others[0].id:'');
+    const nm=document.getElementById('rsName'); if(nm) nm.value = r.name||'';
+    const tw=document.getElementById('rsTwo');  if(tw) tw.value = r.twoMin||'';
+    { const rt=document.getElementById('rsTime'); if(rt) rt.value = _cueTime; }
+    // ancora habit-stacking: exclude ritualul insusi (nu se poate stivui pe sine)
+    const af=document.getElementById('rsAfter');
+    if(af){ af.innerHTML = others.map(x=>'<option value="'+escA(x.id)+'">'+esc(x.name)+'</option>').join('');
+      if(_cueType==='after' && _cueAfter) af.value=_cueAfter; }
+    const afterBtn=document.querySelector('#rsSeg button[data-cue="after"]');
+    if(afterBtn) afterBtn.disabled = !others.length;
+    const ar=document.getElementById('rsArea');
+    if(ar){ let opts='<option value="">'+esc(t('rit_area_none'))+'</option>';
+      try{ (areas||[]).forEach(c=>{ opts+='<option value="'+escA(c.id)+'">'+esc(areaLabel(c))+'</option>'; }); }catch(e){}
+      ar.innerHTML=opts; ar.value=r.area||''; }
+    document.getElementById('rsMorePanel').style.display = r.area ? 'block' : 'none';
+    renderSugChips(); setCue(_cueType);
+    // nume precompletat -> ascunde chip-urile fara sa resetezi _sel (nu apela onNameTyped, care ar sterge icon/identity)
+    document.getElementById('rsChips').style.display = 'none';
+    document.getElementById('rsSub').textContent = t('rit_what_sub_written');
+    updateVote();
+    const w=document.getElementById('ritSheet');
+    _lastFocus = document.activeElement;
+    w.classList.add('show'); w.setAttribute('aria-hidden','false');
+    setTimeout(()=>{ const n=document.getElementById('rsName'); if(n) n.focus(); }, 60);
+  }
+
   function openCreate(prefill){
     buildSheet();
+    _editId = null; setSheetMode(false);
     // reset stare
     _sel = { key:null, icon:'leaf', color:'--olive', identity:'', two:'' };
     _cueType='time'; _cueTime='07:00'; _cueAfter = _cache.length ? _cache[0].id : '';
@@ -6578,6 +6662,7 @@ const Ritual = (function () {
     // focus-return: intoarce focusul pe controlul care a deschis sheet-ul (ex. .r-add)
     try{ if(_lastFocus && _lastFocus.focus){ _lastFocus.focus(); } }catch(e){}
     _lastFocus = null;
+    _editId = null;
   }
 
   function areaLabel(c){
@@ -6598,6 +6683,14 @@ const Ritual = (function () {
     let color = _sel.color || '--olive';
     if(area){ const ca=colorOfArea(area); if(ca) color=ca; }
     const cue = (_cueType==='after' && _cueAfter) ? { type:'after', value:_cueAfter } : { type:'time', value:_cueTime||'07:00' };
+    if(_editId){
+      const ex = _cache.find(x=>x.id===_editId);
+      if(ex){ ex.name=name; ex.identity=_sel.identity||ex.identity||userIdentity||''; ex.cue=cue;
+        ex.twoMin=(''+two).trim(); ex.area=area; ex.color=color; ex.icon=_sel.icon||ex.icon||'leaf'; }
+      _editId=null;
+      await save(); closeSheet(); render(); try{ toast(t('rit_updated')); }catch(e){} emit();
+      return;
+    }
     const r = {
       id: 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),  // M7: sufix random -> fara coliziune la acelasi ms
       name: name,
@@ -6771,6 +6864,14 @@ const Ritual = (function () {
 #ritualMount .r-add{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border:1px dashed var(--line);background:transparent;border-radius:16px;padding:11px;color:var(--text-soft);font-weight:700;font-size:.82rem;margin-bottom:4px;cursor:pointer;font-family:inherit}
 #ritualMount .r-add svg{width:15px;height:15px;stroke:var(--gold-gilt);fill:none;stroke-width:1.7}
 #ritualMount .r-hint{font-size:.7rem;color:var(--text-soft);opacity:.85;margin:6px 2px 0}
+/* v156 Faza 0: edit-mode (sterge/gestioneaza ritualuri) */
+#ritualMount .r-secr{display:flex;align-items:center;gap:10px}
+#ritualMount .r-editbtn{background:transparent;border:none;color:var(--text-soft);font-family:inherit;font-weight:700;font-size:.72rem;cursor:pointer;padding:4px 6px;text-decoration:underline;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+#ritualMount .r-editbtn.on{color:var(--accent)}
+#ritualMount .r-del{min-width:28px;height:28px;flex:none;padding:0 10px;border-radius:9px;border:1px solid color-mix(in srgb,var(--terra) 40%,var(--line));background:color-mix(in srgb,var(--terra) 8%,var(--surface));color:var(--terra);font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;display:grid;place-items:center;transition:transform .12s ease}
+#ritualMount .r-del.arm{background:var(--terra);color:#fff;padding:0 12px;font-size:.72rem}
+#ritualMount .r-del:active{transform:scale(.94)}
+#ritualMount .r-card.editing{cursor:pointer}
 /* ===== sheet de creare ===== */
 .rs-wrap{position:fixed;inset:0;z-index:1200;display:none}
 .rs-wrap.show{display:block}
@@ -6934,7 +7035,7 @@ const Onboard = (function(){
   function stepWelcome(){
     return '<div class="onb-brand">Mi <span class="onb-dia">Día</span></div>'+
            '<div class="onb-phrase"><div class="onb-es">'+esc(t('onb_es_phrase'))+'</div>'+
-             '<div class="onb-tr">'+esc(t('onb_es_tr'))+'</div></div>'+
+             (lang==='es'?'':'<div class="onb-tr">'+esc(t('onb_es_tr'))+'</div>')+'</div>'+
            '<h2 class="onb-t">'+esc(t('onb_welcome_t'))+'</h2>'+
            '<p class="onb-p">'+esc(t('onb_welcome_sub'))+'</p>'+
            '<div class="onb-lang" id="onbLang" role="group" aria-label="'+ea(t('onb_lang_q'))+'">'+
@@ -7102,7 +7203,7 @@ const Onboard = (function(){
 .onb-flower{position:absolute;inset:0;width:100%;height:100%}
 .onb-seed{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,var(--gold-1),var(--gold-deep));box-shadow:0 0 12px 2px rgba(200,162,76,.6)}
 .onb-poem{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.14rem;line-height:1.72;color:var(--text);margin:4px 4px 2px}
-.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;line-height:1;display:inline-block;vertical-align:-.04em;background:var(--gold-hair);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-right:.02em}
+.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;line-height:1.1;display:inline-block;vertical-align:-.06em;background:var(--gold-hair);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding:.5em .02em 0 0;margin-top:-.5em}
 /* plan step: real input + commit */
 .onb-planrow{display:flex;align-items:center;gap:9px;margin:2px 0 4px}
 .onb-planinput{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;

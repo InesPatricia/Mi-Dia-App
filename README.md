@@ -5,7 +5,7 @@
 **🔗 Live app:** https://mi-dia-app.pages.dev &nbsp;·&nbsp; **📱 Installable PWA** (works offline)
 
 ![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20offline-5a8a5a)
-![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
 ![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
@@ -17,7 +17,7 @@
 
 I'm a **QA / AI professional**, and I built this as a real, shipped product to practise engineering and quality end-to-end — not a toy. The interesting part isn't just the app; it's **how it's tested and shipped**:
 
-- ✅ **83 end-to-end tests across 20 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
+- ✅ **85 end-to-end tests across 20 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
 - ♿ **Accessibility audited** with axe-core on a curated rule set across all 7 views; semantic locators (`getByRole`/`getByLabel`) drive the suite — testing the app the way a screen-reader user experiences it.
 - 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation.
 - 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**.
