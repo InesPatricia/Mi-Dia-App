@@ -719,7 +719,7 @@ const Ritual = (function () {
 .rs-wrap.show{display:block}
 .rs-scrim{position:absolute;inset:0;background:rgba(30,12,20,.5);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 .rs-sheet{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:var(--maxw,452px);
-  max-height:92vh;background:var(--bg);color:var(--text);border-radius:26px 26px 0 0;
+  max-height:92vh;background:var(--bg);color:var(--text);border-radius:var(--r-xl,26px) var(--r-xl,26px) 0 0;
   box-shadow:0 -18px 50px -20px rgba(0,0,0,.5);padding:10px 20px 20px;display:flex;flex-direction:column}
 .rs-grip{width:38px;height:4px;border-radius:3px;background:var(--line);margin:0 auto}
 .rs-head{display:flex;align-items:center;justify-content:space-between;margin:12px 0 2px}

@@ -48,6 +48,15 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
   locked rose family).
 - **Action color:** dark = gilt gold, light = wine. Gold everywhere else is **metal only** (hairlines, rings,
   petal icons, accents) — never the action color in light mode.
+- **Design-system primitives (Faza 3, v157→v167 — USE these, don't invent new variants):**
+  - **Action tokens** (defined in `html[data-theme="light"]{}`): `--act` (wine `#6E1334`), `--act-2` (hover /
+    gradient top), `--act-deep`, `--act-ink` (champagne text on action), `--act-accent` (magenta). `--brand`
+    is remapped to `--act` in light and to gilt in dark — so any `background:var(--brand)` themes correctly.
+  - **`.btn--primary`** = the single filled action button (wine gradient light / gilt-filled dark). Give a new
+    action button this class + keep its own layout (width/padding); do NOT create a bespoke colored button.
+  - **`.card`** = the canonical card (`--surface` + `--line` + `--r-lg` + `--shadow-soft` + `--sp-5`).
+  - **Radius scale:** controls `--r-sm` (12) · content cards `--r-md` (16) · panels `--r-lg` (20) · modals/
+    sheets `--r-xl` (26). **Spacing:** `--sp-1..6` (4-based). No ad-hoc px radii on new controls/cards.
 - **FLOWER LABELS — HARD REQUIREMENT (Ines flagged this explicitly):** keep the app's EXACT label system —
   the `.labels .lbl .l1–.l5` markup, the coordinates (`l1 170/78 · l2 255/142 · l3 222/244 · l4 118/244 ·
   l5 85/142`), the 5 line-icon SVGs, and the 9px UPPERCASE word. **Only re-skin colors** (gold line-icon;

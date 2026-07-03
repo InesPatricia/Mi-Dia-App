@@ -1,8 +1,8 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v156.html`** (promoted to `index.html`, sw CACHE `mi-dia-v156`, live on Cloudflare)
-> Latest arc: **Coerență cap-coadă (v156)** — audit multi-agent (5 avatare + 3 experți) → **gestionare ritualuri** (delete + edit; rezolvă „nu se putea șterge niciun ritual, nici cele default") + fix-uri i18n + **unificare design** (titluri hardcodate → tokeni semantice; `.panel h2` → Fraunces; `.calnav`=`.datebar`; colaps tokeni legacy→semantic; scară de radius/spacing) + **fix drop-cap „P" tăiat** (`background-clip:text` headroom, desktop+mobil). e2e 85/85. Rămâne din plan: Faza 3 profund (`.card`/`.btn` unic) + navigația tip iOS (mockup în `private/mockups/`); device-pass Android (Ines).
+> Last updated: July 2026 · Current latest build: **`mi-dia-v168.html`** (promoted to `index.html`, sw CACHE `mi-dia-v168`, live on Cloudflare)
+> Latest arc: **Faza 3 profund + coerență cap-coadă (v157→v168)** — un singur limbaj de tokeni: token de acțiune (`--act` + `--brand`→wine în light), scară de radius pentru controale (`--r-sm`), **`.btn--primary` unic** (wine light / gilt dark uniform, înlocuiește 10+ variante), **`.card` canonic** + carduri pe ierarhia `--r-md`/`--r-lg`/`--r-xl`, fix leak-uri dark (TODAY/toggle/modal-intenție/cell.today → gilt), fix `.hero` radius (tokenul `--radius-lg` era nedefinit → 28px) + eliminat tokenul legacy `--radius`, **fix DEFINITIV drop-cap tăiat pe Home** (v168: cauza reală = `background-clip:text` taie glifa la marginea cutiei, mecanism fragil dependent de font/device — fix-urile de padding tot reveneau; fix robust = culoare gilt SOLIDĂ fără clip, `.phrase-dc` + `.onb-dc`). Audit multi-agent (3 agenți QA) → felii de reparații + sync `cycle.js`/`ritual.js`/`onboard.js`. e2e 85/85. Rămâne din plan: **navigația tip iOS** (mockup A/B, așteaptă decizia lui Ines) + device-pass Android (Ines).
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -35,7 +35,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 > above is now built and live: `ritual.js` (Home section + streak + creation sheet + never-miss-twice +
 > identity card + seed + Progress backfill; check marks TODAY) + `onboard.js` (6-step guided carousel, the
 > "Floarea" step = a poem with a candle-glow seed). e2e **85** (83 functional + 2 `@visual`). Current build
-> **`mi-dia-v156.html`** = `index.html`, `sw.js` CACHE `mi-dia-v156`. See the "Changelog (v145→v155)" +
+> **`mi-dia-v168.html`** = `index.html`, `sw.js` CACHE `mi-dia-v168`. See the "Changelog (v145→v155)" +
 > `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
 > **What's still open (for the next agent) — updated after the v156 Coerență arc:**
@@ -46,8 +46,10 @@ Personal use for now (localStorage only). Future: public/subscription version.
 >   peste tot, fără bloom. **Varianta A** (5 taburi Azi·Jurnal·Respiro·Calendar·Tu, adăugare în conținut) =
 >   recomandarea; **Varianta B** („+" central, o destinație retrogradată). **Ines nu a decis încă** — NU
 >   construi până nu alege A sau B.
-> - **Faza 3 profund** (continuă unificarea design din v156): inputs/butoane pe scara `--r-*`/`--sp-*` (deja
->   definită în `:root`) + un `.card`/`.btn--primary` unic (acum 10+ variante de buton). Pur CSS, low-risk.
+> - **Faza 3 profund — ✅ DONE (v157→v168).** inputs/chips pe `--r-sm`; `.btn--primary` unic (wine light /
+>   gilt dark) înlocuind variantele filled; `.card` canonic + carduri pe `--r-md`/`--r-lg`/`--r-xl`; token de
+>   acțiune `--act` + `--brand`→wine în light; leak-uri dark reparate; `.hero`/`--radius` fix. (Rămâne opțional
+>   un sweep P3/P4 rezidual: câteva raze mici din module opt-in — cosmetic, low-impact.)
 > - **Idei de retenție din audit** (opționale, pe brand, non-anxioase): ritual de seară (închidere zi),
 >   notificări locale reale via `sw.js` (opt-in, ton blând), arhivă/recitire în Jurnal, legare Ritual↔Respiro
 >   (`calmId` + „Respiră acum").
@@ -1084,20 +1086,75 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > tracker, D14 public/subscription version.
 >
 > **DONE since:** the Luxe Light+Dark revamp (v133→v144) AND the **Ritualuri (Atomic Habits) + Onboarding**
-> arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)** on top. Current build **`mi-dia-v156.html`** (sw CACHE `mi-dia-v156`),
+> arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)** and the **Faza 3
+> profund + coerență cap-coadă arc (v157→v168)** on top. Current build **`mi-dia-v168.html`** (sw CACHE `mi-dia-v168`),
 > e2e **85/85**, prod smoke green. Ritualuri = `ritual.js` (Home section + streak + creation sheet + habit
 > stacking + never-miss-twice + identity card + seed + Progress backfill; check marks TODAY, backfill explicit)
 > + Onboarding = `onboard.js` (6-step carousel, "Floarea" step = a poem with candle-glow). Detail in the
 > "Changelog (v145→v155)" + `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
-> **NEXT WORK →** continuarea arcului de coerență: **Faza 3 profund** (inputs/butoane pe scara `--r-*`/`--sp-*`
-> + un `.card`/`.btn--primary` unic — acum sunt 10+ variante de buton) și **navigația tip iOS** (tab-bar în
-> locul florii-meniu + bloom; mockup aprobabil în `private/mockups/mi-dia-nav-tabbar-mockup.html`, în
-> așteptarea deciziei lui Ines varianta A/B). Plus Ines's **real-Android device pass** (native pickers,
-> long-press, blur velvet, Ephesis gilt, chime, axe, **verificare drop-cap pe device**). Pre-existing
-> backlog: UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156** via `.calnav`=`.datebar`), B6 "min" clip,
-> D14 public/subscription. Possible future: extend `freq` beyond "daily" (the model already leaves room).
+> **NEXT WORK →** Faza 3 profund e **livrată (v157→v168)** — un limbaj unic de tokeni (acțiune/radius/buton/
+> card) cap-coadă, ambele teme. Ce rămâne: **navigația tip iOS** (tab-bar în locul florii-meniu + bloom;
+> mockup A/B în `private/mockups/mi-dia-nav-tabbar-mockup.html`, **în așteptarea deciziei lui Ines varianta
+> A vs B** — NU construi până nu alege). Plus Ines's **real-Android device pass** (native pickers, long-press,
+> blur velvet, Ephesis gilt, chime, axe pe velvet). Opțional: sweep P3/P4 rezidual (câteva raze mici din
+> module opt-in — cosmetic). Pre-existing backlog: UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156**),
+> B6 "min" clip, D14 public/subscription. Possible future: extend `freq` beyond "daily", idei de retenție din
+> audit (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
 
+
+---
+
+## Changelog (v157 → v168) — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card)
+
+Continuarea arcului de coerență din v156, livrată o felie per `vNN` cu validare completă (div + `node --check` +
+`/theme-qa` + e2e + screenshot both themes) după fiecare. Agent-assisted: 3 agenți-lucrători au propus maparea
+cardurilor (Faza 3), 3 agenți QA au auditat coerența (leak-uri dark / scară / culoare-acțiune). e2e 85/85.
+
+- **v157 · A1 — token unic de acțiune (light).** ~87 hexuri wine hardcodate din blocul `html[data-theme="light"]`
+  colapsate în 5 tokeni: `--act` (#6E1334) · `--act-2` · `--act-deep` · `--act-ink` · `--act-accent`. Zero
+  schimbare vizuală (pixel-identic vs v156). O singură sursă de adevăr pentru culoarea de acțiune.
+- **v158 · A2 — un tier de radius pentru controale.** inputs + chips → `--r-sm` (12px), sub-cardurile în
+  ierarhia 12 < 16 < 20 < 26. Butoanele lăsate pentru A3.
+- **v159 · A3a — `.btn--primary` unic.** clasă unică (wine gradient light / gilt-filled dark) aplicată pe
+  `.testbtn`/`#exportBtn`/`#importBtn`; șterse stilurile inline rose + 6 reguli per-variantă.
+- **v160 · A3b-1 — +commit-uri proeminente.** `#addBtn` (composer „+") + `.cp-start` (Respiro Start) în
+  `.btn--primary` (Start: rose→gilt în dark, repară inconsistența).
+- **v161 · A3b-2 — micile add uniformizate.** `.leadadd`/`.tagmgr-add`/`.newtag .ok` → gilt în dark (erau rose).
+- **v162 · A3c — `.card` canonic + carduri pe tokeni.** un singur `.card` (surface + line + `--r-lg` + shadow-soft
+  + `--sp-5`) + carduri de conținut → `--r-md`, panouri → `--r-lg`, modale → `--r-xl`; dedup umbra bespoke
+  date/progress → `--shadow-soft`. Hero flush (`.hero-day .datebar/.progress-card` `border-radius:0`) protejat.
+- **v163 — fix TODAY dark.** `.nav .today`/`.calnav .calTodayBtn` erau rose pe velvet (bază rose, fără override
+  dark) → gilt, uniform cu sistemul de acțiune dark.
+- **v164 — toate acțiunile pe wine/gilt.** „capcana `--brand`": `--brand` era rose-4 în light → `.rs-save` (sheet
+  ritual) + onboarding CTAs (`.onb-cta/.onb-next/.onb-planadd`) erau **rose în light** → remap `--brand`→`--act`
+  în light (1 regulă). Butoane bespoke (`.daypop .dpbtn`, `.intent-save`, `.cp-done` olive, `.sc-form button`
+  terracotta, `.addrow .add`) → wine light + gilt dark.
+- **v165 — leak-uri de suprafață în dark.** modalul de intenție `.intent-card` (card crem + text maro + save rose
+  → velvet + champagne + Save gilt), `.toggle.on` (rose→gilt), `.cell.today` calendar (inel rose→gilt),
+  `.cyRhythmBtn`, bulele bloom, inelul mood-sel Jurnal.
+- **v166 — scara de radius finalizată.** `.hero` folosea `--radius-lg` **nedefinit** → 28px literal → `--r-xl`
+  (bug real, cea mai vizibilă suprafață); token legacy `--radius` **eliminat** (0 reziduu); sheet-uri/modale
+  `.cy-sheet`/`.onb-card`/`.jhero`/`.rs-sheet` → `--r-xl`, `.cy-panel` → `--r-lg`. **Sincronizat**
+  `cycle.js` + `ritual.js` + `onboard.js` (mirror standalone).
+- **v167 — sweep P3/P4 (conservator).** 10 controale/carduri non-bespoke rămase pe px literal
+  (`.t-controls button`, `.cp-controls button`, `.cp-done`, `.callens`(+button), `.addrow .add`, `.pp-sub`,
+  `.tagitem`, `.sres`, `.pp-route`) → `--r-sm`/`--r-md`. Lăsate intenționat: journal-bespoke, discurile mood,
+  iconul composer, floarea, module opt-in (cycle/onboard) — documentate ca literale acceptabile.
+- **v168 — fix DEFINITIV drop-cap tăiat pe Home (raportat repetat de Ines, cu 3 poze).** Prima literă a
+  frazei spaniole (`.phrase-dc`, orice literă P/D/E) era tăiată în dreapta-sus. **Cauza reală:**
+  `background-clip:text` NU pictează porțiunea de glifă care iese peste cutia elementului → fix-urile
+  anterioare (v144/v155/v156, prin `line-height`/`padding`/`margin`) mergeau la o marime/font și se stricau
+  la alta = de-aia „reparat de 5 ori" și tot revenea. **Fix robust v168:** eliminat COMPLET
+  `background-clip:text` → **culoare gilt SOLIDĂ** (`var(--gold-gilt)`), randare inline normală. Fără cutie de
+  clip, litera nu poate fi tăiată — indiferent de font/marime/device. Aplicat la `.phrase-dc` (fraza Home) ȘI
+  `.onb-dc` (drop-cap-ul poemului din onboarding, aceeași capcană). Verificat pe hero-ul REAL, ambele teme,
+  cu ZOOM pe literă (nu doar „a trecut validarea"). Trade-off acceptat: se pierde gradientul subtil de pe o
+  singură literă (gradientul rămâne peste tot: hairline, „Día"); un gilt solid e indistinct la privire +
+  bulletproof. Sync `onboard.js`.
+- **Fals-pozitive prinse la audit** (verificate, NU atinse): `.hero-intent-card` (aplatizat pe Home, lizibil),
+  `.pf-intent` (cod mort). **Neatinse intenționat:** delete-danger mauve, ritual „miss" terracotta, culori
+  funcționale arie/mood/calm, petalele florii, `--rose-1..4` LOCKED, idiomul Nunito pe view-titles.
 
 ---
 

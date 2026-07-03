@@ -3,7 +3,32 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v156 — coerență cap-coadă: gestionare ritualuri + unificare design + fix drop-cap (curent)
+## v157 → v168 — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card) (curent)
+Continuarea arcului de coerență, o felie per `vNN`, validată complet după fiecare (div + `node --check` +
+`/theme-qa` + e2e + screenshot ambele teme). Agent-assisted (3 lucrători pentru mapare carduri + 3 QA pentru
+audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerență cap-coadă.
+- **Token unic de acțiune (v157):** ~87 hexuri wine hardcodate → 5 tokeni `--act*` în light. Pixel-identic.
+- **Un tier de control-radius (v158):** inputs + chips → `--r-sm` (ierarhia 12 < 16 < 20 < 26).
+- **`.btn--primary` unic (v159–v161):** o clasă (wine light / **gilt uniform dark**) înlocuiește variantele
+  filled (testbtn/export/import, composer „+", Respiro Start); micile add aliniate la gilt în dark.
+- **`.card` canonic + carduri pe tokeni (v162):** conținut `--r-md` / panou `--r-lg` / modal `--r-xl`; dedup
+  umbră bespoke → `--shadow-soft`; hero flush protejat.
+- **Fix leak-uri dark (v163–v165):** TODAY, `.toggle.on`, modalul de intenție (crem→velvet+gilt),
+  `.cell.today`, `.cyRhythmBtn`, bloom, inel mood-sel → toate pe velvet/gilt (erau rose/crem pe velvet).
+- **„Capcana `--brand`" (v164):** `--brand` era rose-4 în light → `.rs-save` + onboarding CTAs erau **rose în
+  light**; remap `--brand`→wine (1 regulă). Butoane bespoke olive/terracotta/rose → wine light + gilt dark.
+- **Scara de radius finalizată (v166):** `.hero` folosea `--radius-lg` **nedefinit** (→28px) → `--r-xl`;
+  eliminat tokenul legacy `--radius`; sheet-uri/modale → `--r-xl`. Sync `cycle.js`/`ritual.js`/`onboard.js`.
+- **Sweep P3/P4 conservator (v167):** 10 controale/carduri non-bespoke → scară; lăsate module opt-in +
+  journal-bespoke + discuri mood + floarea (documentate).
+- **Fix DEFINITIV drop-cap tăiat pe Home (v168, raportat repetat de Ines):** prima literă a frazei
+  (`.phrase-dc`) era tăiată dreapta-sus. Cauza reală = `background-clip:text` nu pictează glifa peste cutia
+  elementului (fragil, dependent de font/device → „reparat de 5 ori" și tot revenea). Fix robust = **culoare
+  gilt SOLIDĂ, fără `background-clip`** (nu există cutie de clip → nu se poate tăia). Aplicat la `.phrase-dc`
+  + `.onb-dc`. Verificat pe hero-ul real, ambele teme, cu zoom pe literă.
+- **Rămâne:** navigația tip iOS (mockup A/B, decizia lui Ines) + device-pass Android.
+
+## v156 — coerență cap-coadă: gestionare ritualuri + unificare design + fix drop-cap
 - **Gestionare ritualuri (rezolvă frustrarea semnalată de Ines — nu se putea șterge NICIUN ritual, nici
   cele default):** buton „Editează" lângă titlul secțiunii → mod editare în care fiecare card arată un **✕
   cu two-tap delete** (terracotta cald, consecvent cu Scurtături) + **tap pe card = editare** (redeschide

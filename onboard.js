@@ -177,7 +177,7 @@ const Onboard = (function(){
   background:radial-gradient(120% 100% at 50% 0%,rgba(58,20,38,.72),rgba(20,8,14,.86))}
 .onb.show{display:flex}
 .onb-card{width:100%;max-width:390px;max-height:92vh;overflow:auto;background:var(--bg);color:var(--text);
-  border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 70px -28px rgba(0,0,0,.7);
+  border:1px solid var(--line);border-radius:var(--r-xl,26px);box-shadow:0 30px 70px -28px rgba(0,0,0,.7);
   padding:26px 24px 18px;position:relative;text-align:center;animation:onbRise .4s ease}
 @keyframes onbRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .onb-skip{position:absolute;top:12px;right:14px;background:transparent;border:none;color:var(--text-soft);
@@ -212,7 +212,7 @@ const Onboard = (function(){
 .onb-flower{position:absolute;inset:0;width:100%;height:100%}
 .onb-seed{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,var(--gold-1),var(--gold-deep));box-shadow:0 0 12px 2px rgba(200,162,76,.6)}
 .onb-poem{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:1.14rem;line-height:1.72;color:var(--text);margin:4px 4px 2px}
-.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;line-height:1.1;display:inline-block;vertical-align:-.06em;background:var(--gold-hair);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding:.5em .02em 0 0;margin-top:-.5em}
+.onb-dc{font-style:normal;font-weight:600;font-size:1.4em;color:var(--gold-gilt)} /* v168: solid gilt, no background-clip:text (era taiat — vezi .phrase-dc) */
 /* plan step: real input + commit */
 .onb-planrow{display:flex;align-items:center;gap:9px;margin:2px 0 4px}
 .onb-planinput{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;

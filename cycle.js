@@ -555,7 +555,7 @@ const Cycle = (function () {
       .cy-t{display:block;font-family:'Fraunces',serif;font-weight:500;font-size:1.06rem;color:var(--ink,#3A2D21);margin-top:2px;}
       .cy-t b{color:var(--rose-3,#D15E78);font-weight:600;}
       .cy-setup-link{display:flex;align-items:center;gap:10px;width:100%;background:var(--rose-0,#FBE4E5);border:1px solid var(--rose-1,#F4BFC4);border-radius:14px;padding:10px 12px;color:var(--rose-4,#B5495F);font-weight:800;font-size:.86rem;cursor:pointer;margin-bottom:10px;}
-      .cy-panel{background:linear-gradient(180deg,#FFFBF4,#FCF5E9);border:1px solid rgba(184,137,63,.18);border-radius:var(--radius,20px);box-shadow:var(--shadow-soft,0 6px 20px -10px rgba(150,90,90,.2));padding:16px;margin-top:14px;}
+      .cy-panel{background:linear-gradient(180deg,#FFFBF4,#FCF5E9);border:1px solid rgba(184,137,63,.18);border-radius:var(--r-lg,20px);box-shadow:var(--shadow-soft,0 6px 20px -10px rgba(150,90,90,.2));padding:16px;margin-top:14px;}
       .cy-panel-h{font-family:'Fraunces',serif;font-weight:600;font-size:1.06rem;color:var(--ink,#3A2D21);}
       .cy-panel-s{font-size:.8rem;color:var(--ink-soft,#897662);margin:2px 0 10px;}
       .cy-prow{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line,#EFE6D4);}
@@ -571,7 +571,7 @@ const Cycle = (function () {
       .cy-disc{font-size:.7rem;color:var(--rose-dust,#C39199);font-style:italic;line-height:1.5;margin-top:11px;}
       /* overlay */
       .cy-ov{position:fixed;inset:0;background:rgba(58,45,33,.34);display:flex;align-items:flex-end;justify-content:center;z-index:9999;padding:0;}
-      .cy-sheet{background:var(--cream,#FFFCF7);width:100%;max-width:460px;border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));position:relative;max-height:90vh;overflow:auto;box-shadow:0 -10px 40px -10px rgba(120,90,60,.3);}
+      .cy-sheet{background:var(--cream,#FFFCF7);width:100%;max-width:460px;border-radius:var(--r-xl,26px) var(--r-xl,26px) 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));position:relative;max-height:90vh;overflow:auto;box-shadow:0 -10px 40px -10px rgba(120,90,60,.3);}
       .cy-x{position:absolute;top:12px;right:14px;border:none;background:transparent;font-size:1.4rem;color:var(--ink-soft,#897662);cursor:pointer;line-height:1;}
       .cy-detail-h{font-family:'Fraunces',serif;font-weight:500;font-size:1.2rem;text-align:center;margin:2px 0 14px;color:var(--ink,#3A2D21);}
       .cy-breath{display:flex;justify-content:space-between;gap:6px;margin-bottom:6px;}
