@@ -35,21 +35,34 @@ stats, and calming/energizing breathing tools — with a focus on coaching refle
 and energy awareness. Fully **trilingual (EN · ES · RO)**. All data stays **local** in
 the browser (localStorage); nothing is sent to any server.
 
-**Highlights:** radial "flower" navigation · day planner with overlap-aware time slots ·
+**Highlights:** dual **Light-luxe / Dark-velvet** theme (☾/☀ switcher, champagne + wine + gilt ⟷
+aubergine velvet + gilt) · radial "flower" navigation · day planner with overlap-aware time slots ·
 identity-based **habit rituals** with streaks + habit-stacking (Atomic Habits) · a **guided
 onboarding** carousel · mood + emotion-wheel journaling with a 4F reflection scaffold ·
 calendar "lenses" · consolidated progress view · opt-in cycle/rhythm tracking · Word/PDF & JSON backup.
 
 ### Screenshots
 
+Two real themes, switchable with a ☾/☀ toggle: **Light-luxe** (champagne + wine + gilt) and
+**Dark-velvet** (aubergine + gilt). Same views, both themes:
+
 <table>
+  <tr><th width="50%">☀ Light-luxe</th><th width="50%">☾ Dark-velvet</th></tr>
   <tr>
-    <td width="50%" valign="top"><img src="docs/screenshots/01-day.png" alt="Day view — flower navigation and day plan"><br><sub><b>Day</b> — flower navigation, daily phrase & plan</sub></td>
-    <td width="50%" valign="top"><img src="docs/screenshots/02-journal.png" alt="Journal — mood and reflective writing"><br><sub><b>Journal</b> — mood + reflective writing, autosave</sub></td>
+    <td valign="top"><img src="docs/screenshots/day-light.png" alt="Day view (light) — flower navigation, daily phrase, rituals"><br><sub><b>Day</b> — flower navigation, daily phrase & rituals</sub></td>
+    <td valign="top"><img src="docs/screenshots/day-dark.png" alt="Day view (dark-velvet)"><br><sub><b>Day</b> — dark-velvet</sub></td>
   </tr>
   <tr>
-    <td width="50%" valign="top"><img src="docs/screenshots/04-calendar.png" alt="Calendar — Plan and Mood lenses"><br><sub><b>Calendar</b> — Plan / Mood lenses, completion rings</sub></td>
-    <td width="50%" valign="top"><img src="docs/screenshots/05-progress.png" alt="Progress — streak, hours by area, mood vs productivity"><br><sub><b>Progress</b> — streak, hours by area, mood ↔ productivity</sub></td>
+    <td valign="top"><img src="docs/screenshots/journal-light.png" alt="Journal (light) — mood and reflective writing"><br><sub><b>Journal</b> — mood + reflective writing, autosave</sub></td>
+    <td valign="top"><img src="docs/screenshots/journal-dark.png" alt="Journal (dark-velvet)"><br><sub><b>Journal</b> — dark-velvet</sub></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/calendar-light.png" alt="Calendar (light) — Plan and Mood lenses"><br><sub><b>Calendar</b> — Plan / Mood lenses, completion rings</sub></td>
+    <td valign="top"><img src="docs/screenshots/calendar-dark.png" alt="Calendar (dark-velvet)"><br><sub><b>Calendar</b> — dark-velvet</sub></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/progress-light.png" alt="Progress (light) — streak, hours by area, mood vs productivity"><br><sub><b>Progress</b> — streak, hours by area, mood ↔ productivity</sub></td>
+    <td valign="top"><img src="docs/screenshots/progress-dark.png" alt="Progress (dark-velvet)"><br><sub><b>Progress</b> — dark-velvet</sub></td>
   </tr>
 </table>
 
