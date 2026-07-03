@@ -3,7 +3,23 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v157 → v168 — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card) (curent)
+## v169 → v172 — Respiro breathwork/educatie (research-fundamentat, agent-assisted) (curent)
+Upgrade Respiro pornit de la 2 research-uri verificate + 2 rulari deep-research multi-agent. Concluzia:
+efectele acute ale respiratiei lente sunt reale, „nervul vag/polivagal" e contestat (2025) → descriem CE SIMTI,
+onestitate prin retinere. Livrat prin `/revamp` (4 agenti propun, TL integreaza), o felie per `vNN`, e2e 85/85.
+- **v169 · Felia 1 — educatie + „Corp".** Eticheta de scop pe carduri (Varianta C, familii de culori) + nota
+  „De ce merita?" in player (Varianta B, ascunsa, pozitiva, cu sursa). Segment „Somatic / nerv vag" → **„Corp"**;
+  scos „nerv vag"/vagus din TOATA aplicatia (incl. `sc_breath`). `coh`→„rezonanta". Footnote onest.
+- **v170 · Felia 2 — playere reglabile.** Camp `tune`: rezonanta = Ritm (5/5,5/6) + Durata (5/10/15, default 5);
+  suspin = dual Acum/5min; hooming convertit din somatic in player breath ghidat. Poarta de siguranta energizare.
+- **v171 · Felia 4 — PMR.** Relaxare musculara progresiva — tehnica noua de corp, cele mai bune dovezi
+  (meta-analiza 31 RCT), tip scan (incordeaza-elibereaza 6 grupe), reutilizeaza `startScan`.
+- **v172 · Felia 3 — finder „Gaseste-ti ritmul".** Testeaza 3 ritmuri → `settings.resonancePace` (in backup) →
+  preselectat la rezonanta; card featured gilt in grila.
+- **Teste:** e2e 85/85. Actualizate la schimbari UI: label „Body", „Duration" scopat la `#composer`, primul
+  exercitiu sare cardul finder. NU s-a adaugat (pe dovezi/siguranta): Wim Hof/Buteyko/scor-HRV/Havening.
+
+## v157 → v168 — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card)
 Continuarea arcului de coerență, o felie per `vNN`, validată complet după fiecare (div + `node --check` +
 `/theme-qa` + e2e + screenshot ambele teme). Agent-assisted (3 lucrători pentru mapare carduri + 3 QA pentru
 audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerență cap-coadă.

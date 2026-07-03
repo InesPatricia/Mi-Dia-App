@@ -28,7 +28,8 @@ test.describe('add flow (composer)', () => {
     await title.fill('Yoga'); // typing fires the input handler -> expands
     await expect(composer).toHaveClass(/active/);
     // reveal content (Duration label) is now on screen
-    await expect(page.getByText('Duration', { exact: true })).toBeVisible();
+    // scoped to #composer: Respiro's resonance tune UI also has a "Duration" label
+    await expect(composer.getByText('Duration', { exact: true })).toBeVisible();
   });
 
   test('fast path: title + Enter creates an untimed slot', async ({ page }) => {

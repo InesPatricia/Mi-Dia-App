@@ -85,6 +85,7 @@
     --brand:var(--gold-gilt);  /* gilt gold action */
     --brand-ink:#3A1020;       /* ink on gold */
     --accent:#D9618C;          /* rose that reads on velvet */
+    --act-accent:#D9618C;      /* v169: warm purpose-chip fallback in dark (light defines it at :root-light) */
     /* v137 Faza 4: remap the legacy NEUTRAL surface/ink tokens to velvet so every shared
        component that consumes them (cards, buttons, chips, slots, composer, inputs) themes
        in dark automatically. Borders already flip via --line. Action (rose) + functional
@@ -375,6 +376,11 @@
   .scan-cue{text-align:center;color:var(--ink-soft);font-size:.92rem;margin-top:6px;min-height:2.8rem;line-height:1.35;}
   #scanMode{display:flex;width:100%;}
   #scanMode button{flex:1;}
+  .breath-tune{display:flex;flex-direction:column;gap:12px;align-items:center;margin-bottom:14px;}
+  .breath-tune-row{display:flex;flex-direction:column;gap:5px;align-items:center;width:100%;}
+  .breath-tune-row .tune-lbl{font-size:.68rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gold-deep);}
+  .breath-tune-row .segmented{margin-bottom:0;flex-wrap:wrap;justify-content:center;max-width:100%;}
+  .breath-tune-row .tune-hint{font-size:.74rem;color:var(--ink-soft);line-height:1.4;max-width:36ch;text-align:center;font-style:italic;margin-top:2px;}
   .segmented button{border:none;background:transparent;border-radius:30px;padding:8px 16px;font-weight:700;font-size:.85rem;cursor:pointer;color:var(--ink-soft);font-family:inherit;transition:.15s;}
   .segmented button.sel{background:var(--cream);color:var(--ink);box-shadow:var(--shadow-sm);}
 
@@ -437,6 +443,54 @@
   .calmcard .cc-title{font-family:'Nunito Sans',system-ui,sans-serif;font-weight:600;font-size:1.05rem;color:var(--ink);}
   .calmcard .cc-desc{font-size:.83rem;color:var(--ink-soft);margin-top:6px;line-height:1.4;}
   .calmcard .cc-dur{font-size:.74rem;font-weight:800;color:var(--rose-4);margin-top:8px;}
+  /* v169 Respiro education — purpose chip (Varianta C) + edu note (Varianta B) */
+  .calmcard .cc-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .calmcard .cc-foot .cc-dur{font-size:.72rem;font-weight:700;color:var(--text-soft);margin-top:0;}
+  /* v171 Felia 3: card featured „Gaseste-ti ritmul" + ecrane finder */
+  .calmcard.finder-card{grid-column:1 / -1;border-left-color:var(--gold-gilt);
+    background:linear-gradient(120deg, var(--surface), color-mix(in srgb, var(--gold-1) 16%, var(--surface)));}
+  .calmcard.finder-card .cc-dur{color:var(--gold-deep);text-transform:uppercase;letter-spacing:.3px;font-weight:800;}
+  .calmcard.finder-card .cc-mine{color:var(--act);}
+  .cp-btn{background:var(--act);color:#fff;border:none;border-radius:var(--r-sm);padding:12px 26px;
+    font-weight:800;font-family:inherit;cursor:pointer;font-size:.95rem;margin-top:12px;transition:.15s;}
+  .cp-btn:hover{transform:translateY(-1px);}
+  .cp-btn.ghost{background:var(--sand-deep);color:var(--ink);}
+  .f-step{font-size:.72rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold-deep);min-height:1em;margin:6px 0 2px;}
+  .f-choices{display:flex;flex-direction:column;gap:9px;align-items:center;margin-top:6px;}
+  .f-choice{width:82%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;
+    font-family:inherit;font-weight:700;font-size:.95rem;color:var(--ink);cursor:pointer;transition:.15s;}
+  .f-choice:hover{border-color:var(--act);color:var(--act);transform:translateY(-1px);}
+  .f-choice small{display:block;font-weight:600;color:var(--text-soft);font-size:.72rem;margin-top:2px;}
+  .f-result{font-family:'Fraunces',serif;font-size:1.6rem;color:var(--act);margin:10px 0 2px;}
+  .f-final-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  /* dark: actiunea e gilt (ca .btn--primary), nu wine — altfel butoanele/rezultatul pe velvet au contrast slab */
+  html[data-theme="dark"] .cp-btn{background:var(--brand);color:var(--brand-ink);}
+  html[data-theme="dark"] .f-result{color:var(--gold-1);}
+  html[data-theme="dark"] .f-choice:hover{border-color:var(--brand);color:var(--gold-1);}
+  .purpose{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:800;letter-spacing:.2px;
+    border-radius:20px;padding:4px 11px;
+    color:var(--pc,var(--act-accent));
+    background:color-mix(in srgb, var(--pc,var(--act-accent)) 12%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--pc,var(--act-accent)) 30%, transparent);}
+  .edu-toggle{background:none;border:none;font-family:inherit;font-size:.82rem;font-weight:700;color:var(--act);
+    cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+    text-decoration:underline;text-underline-offset:3px;}
+  .edu-toggle .edu-arw{font-size:.7rem;transition:.15s;}
+  .edu-panel{display:none;margin-top:11px;padding:13px 15px;text-align:left;border-radius:12px;
+    background:color-mix(in srgb, var(--gold-1) 12%, var(--surface));border:1px solid var(--line);}
+  .edu-panel.open{display:block;}
+  .edu-why{font-size:.85rem;color:var(--text);line-height:1.5;margin-bottom:8px;}
+  .edu-why b{color:var(--act);}
+  .edu-research{display:flex;gap:8px;font-size:.8rem;color:var(--text-soft);line-height:1.5;}
+  .edu-research svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--gold-deep);stroke:var(--gold-deep);}
+  .edu-research b{color:var(--act);}
+  .edu-cite{display:block;font-size:.69rem;color:var(--gold-deep);font-weight:700;margin-top:5px;}
+  .calm-footnote{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);
+    padding:12px 15px;font-size:.76rem;line-height:1.5;color:var(--text-soft);margin:14px 0 6px;}
+  .calm-footnote b{color:var(--text);}
+  html[data-theme="dark"] .edu-toggle{color:var(--gold-1);}
+  html[data-theme="dark"] .edu-why b{color:var(--gold-1);}
+  html[data-theme="dark"] .edu-research b{color:var(--gold-1);}
   .calm-cue{display:flex;align-items:center;gap:8px;justify-content:center;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:.96rem;color:#8a6a55;margin:2px 0 12px;}
   .calm-cue svg{width:18px;height:18px;color:var(--olive);}
   .cp-title .cp-ico svg{width:22px;height:22px;vertical-align:-4px;}
@@ -2249,9 +2303,10 @@
     </div>
     <div class="segmented" id="calmMode">
       <button data-m="breath" class="sel" data-i18n="seg_breath">Respirație</button>
-      <button data-m="somatic" data-i18n="seg_somatic">Somatic / nerv vag</button>
+      <button data-m="somatic" data-i18n="seg_somatic">Corp</button>
     </div>
     <div class="calmgrid" id="calmGrid"></div>
+    <div class="calm-footnote" id="calmFootnote"></div>
   </div><!-- /view-calm -->
 
   <!-- ============ PROFIL VIEW ============ -->
@@ -2418,7 +2473,20 @@
     <button class="cp-close" id="cpClose" data-i18n-title="close" title="Închide">✕</button>
     <div class="cp-title" id="cpTitle"></div>
     <div class="cp-desc" id="cpDesc"></div>
+    <button class="edu-toggle" id="eduToggle" style="display:none;" onclick="var p=document.getElementById('eduPanel');p.classList.toggle('open');var a=this.querySelector('.edu-arw');if(a)a.textContent=p.classList.contains('open')?'▴':'▾';"></button>
+    <div class="edu-panel" id="eduPanel"></div>
     <div class="cp-breath" id="cpBreath" style="display:none;">
+      <div class="breath-tune" id="breathTune" style="display:none;">
+        <div class="breath-tune-row" id="breathPaceRow" style="display:none;">
+          <div class="tune-lbl" data-i18n="reson_pace">Ritm</div>
+          <div class="segmented" id="breathPaceSeg"></div>
+          <div class="tune-hint" id="breathPaceHint" data-i18n="reson_hint">Caută ritmul în care respiri fără efort.</div>
+        </div>
+        <div class="breath-tune-row" id="breathDurRow">
+          <div class="tune-lbl" data-i18n="reson_dur">Durată</div>
+          <div class="segmented" id="breathDurSeg"></div>
+        </div>
+      </div>
       <div class="breath-stage"><div class="breath-circle" id="breathCircle"></div><div class="breath-label" id="breathLabel" data-i18n="ready">Pregătit?</div></div>
       <div class="breath-count" id="breathCount"></div>
       <div class="breath-cycle" id="breathCycle"></div>
@@ -2440,6 +2508,24 @@
       <button class="cp-done" id="cpDone" data-i18n="cp_done" style="display:none;">✓ Am terminat</button>
       <button class="cp-stop" id="cpStop" data-i18n="cp_stop">Stop</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ FINDER: „Gaseste-ti ritmul" (v171 Felia 3) ============ -->
+<div class="calm-player" id="finder">
+  <div class="cp-card">
+    <button class="cp-close" id="finderClose" data-i18n-title="close" title="Închide">✕</button>
+    <div class="cp-title">
+      <span class="cp-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-6 4 12 2-8 2 4h5"/></svg></span>
+      <span data-i18n="finder_title">Găsește-ți ritmul</span>
+    </div>
+    <div class="f-step" id="fStep"></div>
+    <div class="breath-stage" id="fStage" style="display:none;">
+      <div class="breath-circle" id="fCircle"></div>
+      <div class="breath-label" id="fLabel"></div>
+    </div>
+    <div class="breath-count" id="fCount" style="min-height:0;"></div>
+    <div id="fBody"></div>
   </div>
 </div>
 
@@ -2696,15 +2782,37 @@
     calm_cue:{ro:"un mic spațiu de respiro",es:"un pequeño espacio para respirar",en:"a little space to breathe"},
     calm_disclaimer:{ro:"Practici blânde de relaxare — nu sfat medical. Oprește-te dacă amețești sau te simți inconfortabil. Respirația cu reținere nu se face la volan sau în apă.",es:"Prácticas suaves de relajación — no son consejo médico. Detente si te mareas o te sientes incómoda. La respiración con retención no se hace al volante ni en el agua.",en:"Gentle relaxation practices — not medical advice. Stop if you feel dizzy or uncomfortable. Breath-holding is not for driving or in water."},
     seg_breath:{ro:"Respirație",es:"Respiración",en:"Breathing"},
-    seg_somatic:{ro:"Somatic / nerv vag",es:"Somático / nervio vago",en:"Somatic / vagus nerve"},
+    seg_somatic:{ro:"Corp",es:"Cuerpo",en:"Body"},
+    edu_toggle:{ro:"De ce merită?",es:"¿Por qué ayuda?",en:"Why it helps?"},
+    edu_why:{ro:"De ce:",es:"Por qué:",en:"Why:"},
+    calm_footnote:{ro:"Descriem ce simți și ce îți aduce fiecare practică. Unde există studii, ți le arătăm; unde e o tradiție blândă, o spunem la fel de sincer — fără promisiuni mari.",es:"Describimos lo que sientes y lo que te aporta cada práctica. Donde hay estudios, te los mostramos; donde es una tradición suave, lo decimos igual de sincero — sin grandes promesas.",en:"We describe what you feel and what each practice brings. Where there are studies, we show them; where it's a gentle tradition, we say so just as honestly — no big promises."},
     dir_calm:{ro:"Calmează-mă",es:"Calmarme",en:"Calm me"},
     dir_energy:{ro:"Trezește-mă",es:"Activarme",en:"Wake me up"},
     energy_cue:{ro:"un mic impuls, fără grabă",es:"un pequeño impulso, sin prisa",en:"a little lift, no rush"},
-    energy_disclaimer:{ro:"Mișcare și respirație blândă pentru energie — nu sfat medical. Mergi în ritmul tău și oprește-te dacă amețești sau te simți ușor confuză.",es:"Movimiento y respiración suaves para tener energía — no es consejo médico. Ve a tu ritmo y detente si te mareas o te sientes aturdida.",en:"Gentle movement and breathing for energy — not medical advice. Go at your own pace and stop if you feel dizzy or lightheaded."},
+    energy_disclaimer:{ro:"Mișcare și respirație blândă pentru energie — nu sfat medical. Stai comod, nu în picioare lângă ceva dur; mergi în ritmul tău și oprește-te dacă amețești. Dacă ești însărcinată sau ai o afecțiune, ia-o foarte ușor.",es:"Movimiento y respiración suaves para tener energía — no es consejo médico. Ponte cómoda, no de pie junto a algo duro; ve a tu ritmo y detente si te mareas. Si estás embarazada o tienes alguna afección, tómalo con mucha calma.",en:"Gentle movement and breathing for energy — not medical advice. Get comfortable, not standing near anything hard; go at your own pace and stop if you feel dizzy. If you're pregnant or have a medical condition, take it very gently."},
     scan_eyes:{ro:"Închide ochii. Te ghidez eu — un ton te mută la zona următoare.",es:"Cierra los ojos. Yo te guío — un tono te lleva a la siguiente zona.",en:"Close your eyes. I'll guide you — a tone moves you to the next area."},
     scan_tone:{ro:"Doar ton",es:"Solo tono",en:"Tone only"},
     scan_voice:{ro:"Voce",es:"Voz",en:"Voice"},
     scan_novoice:{ro:"Vocea în limba ta nu e disponibilă pe acest dispozitiv — rămânem pe ton.",es:"La voz en tu idioma no está disponible en este dispositivo — seguimos con el tono.",en:"A voice in your language isn't available on this device — staying on tone."},
+    reson_pace:{ro:"Ritm",es:"Ritmo",en:"Pace"},
+    reson_dur:{ro:"Durată",es:"Duración",en:"Duration"},
+    reson_hint:{ro:"Caută ritmul în care respiri fără efort.",es:"Busca el ritmo en el que respiras sin esfuerzo.",en:"Find the pace where you breathe without effort."},
+    finder_title:{ro:"Găsește-ți ritmul",es:"Encuentra tu ritmo",en:"Find your rhythm"},
+    finder_card_desc:{ro:"Testezi 3 ritmuri, îl alegi pe cel mai lin — devine ritmul tău.",es:"Pruebas 3 ritmos, eliges el más suave — se vuelve tu ritmo.",en:"You try 3 rhythms, pick the smoothest — it becomes yours."},
+    finder_card_dur:{ro:"≈ 3 min · o dată",es:"≈ 3 min · una vez",en:"≈ 3 min · once"},
+    finder_your_pace:{ro:"ritmul tău: {p}",es:"tu ritmo: {p}",en:"your pace: {p}"},
+    finder_intro:{ro:"Vom încerca 3 ritmuri lente. Respiră lin la fiecare și observă în care aerul curge cel mai ușor. La final îl alegi pe al tău.",es:"Probaremos 3 ritmos lentos. Respira suave en cada uno y observa en cuál el aire fluye más fácil. Al final eliges el tuyo.",en:"We'll try 3 slow rhythms. Breathe gently through each and notice where the air flows most easily. At the end you pick yours."},
+    finder_intro_hint:{ro:"Nu există un răspuns „corect” — contează doar ce simți tu.",es:"No hay una respuesta „correcta” — solo importa lo que sientes tú.",en:"There's no „right” answer — only what you feel matters."},
+    finder_begin:{ro:"Începe",es:"Empezar",en:"Begin"},
+    finder_step_of:{ro:"Ritm {n} din 3",es:"Ritmo {n} de 3",en:"Rhythm {n} of 3"},
+    finder_done_word:{ro:"gata",es:"listo",en:"done"},
+    finder_between:{ro:"Cum a fost? Ține minte senzația și încearcă următorul.",es:"¿Cómo fue? Recuerda la sensación e intenta el siguiente.",en:"How was it? Hold on to the feeling and try the next one."},
+    finder_next:{ro:"Următorul ritm",es:"Siguiente ritmo",en:"Next rhythm"},
+    finder_last_q:{ro:"Ultima întrebare",es:"Última pregunta",en:"Last question"},
+    finder_which:{ro:"Care ritm a curs cel mai fără efort pentru tine?",es:"¿Qué ritmo fluyó con menos esfuerzo para ti?",en:"Which rhythm flowed most effortlessly for you?"},
+    finder_result_desc:{ro:"Acesta e ritmul tău. Îl folosim automat la Respirație de rezonanță — îl poți schimba oricând.",es:"Este es tu ritmo. Lo usamos automáticamente en la Respiración de resonancia — puedes cambiarlo cuando quieras.",en:"This is your rhythm. We use it automatically for Resonance breathing — you can change it anytime."},
+    finder_breathe_now:{ro:"Respiră acum",es:"Respira ahora",en:"Breathe now"},
+    finder_finish:{ro:"Gata",es:"Listo",en:"Done"},
     pp_ok:{ro:"E ok că simt asta acum.",es:"Está bien sentir esto ahora.",en:"It's okay that I feel this right now."},
     pp_micro:{ro:"O respirație. Lasă ce e acolo să fie acolo — nu trebuie reparat în clipa asta.",es:"Una respiración. Deja que lo que hay esté ahí — no hay que arreglarlo ahora.",en:"One breath. Let what's there be there — it doesn't need fixing right now."},
     pp_breath:{ro:"↻ O respirație",es:"↻ Una respiración",en:"↻ One breath"},
@@ -3219,6 +3327,7 @@
   let userIdentity = "";         // v148: "cine vrei sa devii?" — Atomic Habits identity engine (settings.identity)
   let userOnboarded = false;     // v150: guided onboarding seen (settings.onboarded)
   let goalWeekly = 25;           // target completed slots per week
+  let resonancePace = "";        // v171 Felia 3: ritmul de rezonanta ales in "Gaseste-ti ritmul" ("5"|"5.5"|"6"|""=nesetat), settings.resonancePace
 
   /* ---------- start-time memento (v118): in-app alert when a timed slot's start arrives ---------- */
   let mementoOn = true;          // toggle in Settings; alerts only while the app is open
@@ -3259,7 +3368,7 @@
     sc_4f:{ro:"Reflecție 4F",es:"Reflexión 4F",en:"4F reflection"},
     sc_journal:{ro:"Jurnal liber",es:"Diario libre",en:"Free journaling"},
     sc_read:{ro:"Citit / curs",es:"Lectura / curso",en:"Reading / course"},
-    sc_breath:{ro:"Respirație / nerv vag",es:"Respiración / nervio vago",en:"Breathing / vagus nerve"},
+    sc_breath:{ro:"Respirație / Corp",es:"Respiración / Cuerpo",en:"Breathing / Body"},
     sc_move:{ro:"Mișcare / plimbare",es:"Movimiento / paseo",en:"Movement / walk"},
     sc_loved:{ro:"Timp cu cei dragi",es:"Tiempo con seres queridos",en:"Time with loved ones"}
   };
@@ -4007,11 +4116,12 @@
       if(typeof s.identity==="string") userIdentity = s.identity;
       if(typeof s.onboarded==="boolean") userOnboarded = s.onboarded;
       if(s.theme==="dark"||s.theme==="light") theme = s.theme;
+      if(typeof s.resonancePace==="string") resonancePace = s.resonancePace;
     }catch(e){} }
     applyTheme();
     renderSettings();
   }
-  async function saveSettings(){ await Store.set("settings", JSON.stringify({soundOn, memento:mementoOn, leads:reminderLeads, goalDaily, goalWeekly, lang, name:userName, identity:userIdentity, onboarded:userOnboarded, theme})); }
+  async function saveSettings(){ await Store.set("settings", JSON.stringify({soundOn, memento:mementoOn, leads:reminderLeads, goalDaily, goalWeekly, lang, name:userName, identity:userIdentity, onboarded:userOnboarded, theme, resonancePace})); }
 
   /* v134: theme switcher — drives <html data-theme>, persisted + in backup */
   function applyTheme(){
@@ -5004,52 +5114,158 @@ Objective description, "just the facts".
   function LL(x){ return (x && typeof x==="object" && !Array.isArray(x)) ? (x[lang]!==undefined?x[lang]:x.en) : x; }
   const IN={ro:"Inspiră",es:"Inhala",en:"Inhale"}, HOLD={ro:"Ține",es:"Retén",en:"Hold"}, OUT={ro:"Expiră",es:"Exhala",en:"Exhale"}, OUTL={ro:"Expiră lung",es:"Exhala largo",en:"Exhale slowly"}, HOLDE={ro:"Ține gol",es:"Retén vacío",en:"Hold empty"};
   const BREATH=[
-    {id:"sigh", emoji:"😮‍💨", title:{ro:"Suspinul fiziologic",es:"Suspiro fisiológico",en:"Physiological sigh"}, desc:{ro:"Două inspirații pe nas + o expirație lungă. Cel mai rapid mod de a coborî tensiunea.",es:"Dos inhalaciones por la nariz + una exhalación larga. La forma más rápida de bajar la tensión.",en:"Two inhales through the nose + one long exhale. The fastest way to lower tension."}, color:"var(--sea)", cycles:6,
-      pattern:[{l:IN,s:2,sc:0.8},{l:{ro:"Încă puțin aer",es:"Un poco más de aire",en:"A bit more air"},s:1,sc:1.0},{l:OUTL,s:6,sc:0.42}]},
-    {id:"478", emoji:"🌙", title:{ro:"Respirație 4-7-8",es:"Respiración 4-7-8",en:"4-7-8 breathing"}, desc:{ro:"Inspiri 4, ții 7, expiri 8. Pentru relaxare profundă și somn.",es:"Inhala 4, retén 7, exhala 8. Para relajación profunda y sueño.",en:"Inhale 4, hold 7, exhale 8. For deep relaxation and sleep."}, color:"var(--lavender)", cycles:6,
-      pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:7,sc:1},{l:OUT,s:8,sc:0.42}]},
-    {id:"box", emoji:"🟦", title:{ro:"Respirație în cutie",es:"Respiración en caja",en:"Box breathing"}, desc:{ro:"4-4-4-4. Calm și concentrare.",es:"4-4-4-4. Calma y concentración.",en:"4-4-4-4. Calm and focus."}, color:"var(--sky)", cycles:6,
-      pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:4,sc:1},{l:OUT,s:4,sc:0.42},{l:HOLDE,s:4,sc:0.42}]},
-    {id:"ext", emoji:"🌊", title:{ro:"Expirație prelungită",es:"Exhalación prolongada",en:"Extended exhale"}, desc:{ro:"Inspiri 4, expiri 6. Expirația lungă activează nervul vag.",es:"Inhala 4, exhala 6. La exhalación larga activa el nervio vago.",en:"Inhale 4, exhale 6. The long exhale activates the vagus nerve."}, color:"var(--olive)", cycles:8,
-      pattern:[{l:IN,s:4,sc:1},{l:OUTL,s:6,sc:0.42}]},
-    {id:"coh", emoji:"💗", title:{ro:"Respirație coerentă",es:"Respiración coherente",en:"Coherent breathing"}, desc:{ro:"6 sec inspir, 6 sec expir (~5 respirații/min). Echilibru.",es:"6 s inhala, 6 s exhala (~5 resp/min). Equilibrio.",en:"6 s in, 6 s out (~5 breaths/min). Balance."}, color:"var(--rose)", cycles:8,
-      pattern:[{l:IN,s:6,sc:1},{l:OUT,s:6,sc:0.42}]}
-  ];
-  const SOMATIC=[
-    {id:"bodyscan", title:{ro:"Scanare corporală",es:"Escaneo corporal",en:"Body scan"}, desc:{ro:"60 sec din creștet până la mâini — observi tensiunea și o lași să plece. Cu ochii închiși.",es:"60 s de la coronilla a las manos — observa la tensión y déjala ir. Con los ojos cerrados.",en:"60 sec from crown to hands — notice tension and let it go. Eyes closed."}, color:"var(--sea)", dur:60, scan:true,
-      regions:[
-        {w:{ro:"Creștet",es:"Coronilla",en:"Crown"}, c:{ro:"Adu atenția în creștet și frunte. Lasă-le moi.",es:"Lleva la atención a la coronilla y la frente. Suéltalas.",en:"Bring attention to your crown and forehead. Let them soften."}},
-        {w:{ro:"Maxilar",es:"Mandíbula",en:"Jaw"}, c:{ro:"Maxilarul — e încleștat? Lasă-l să cadă.",es:"La mandíbula — ¿está apretada? Déjala caer.",en:"Your jaw — is it clenched? Let it drop."}},
-        {w:{ro:"Umeri",es:"Hombros",en:"Shoulders"}, c:{ro:"Umerii — sunt ridicați spre urechi? Coboară-i.",es:"Los hombros — ¿están subidos hacia las orejas? Bájalos.",en:"Your shoulders — raised toward your ears? Drop them."}},
-        {w:{ro:"Piept",es:"Pecho",en:"Chest"}, c:{ro:"Pieptul — respiri scurt? O respirație adâncă.",es:"El pecho — ¿respiras corto? Una respiración profunda.",en:"Your chest — breathing shallow? Take one deep breath."}},
-        {w:{ro:"Mâini",es:"Manos",en:"Hands"}, c:{ro:"Mâinile — sunt strânse? Deschide-le.",es:"Las manos — ¿están tensas? Ábrelas.",en:"Your hands — are they tight? Open them."}},
-        {w:{ro:"Tot corpul",es:"Todo el cuerpo",en:"Whole body"}, c:{ro:"Tot corpul — lasă orice tensiune rămasă să plece.",es:"Todo el cuerpo — deja ir cualquier tensión que quede.",en:"Your whole body — let any remaining tension go."}}
-      ]},
-    {id:"hum", emoji:"🎵", title:{ro:"Bâzâit (Voo / hum)",es:"Zumbido (Voo / hum)",en:"Humming (Voo / hum)"}, desc:{ro:"Vibrația din gât stimulează nervul vag.",es:"La vibración en la garganta estimula el nervio vago.",en:"The throat vibration stimulates the vagus nerve."}, color:"var(--sea)", dur:120,
-      steps:[{ro:"Inspiră normal pe nas.",es:"Inhala normal por la nariz.",en:"Inhale normally through the nose."},{ro:"Pe expirație, bâzâie continuu (sunetul mmm sau voo), simțind vibrația în piept și gât.",es:"Al exhalar, zumba de forma continua (sonido mmm o voo), sintiendo la vibración en pecho y garganta.",en:"On the exhale, hum continuously (an mmm or voo sound), feeling the vibration in chest and throat."},{ro:"Repetă lin, fără să forțezi, până sună finalul.",es:"Repite con suavidad, sin forzar, hasta que suene el final.",en:"Repeat gently, without forcing, until the timer ends."}]},
-    {id:"eyes", emoji:"👀", title:{ro:"Exercițiul de bază (ochi)",es:"Ejercicio básico (ojos)",en:"Basic exercise (eyes)"}, desc:{ro:"Relaxează ceafa și sistemul nervos.",es:"Relaja la nuca y el sistema nervioso.",en:"Relaxes the neck and nervous system."}, color:"var(--olive)", dur:120,
-      steps:[{ro:"Stai comod, împletește mâinile sub ceafă.",es:"Ponte cómoda, entrelaza las manos bajo la nuca.",en:"Get comfortable, lace your hands behind your head."},{ro:"Ține capul nemișcat și mută doar ochii spre dreapta.",es:"Mantén la cabeza quieta y mueve solo los ojos a la derecha.",en:"Keep your head still and move only your eyes to the right."},{ro:"Rămâi până caști, înghiți sau oftezi, apoi revino la centru.",es:"Quédate hasta que bosteces, tragues o suspires, luego vuelve al centro.",en:"Stay until you yawn, swallow or sigh, then return to center."},{ro:"Repetă spre stânga.",es:"Repite hacia la izquierda.",en:"Repeat to the left."}]},
-    {id:"butterfly", emoji:"🦋", title:{ro:"Îmbrățișarea fluture",es:"Abrazo de mariposa",en:"Butterfly hug"}, desc:{ro:"Atingere bilaterală liniștitoare.",es:"Toque bilateral que calma.",en:"Soothing bilateral tapping."}, color:"var(--rose)", dur:90,
-      steps:[{ro:"Încrucișează brațele pe piept, palmele pe umeri.",es:"Cruza los brazos sobre el pecho, palmas en los hombros.",en:"Cross your arms over your chest, palms on shoulders."},{ro:"Bate ușor și alternativ, stânga-dreapta, ca niște aripi.",es:"Da golpecitos suaves y alternos, izquierda-derecha, como alas.",en:"Tap gently and alternately, left-right, like wings."},{ro:"Respiră lin și continuă în ritm calm.",es:"Respira suave y sigue a ritmo tranquilo.",en:"Breathe softly and continue at a calm pace."}]},
-    {id:"cold", emoji:"💧", title:{ro:"Apă rece pe față",es:"Agua fría en la cara",en:"Cold water on the face"}, desc:{ro:"Reflexul de scufundare încetinește pulsul.",es:"El reflejo de inmersión baja el pulso.",en:"The dive reflex slows the pulse."}, color:"var(--sky)", dur:30,
-      steps:[{ro:"Pregătește apă rece la chiuvetă.",es:"Prepara agua fría en el lavabo.",en:"Prepare cold water at the sink."},{ro:"Stropește fața și gâtul, mai ales în jurul ochilor, 15-30 sec.",es:"Salpica cara y cuello, sobre todo alrededor de los ojos, 15-30 s.",en:"Splash face and neck, especially around the eyes, 15-30 s."},{ro:"Sau ține o compresă rece pe obraji.",es:"O coloca una compresa fría en las mejillas.",en:"Or hold a cold compress to your cheeks."}]},
-    {id:"gargle", emoji:"💦", title:{ro:"Gargară + fredonat",es:"Gárgaras + tararear",en:"Gargle + humming"}, desc:{ro:"Activează mușchii legați de nervul vag.",es:"Activa los músculos ligados al nervio vago.",en:"Activates muscles linked to the vagus nerve."}, color:"var(--citrus)", dur:60,
-      steps:[{ro:"Fă gargară viguroasă cu apă ~20-30 sec.",es:"Haz gárgaras vigorosas con agua ~20-30 s.",en:"Gargle vigorously with water ~20-30 s."},{ro:"Apoi fredonează o melodie scurtă.",es:"Luego tararea una melodía corta.",en:"Then hum a short tune."},{ro:"Repetă o dată dacă vrei.",es:"Repite una vez si quieres.",en:"Repeat once if you like."}]},
-    {id:"massage", emoji:"💆", title:{ro:"Masaj urechi & gât",es:"Masaje de orejas y cuello",en:"Ear & neck massage"}, desc:{ro:"Relaxare blândă a zonei vagale.",es:"Relajación suave de la zona vagal.",en:"Gentle relaxation of the vagal area."}, color:"var(--lavender)", dur:120,
-      steps:[{ro:"Masează ușor pavilionul urechilor, de sus în jos.",es:"Masajea suavemente el pabellón de las orejas, de arriba abajo.",en:"Gently massage the outer ears, top to bottom."},{ro:"Coboară pe gât, pe lateral, cu mișcări lente.",es:"Baja por el cuello, por el lateral, con movimientos lentos.",en:"Move down the side of the neck with slow strokes."},{ro:"Respiră adânc în tot acest timp.",es:"Respira hondo todo este tiempo.",en:"Breathe deeply throughout."}]},
-    {id:"ground", emoji:"🌍", title:{ro:"Împământare 5-4-3-2-1",es:"Anclaje 5-4-3-2-1",en:"Grounding 5-4-3-2-1"}, desc:{ro:"Te readuce în prezent.",es:"Te devuelve al presente.",en:"Brings you back to the present."}, color:"var(--olive)", dur:0,
-      steps:[{ro:"5 lucruri pe care le vezi.",es:"5 cosas que ves.",en:"5 things you can see."},{ro:"4 lucruri pe care le auzi.",es:"4 cosas que oyes.",en:"4 things you can hear."},{ro:"3 lucruri pe care le poți atinge.",es:"3 cosas que puedes tocar.",en:"3 things you can touch."},{ro:"2 lucruri pe care le miroși.",es:"2 cosas que hueles.",en:"2 things you can smell."},{ro:"1 lucru pe care îl guști — sau o respirație adâncă.",es:"1 cosa que saboreas — o una respiración profunda.",en:"1 thing you can taste — or one deep breath."}]}
-  ];
-  const ENERGY=[
-    {id:"ebreath", title:{ro:"Respirație energizantă",es:"Respiración energizante",en:"Energizing breath"}, desc:{ro:"Inspiri 4, ții 1, expiri 2 — accent pe inspirație, ca să te trezească.",es:"Inhala 4, retén 1, exhala 2 — énfasis en la inhalación, para activarte.",en:"Inhale 4, hold 1, exhale 2 — inhale-led, to wake you up."}, color:"var(--sun)", cycles:8,
-      pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:1,sc:1},{l:OUT,s:2,sc:0.42}]},
-    {id:"move", title:{ro:"Mișcare 2 minute",es:"Movimiento 2 minutos",en:"2-minute movement"}, desc:{ro:"Sari, dansează o melodie, mers rapid. Orice îți ridică pulsul.",es:"Salta, baila una canción, camina rápido. Lo que suba tu pulso.",en:"Jump, dance to one song, walk fast. Anything that lifts your pulse."}, color:"var(--terra)", dur:120,
-      steps:[{ro:"Ridică-te în picioare.",es:"Ponte de pie.",en:"Stand up."},{ro:"Mișcă-te alert 2 minute: sărituri, genuflexiuni, dans — orice îți place.",es:"Muévete con energía 2 minutos: saltos, sentadillas, baile — lo que te guste.",en:"Move briskly for 2 minutes: jumps, squats, dancing — whatever you like."},{ro:"Lasă pulsul să urce puțin, fără să forțezi.",es:"Deja que el pulso suba un poco, sin forzar.",en:"Let your pulse rise a little, without forcing."}]},
-    {id:"light", title:{ro:"Ieși la lumină",es:"Sal a la luz",en:"Step into the light"}, desc:{ro:"2 minute la lumină, privește departe. Reglare blândă a energiei.",es:"2 minutos a la luz, mira a lo lejos. Regulación suave de la energía.",en:"2 minutes in the light, look into the distance. A gentle energy reset."}, color:"var(--sun)", dur:120,
-      steps:[{ro:"Mergi la o fereastră sau ieși afară.",es:"Ve a una ventana o sal fuera.",en:"Go to a window or step outside."},{ro:"Privește spre lumină și apoi în depărtare, relaxat.",es:"Mira hacia la luz y luego a lo lejos, relajada.",en:"Look toward the light, then into the distance, relaxed."},{ro:"Respiră lin și lasă lumina să te trezească.",es:"Respira suave y deja que la luz te despierte.",en:"Breathe softly and let the light wake you."}]},
-    {id:"shake", title:{ro:"Scuturare + postură",es:"Sacudida + postura",en:"Shake + posture"}, desc:{ro:"Scutură tensiunea, apoi îndreaptă-te și deschide pieptul.",es:"Sacude la tensión, luego enderézate y abre el pecho.",en:"Shake off tension, then straighten up and open your chest."}, color:"var(--olive)", dur:60,
-      steps:[{ro:"Scutură mâinile și brațele 20 de secunde.",es:"Sacude manos y brazos 20 segundos.",en:"Shake your hands and arms for 20 seconds."},{ro:"Apoi îndreaptă spatele, trage umerii înapoi, deschide pieptul.",es:"Luego endereza la espalda, lleva los hombros atrás, abre el pecho.",en:"Then straighten your back, draw shoulders back, open your chest."},{ro:"Respiră adânc de câteva ori în această poziție.",es:"Respira hondo varias veces en esta postura.",en:"Take a few deep breaths in this posture."}]}
-  ];
+      {id:"sigh", emoji:"😮‍💨", title:{ro:"Suspinul fiziologic",es:"Suspiro fisiológico",en:"Physiological sigh"}, desc:{ro:"Cel mai rapid mod de a-ți coborî tensiunea — chiar și în 1-2 respirații.",es:"La forma más rápida de bajar la tensión — incluso en 1-2 respiraciones.",en:"The fastest way to lower tension — even in 1-2 breaths."}, color:"var(--sea)", cycles:6,
+        purpose:{ro:"Calmare rapidă",es:"Calma rápida",en:"Fast calm"}, ptype:"warm",
+        edu:{ why:{ro:"Cel mai rapid mod de a-ți coborî tensiunea — chiar și în 1-2 respirații.",es:"La forma más rápida de bajar la tensión — incluso en 1-2 respiraciones.",en:"The fastest way to lower tension — even in 1-2 breaths."},
+          research:{ro:"Un studiu Stanford a arătat că 5 minute pe zi îți pot ridica dispoziția și liniști respirația.",es:"Un estudio de Stanford mostró que 5 minutos al día pueden mejorar el ánimo y calmar la respiración.",en:"A Stanford study showed 5 minutes a day can lift your mood and calm your breathing."},
+          src:{ro:"Balban et al., Stanford",es:"Balban et al., Stanford",en:"Balban et al., Stanford"} },
+        pattern:[{l:IN,s:2,sc:0.8},{l:{ro:"Încă puțin aer",es:"Un poco más de aire",en:"A bit more air"},s:1,sc:1.0},{l:OUTL,s:6,sc:0.42}],
+        tune:{
+          dur:[
+            {k:"now", lbl:{ro:"Acum",es:"Ahora",en:"Now"},   min:0.6},
+            {k:"5",   lbl:{ro:"5 min",es:"5 min",en:"5 min"}, min:5}
+          ], durDefault:"now"
+        }},
+      {id:"478", emoji:"🌙", title:{ro:"Respirație 4-7-8",es:"Respiración 4-7-8",en:"4-7-8 breathing"}, desc:{ro:"Un expir lung care te pregătește blând de somn.",es:"Una exhalación larga que te prepara suavemente para dormir.",en:"A long exhale that gently readies you for sleep."}, color:"var(--lavender)", cycles:6,
+        purpose:{ro:"Somn liniștit",es:"Sueño tranquilo",en:"Restful sleep"}, ptype:"lav",
+        edu:{ why:{ro:"Un expir lung care te pregătește blând de somn.",es:"Una exhalación larga que te prepara suavemente para dormir.",en:"A long exhale that gently readies you for sleep."},
+          research:{ro:"Un studiu de câteva săptămâni a arătat că ajută somnul și scade stresul.",es:"Un estudio de varias semanas mostró que ayuda al sueño y reduce el estrés.",en:"A several-week study showed it helps sleep and lowers stress."},
+          src:{ro:"Studiu 4-7-8, 2025",es:"Estudio 4-7-8, 2025",en:"4-7-8 study, 2025"} },
+        pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:7,sc:1},{l:OUT,s:8,sc:0.42}]},
+      {id:"box", emoji:"🟦", title:{ro:"Respirație în cutie",es:"Respiración en caja",en:"Box breathing"}, desc:{ro:"Un ritm egal, „în patru”, care te adună când mintea aleargă.",es:"Un ritmo parejo, „en cuatro”, que te centra cuando la mente corre.",en:"An even, four-count rhythm that gathers you when the mind races."}, color:"var(--sky)", cycles:6,
+        purpose:{ro:"Concentrare",es:"Enfoque",en:"Focus"}, ptype:"sea",
+        edu:{ why:{ro:"Un ritm egal, „în patru”, care te adună când mintea aleargă.",es:"Un ritmo parejo, „en cuatro”, que te centra cuando la mente corre.",en:"An even, four-count rhythm that gathers you when the mind races."},
+          research:{ro:"Un mod simplu și sigur de a-ți găsi stabilitatea în câteva respirații.",es:"Una forma simple y segura de encontrar estabilidad en unas respiraciones.",en:"A simple, safe way to find steadiness in a few breaths."},
+          src:{ro:"Practică larg folosită",es:"Práctica muy usada",en:"Widely used practice"} },
+        pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:4,sc:1},{l:OUT,s:4,sc:0.42},{l:HOLDE,s:4,sc:0.42}]},
+      {id:"ext", emoji:"🌊", title:{ro:"Expirație prelungită",es:"Exhalación prolongada",en:"Extended exhale"}, desc:{ro:"Un expir lung și blând — corpul înțelege că poate încetini.",es:"Una exhalación larga y suave — el cuerpo entiende que puede frenar.",en:"A long, gentle exhale — the body understands it can slow down."}, color:"var(--olive)", cycles:8,
+        purpose:{ro:"Înainte de somn",es:"Antes de dormir",en:"Before sleep"}, ptype:"lav",
+        edu:{ why:{ro:"Un expir lung și blând — corpul înțelege că poate încetini.",es:"Una exhalación larga y suave — el cuerpo entiende que puede frenar.",en:"A long, gentle exhale — the body understands it can slow down."},
+          research:{ro:"Respirația lentă e una dintre cele mai simple căi de a te relaxa seara.",es:"La respiración lenta es una de las formas más simples de relajarte por la noche.",en:"Slow breathing is one of the simplest ways to relax in the evening."},
+          src:{ro:"Respirație lentă",es:"Respiración lenta",en:"Slow breathing"} },
+        pattern:[{l:IN,s:4,sc:1},{l:OUTL,s:6,sc:0.42}]},
+      {id:"coh", emoji:"💗", title:{ro:"Respirație de rezonanță",es:"Respiración de resonancia",en:"Resonance breathing"}, desc:{ro:"Respiratul lent și egal aduce corpul într-un ritm liniștit și echilibrat.",es:"Respirar lento y parejo lleva el cuerpo a un ritmo tranquilo y equilibrado.",en:"Slow, even breathing brings the body into a calm, balanced rhythm."}, color:"var(--rose)", cycles:8,
+        purpose:{ro:"Echilibru",es:"Equilibrio",en:"Balance"}, ptype:"sea",
+        edu:{ why:{ro:"Respiratul lent și egal aduce corpul într-un ritm liniștit și echilibrat.",es:"Respirar lento y parejo lleva el cuerpo a un ritmo tranquilo y equilibrado.",en:"Slow, even breathing brings the body into a calm, balanced rhythm."},
+          research:{ro:"E practica cea mai studiată pentru echilibrul sistemului nervos — mai ales în ritmul tău personal.",es:"Es la práctica más estudiada para el equilibrio del sistema nervioso — sobre todo en tu ritmo personal.",en:"It's the best-studied practice for nervous-system balance — especially at your personal pace."},
+          src:{ro:"Lehrer & Gevirtz",es:"Lehrer & Gevirtz",en:"Lehrer & Gevirtz"} },
+        pattern:[{l:IN,s:6,sc:1},{l:OUT,s:6,sc:0.42}],
+        tune:{
+          pace:[
+            {k:"5",   lbl:{ro:"5/min",es:"5/min",en:"5/min"},     ins:6,   outs:6},
+            {k:"5.5", lbl:{ro:"5,5/min",es:"5,5/min",en:"5.5/min"}, ins:5.5, outs:5.5},
+            {k:"6",   lbl:{ro:"6/min",es:"6/min",en:"6/min"},     ins:5,   outs:5}
+          ], paceDefault:"5.5",
+          dur:[
+            {k:"5",  lbl:{ro:"5 min",es:"5 min",en:"5 min"},   min:5},
+            {k:"10", lbl:{ro:"10 min",es:"10 min",en:"10 min"}, min:10},
+            {k:"15", lbl:{ro:"15 min",es:"15 min",en:"15 min"}, min:15}
+          ], durDefault:"5"
+        }}
+    ];
+    const SOMATIC=[
+      {id:"pmr", title:{ro:"Relaxare musculară progresivă",es:"Relajación muscular progresiva",en:"Progressive muscle relaxation"}, desc:{ro:"Încordezi ușor fiecare grupă de mușchi, apoi o eliberezi — tensiunea pleacă din corp.",es:"Tensas suavemente cada grupo de músculos, luego lo sueltas — la tensión abandona el cuerpo.",en:"You gently tense each muscle group, then release it — tension leaves the body."}, color:"var(--lavender)", dur:300, scan:true,
+        purpose:{ro:"Relaxare profundă",es:"Relajación profunda",en:"Deep release"}, ptype:"lav",
+        edu:{ why:{ro:"Încordezi ușor fiecare grupă de mușchi, apoi o eliberezi — tensiunea pleacă din corp.",es:"Tensas suavemente cada grupo de músculos, luego lo sueltas — la tensión abandona el cuerpo.",en:"You gently tense each muscle group, then release it — tension leaves the body."},
+          research:{ro:"Una dintre cele mai bine studiate tehnici de relaxare: zeci de studii arată că reduce anxietatea și îmbunătățește somnul.",es:"Una de las técnicas de relajación más estudiadas: decenas de estudios muestran que reduce la ansiedad y mejora el sueño.",en:"One of the most-studied relaxation techniques: dozens of studies show it reduces anxiety and improves sleep."},
+          src:{ro:"Meta-analize (31+ RCT-uri)",es:"Metaanálisis (31+ ECA)",en:"Meta-analyses (31+ RCTs)"} },
+        regions:[
+          {w:{ro:"Mâini & brațe",es:"Manos y brazos",en:"Hands & arms"}, c:{ro:"Strânge pumnii și încordează brațele ~5 secunde... apoi eliberează și simte diferența.",es:"Aprieta los puños y tensa los brazos ~5 segundos... luego suelta y siente la diferencia.",en:"Clench your fists and tense your arms ~5 seconds... then release and feel the difference."}},
+          {w:{ro:"Umeri & ceafă",es:"Hombros y nuca",en:"Shoulders & neck"}, c:{ro:"Ridică umerii spre urechi, ține ~5 secunde... apoi lasă-i să cadă moale.",es:"Sube los hombros hacia las orejas, mantén ~5 segundos... luego déjalos caer sueltos.",en:"Lift your shoulders toward your ears, hold ~5 seconds... then let them drop soft."}},
+          {w:{ro:"Față",es:"Cara",en:"Face"}, c:{ro:"Strânge ochii și maxilarul ~5 secunde... apoi destinde toată fața.",es:"Aprieta los ojos y la mandíbula ~5 segundos... luego relaja toda la cara.",en:"Scrunch your eyes and jaw ~5 seconds... then let the whole face go slack."}},
+          {w:{ro:"Abdomen",es:"Abdomen",en:"Belly"}, c:{ro:"Încordează ușor burta ~5 secunde... apoi eliberează și respiră adânc.",es:"Tensa suavemente el vientre ~5 segundos... luego suelta y respira hondo.",en:"Gently tense your belly ~5 seconds... then release and breathe deep."}},
+          {w:{ro:"Picioare",es:"Piernas",en:"Legs"}, c:{ro:"Întinde picioarele și încordează coapsele ~5 secunde... apoi lasă-le grele și moi.",es:"Estira las piernas y tensa los muslos ~5 segundos... luego déjalas pesadas y sueltas.",en:"Straighten your legs and tense your thighs ~5 seconds... then let them go heavy and soft."}},
+          {w:{ro:"Tot corpul",es:"Todo el cuerpo",en:"Whole body"}, c:{ro:"Încordează blând tot corpul o clipă... apoi eliberează complet și odihnește-te.",es:"Tensa suavemente todo el cuerpo un instante... luego suelta del todo y descansa.",en:"Gently tense the whole body for a moment... then release completely and rest."}}
+        ]},
+      {id:"bodyscan", title:{ro:"Scanare corporală",es:"Escaneo corporal",en:"Body scan"}, desc:{ro:"Plimbi atenția prin corp și lași fiecare zonă să se moaie — o eliberare adâncă.",es:"Paseas la atención por el cuerpo y dejas que cada zona se ablande — una liberación profunda.",en:"You move attention through the body and let each area soften — a deep release."}, color:"var(--sea)", dur:60, scan:true,
+        purpose:{ro:"Relaxare profundă",es:"Relajación profunda",en:"Deep release"}, ptype:"lav",
+        edu:{ why:{ro:"Plimbi atenția prin corp și lași fiecare zonă să se moaie — o eliberare adâncă.",es:"Paseas la atención por el cuerpo y dejas que cada zona se ablande — una liberación profunda.",en:"You move attention through the body and let each area soften — a deep release."},
+          research:{ro:"O practică blândă de conștientizare a corpului pe care multe o găsesc profund liniștitoare seara.",es:"Una práctica suave de conciencia corporal que a muchas les resulta profundamente calmante por la noche.",en:"A gentle body-awareness practice that many find deeply soothing in the evening."},
+          src:{ro:"Practică de mindfulness",es:"Práctica de mindfulness",en:"Mindfulness practice"} },
+        regions:[
+          {w:{ro:"Creștet",es:"Coronilla",en:"Crown"}, c:{ro:"Adu atenția în creștet și frunte. Lasă-le moi.",es:"Lleva la atención a la coronilla y la frente. Suéltalas.",en:"Bring attention to your crown and forehead. Let them soften."}},
+          {w:{ro:"Maxilar",es:"Mandíbula",en:"Jaw"}, c:{ro:"Maxilarul — e încleștat? Lasă-l să cadă.",es:"La mandíbula — ¿está apretada? Déjala caer.",en:"Your jaw — is it clenched? Let it drop."}},
+          {w:{ro:"Umeri",es:"Hombros",en:"Shoulders"}, c:{ro:"Umerii — sunt ridicați spre urechi? Coboară-i.",es:"Los hombros — ¿están subidos hacia las orejas? Bájalos.",en:"Your shoulders — raised toward your ears? Drop them."}},
+          {w:{ro:"Piept",es:"Pecho",en:"Chest"}, c:{ro:"Pieptul — respiri scurt? O respirație adâncă.",es:"El pecho — ¿respiras corto? Una respiración profunda.",en:"Your chest — breathing shallow? Take one deep breath."}},
+          {w:{ro:"Mâini",es:"Manos",en:"Hands"}, c:{ro:"Mâinile — sunt strânse? Deschide-le.",es:"Las manos — ¿están tensas? Ábrelas.",en:"Your hands — are they tight? Open them."}},
+          {w:{ro:"Tot corpul",es:"Todo el cuerpo",en:"Whole body"}, c:{ro:"Tot corpul — lasă orice tensiune rămasă să plece.",es:"Todo el cuerpo — deja ir cualquier tensión que quede.",en:"Your whole body — let any remaining tension go."}}
+        ]},
+      {id:"hum", emoji:"🎵", title:{ro:"Bâzâit / hooming",es:"Zumbido / humming",en:"Humming"}, desc:{ro:"Expirul lung și vibrația din piept și gât îți aduc un val de liniște.",es:"La exhalación larga y la vibración en pecho y garganta te dan una ola de calma.",en:"The long exhale and the vibration in chest and throat bring a wave of calm."}, color:"var(--sea)",
+        purpose:{ro:"Liniște blândă",es:"Sosiego suave",en:"Gentle calm"}, ptype:"olive",
+        edu:{ why:{ro:"Expirul lung și vibrația din piept și gât îți aduc un val de liniște.",es:"La exhalación larga y la vibración en pecho y garganta te dan una ola de calma.",en:"The long exhale and the vibration in chest and throat bring a wave of calm."},
+          research:{ro:"O practică veche din yoga (Bhramari) pe care multe o găsesc profund liniștitoare.",es:"Una práctica antigua del yoga (Bhramari) que a muchas les resulta profundamente calmante.",en:"An old yoga practice (Bhramari) that many find deeply soothing."},
+          src:{ro:"Tradiție yoga",es:"Tradición yoga",en:"Yoga tradition"} },
+        pattern:[{l:{ro:"Inspiră pe nas",es:"Inhala por la nariz",en:"Inhale through the nose"},s:4,sc:1},{l:{ro:"Bâzâie — mmm",es:"Zumba — mmm",en:"Hum — mmm"},s:7,sc:0.42}],
+        tune:{
+          dur:[
+            {k:"2", lbl:{ro:"2 min",es:"2 min",en:"2 min"}, min:2},
+            {k:"5", lbl:{ro:"5 min",es:"5 min",en:"5 min"}, min:5}
+          ], durDefault:"2"
+        },
+        steps:[{ro:"Inspiră normal pe nas.",es:"Inhala normal por la nariz.",en:"Inhale normally through the nose."},{ro:"Pe expirație, bâzâie continuu (sunetul mmm sau voo), simțind vibrația în piept și gât.",es:"Al exhalar, zumba de forma continua (sonido mmm o voo), sintiendo la vibración en pecho y garganta.",en:"On the exhale, hum continuously (an mmm or voo sound), feeling the vibration in chest and throat."},{ro:"Repetă lin, fără să forțezi, până sună finalul.",es:"Repite con suavidad, sin forzar, hasta que suene el final.",en:"Repeat gently, without forcing, until the timer ends."}]},
+      {id:"eyes", emoji:"👀", title:{ro:"Exercițiul de bază (ochi)",es:"Ejercicio básico (ojos)",en:"Basic exercise (eyes)"}, desc:{ro:"Mutarea blândă a privirii destinde ceafa și te scoate dintr-o stare încordată.",es:"Mover suavemente la mirada destensa la nuca y te saca de un estado tenso.",en:"Gently shifting your gaze relaxes the neck and eases you out of a tense state."}, color:"var(--olive)", dur:120,
+        purpose:{ro:"Destindere",es:"Distensión",en:"Unwind"}, ptype:"olive",
+        edu:{ why:{ro:"Mutarea blândă a privirii destinde ceafa și te scoate dintr-o stare încordată.",es:"Mover suavemente la mirada destensa la nuca y te saca de un estado tenso.",en:"Gently shifting your gaze relaxes the neck and eases you out of a tense state."},
+          research:{ro:"Un exercițiu din terapia somatică pe care multe îl găsesc relaxant.",es:"Un ejercicio de la terapia somática que a muchas les resulta relajante.",en:"A somatic-therapy exercise that many find relaxing."},
+          src:{ro:"Terapie somatică",es:"Terapia somática",en:"Somatic therapy"} },
+        steps:[{ro:"Stai comod, împletește mâinile sub ceafă.",es:"Ponte cómoda, entrelaza las manos bajo la nuca.",en:"Get comfortable, lace your hands behind your head."},{ro:"Ține capul nemișcat și mută doar ochii spre dreapta.",es:"Mantén la cabeza quieta y mueve solo los ojos a la derecha.",en:"Keep your head still and move only your eyes to the right."},{ro:"Rămâi până caști, înghiți sau oftezi, apoi revino la centru.",es:"Quédate hasta que bosteces, tragues o suspires, luego vuelve al centro.",en:"Stay until you yawn, swallow or sigh, then return to center."},{ro:"Repetă spre stânga.",es:"Repite hacia la izquierda.",en:"Repeat to the left."}]},
+      {id:"butterfly", emoji:"🦋", title:{ro:"Îmbrățișarea fluture",es:"Abrazo de mariposa",en:"Butterfly hug"}, desc:{ro:"Atingerea bilaterală, ritmică, te alină — o îmbrățișare pentru tine.",es:"El toque bilateral y rítmico te reconforta — un abrazo para ti.",en:"Rhythmic, bilateral tapping soothes you — a hug for yourself."}, color:"var(--rose)", dur:90,
+        purpose:{ro:"Alinare",es:"Consuelo",en:"Comfort"}, ptype:"warm",
+        edu:{ why:{ro:"Atingerea bilaterală, ritmică, te alină — o îmbrățișare pentru tine.",es:"El toque bilateral y rítmico te reconforta — un abrazo para ti.",en:"Rhythmic, bilateral tapping soothes you — a hug for yourself."},
+          research:{ro:"Vine din terapia traumei; multe o folosesc ca gest de auto-alinare.",es:"Viene de la terapia del trauma; muchas la usan como gesto de autoconsuelo.",en:"It comes from trauma therapy; many use it as a self-soothing gesture."},
+          src:{ro:"Din EMDR",es:"De EMDR",en:"From EMDR"} },
+        steps:[{ro:"Încrucișează brațele pe piept, palmele pe umeri.",es:"Cruza los brazos sobre el pecho, palmas en los hombros.",en:"Cross your arms over your chest, palms on shoulders."},{ro:"Bate ușor și alternativ, stânga-dreapta, ca niște aripi.",es:"Da golpecitos suaves y alternos, izquierda-derecha, como alas.",en:"Tap gently and alternately, left-right, like wings."},{ro:"Respiră lin și continuă în ritm calm.",es:"Respira suave y sigue a ritmo tranquilo.",en:"Breathe softly and continue at a calm pace."}]},
+      {id:"cold", emoji:"💧", title:{ro:"Apă rece pe față",es:"Agua fría en la cara",en:"Cold water on the face"}, desc:{ro:"Apă rece pe față — un calm aproape imediat când te simți copleșită.",es:"Agua fría en la cara — una calma casi inmediata cuando te sientes desbordada.",en:"Cold water on the face — an almost instant calm when you feel overwhelmed."}, color:"var(--sky)", dur:30,
+        purpose:{ro:"Calm imediat",es:"Calma inmediata",en:"Instant calm"}, ptype:"warm",
+        edu:{ why:{ro:"Apă rece pe față — un calm aproape imediat când te simți copleșită.",es:"Agua fría en la cara — una calma casi inmediata cuando te sientes desbordada.",en:"Cold water on the face — an almost instant calm when you feel overwhelmed."},
+          research:{ro:"Declanșează un reflex natural care îți încetinește pulsul pe loc.",es:"Activa un reflejo natural que baja el pulso al instante.",en:"It triggers a natural reflex that slows your pulse on the spot."},
+          src:{ro:"Reflex natural",es:"Reflejo natural",en:"Natural reflex"} },
+        steps:[{ro:"Pregătește apă rece la chiuvetă.",es:"Prepara agua fría en el lavabo.",en:"Prepare cold water at the sink."},{ro:"Stropește fața și gâtul, mai ales în jurul ochilor, 15-30 sec.",es:"Salpica cara y cuello, sobre todo alrededor de los ojos, 15-30 s.",en:"Splash face and neck, especially around the eyes, 15-30 s."},{ro:"Sau ține o compresă rece pe obraji.",es:"O coloca una compresa fría en las mejillas.",en:"Or hold a cold compress to your cheeks."}]},
+      {id:"gargle", emoji:"💦", title:{ro:"Gargară + fredonat",es:"Gárgaras + tarareo",en:"Gargle + humming"}, desc:{ro:"Un mic ritual jucăuș care destinde gâtul și te readuce la tine.",es:"Un pequeño ritual juguetón que destensa la garganta y te devuelve a ti.",en:"A small, playful ritual that loosens the throat and brings you back to yourself."}, color:"var(--citrus)", dur:60,
+        purpose:{ro:"Mic ritual",es:"Pequeño ritual",en:"Small ritual"}, ptype:"olive",
+        edu:{ why:{ro:"Un mic ritual jucăuș care destinde gâtul și te readuce la tine.",es:"Un pequeño ritual juguetón que destensa la garganta y te devuelve a ti.",en:"A small, playful ritual that loosens the throat and brings you back to yourself."},
+          research:{ro:"Simplu și blând — bun când simți nevoia unei pauze.",es:"Simple y suave — bueno cuando necesitas una pausa.",en:"Simple and gentle — good when you need a pause."},
+          src:{ro:"Practică blândă",es:"Práctica suave",en:"Gentle practice"} },
+        steps:[{ro:"Fă gargară viguroasă cu apă ~20-30 sec.",es:"Haz gárgaras vigorosas con agua ~20-30 s.",en:"Gargle vigorously with water ~20-30 s."},{ro:"Apoi fredonează o melodie scurtă.",es:"Luego tararea una melodía corta.",en:"Then hum a short tune."},{ro:"Repetă o dată dacă vrei.",es:"Repite una vez si quieres.",en:"Repeat once if you like."}]},
+      {id:"massage", emoji:"💆", title:{ro:"Masaj urechi & gât",es:"Masaje de orejas y cuello",en:"Ear & neck massage"}, desc:{ro:"Un masaj lent al urechilor și gâtului, cu respirație adâncă — un moment de răsfăț.",es:"Un masaje lento de orejas y cuello, con respiración profunda — un momento de mimo.",en:"A slow massage of the ears and neck, with deep breathing — a moment of care."}, color:"var(--lavender)", dur:120,
+        purpose:{ro:"Răsfăț blând",es:"Mimo suave",en:"Gentle self-care"}, ptype:"olive",
+        edu:{ why:{ro:"Un masaj lent al urechilor și gâtului, cu respirație adâncă — un moment de răsfăț.",es:"Un masaje lento de orejas y cuello, con respiración profunda — un momento de mimo.",en:"A slow massage of the ears and neck, with deep breathing — a moment of care."},
+          research:{ro:"Atingerea blândă și încetinirea îți aduc relaxare.",es:"El tacto suave y frenar el ritmo te dan relajación.",en:"Gentle touch and slowing down bring relaxation."},
+          src:{ro:"Practică blândă",es:"Práctica suave",en:"Gentle practice"} },
+        steps:[{ro:"Masează ușor pavilionul urechilor, de sus în jos.",es:"Masajea suavemente el pabellón de las orejas, de arriba abajo.",en:"Gently massage the outer ears, top to bottom."},{ro:"Coboară pe gât, pe lateral, cu mișcări lente.",es:"Baja por el cuello, por el lateral, con movimientos lentos.",en:"Move down the side of the neck with slow strokes."},{ro:"Respiră adânc în tot acest timp.",es:"Respira hondo todo este tiempo.",en:"Breathe deeply throughout."}]},
+      {id:"ground", emoji:"🌍", title:{ro:"Împământare 5-4-3-2-1",es:"Anclaje 5-4-3-2-1",en:"Grounding 5-4-3-2-1"}, desc:{ro:"Numeri ce vezi, auzi, atingi — și revii blând în prezent.",es:"Cuentas lo que ves, oyes, tocas — y vuelves suavemente al presente.",en:"You count what you see, hear, touch — and gently return to the present."}, color:"var(--olive)", dur:0,
+        purpose:{ro:"Revii în prezent",es:"Vuelve al presente",en:"Back to now"}, ptype:"sea",
+        edu:{ why:{ro:"Numeri ce vezi, auzi, atingi — și revii blând în prezent.",es:"Cuentas lo que ves, oyes, tocas — y vuelves suavemente al presente.",en:"You count what you see, hear, touch — and gently return to the present."},
+          research:{ro:"Tehnică folosită în terapie pentru momentele copleșitoare.",es:"Técnica usada en terapia para los momentos que desbordan.",en:"A technique used in therapy for overwhelming moments."},
+          src:{ro:"Practică clinică",es:"Práctica clínica",en:"Clinical practice"} },
+        steps:[{ro:"5 lucruri pe care le vezi.",es:"5 cosas que ves.",en:"5 things you can see."},{ro:"4 lucruri pe care le auzi.",es:"4 cosas que oyes.",en:"4 things you can hear."},{ro:"3 lucruri pe care le poți atinge.",es:"3 cosas que puedes tocar.",en:"3 things you can touch."},{ro:"2 lucruri pe care le miroși.",es:"2 cosas que hueles.",en:"2 things you can smell."},{ro:"1 lucru pe care îl guști — sau o respirație adâncă.",es:"1 cosa que saboreas — o una respiración profunda.",en:"1 thing you can taste — or one deep breath."}]}
+    ];
+    const ENERGY=[
+      {id:"ebreath", title:{ro:"Respirație energizantă",es:"Respiración energizante",en:"Energizing breath"}, desc:{ro:"Inspiri 4, ții 1, expiri 2 — accent pe inspirație, ca să te trezească.",es:"Inhala 4, retén 1, exhala 2 — énfasis en la inhalación, para activarte.",en:"Inhale 4, hold 1, exhale 2 — inhale-led, to wake you up."}, color:"var(--sun)", cycles:8,
+        purpose:{ro:"Energie blândă",es:"Energía suave",en:"Gentle energy"}, ptype:"warm",
+        edu:{ why:{ro:"Un accent blând pe inspirație care te trezește fără să te agite.",es:"Un énfasis suave en la inhalación que te despierta sin agitarte.",en:"A gentle inhale-led rhythm that wakes you without stirring you up."},
+          research:{ro:"Multe simt un plus blând de energie când inspirația e puțin mai lungă decât expirația.",es:"Muchas notan un impulso suave de energía cuando la inhalación es algo más larga que la exhalación.",en:"Many feel a gentle lift when the inhale is a little longer than the exhale."},
+          src:{ro:"Experiență blândă",es:"Experiencia suave",en:"Gentle experience"} },
+        pattern:[{l:IN,s:4,sc:1},{l:HOLD,s:1,sc:1},{l:OUT,s:2,sc:0.42}]},
+      {id:"move", title:{ro:"Mișcare 2 minute",es:"Movimiento 2 minutos",en:"2-minute movement"}, desc:{ro:"Sari, dansează o melodie, mers rapid. Orice îți ridică pulsul.",es:"Salta, baila una canción, camina rápido. Lo que suba tu pulso.",en:"Jump, dance to one song, walk fast. Anything that lifts your pulse."}, color:"var(--terra)", dur:120,
+        purpose:{ro:"Mișcare",es:"Movimiento",en:"Movement"}, ptype:"warm",
+        edu:{ why:{ro:"Câteva minute de mișcare îți urcă pulsul și te readuc în corp.",es:"Unos minutos de movimiento suben el pulso y te devuelven al cuerpo.",en:"A few minutes of movement lifts your pulse and brings you back into your body."},
+          research:{ro:"Cel mai simplu mod de a-ți schimba starea când te simți moleșită.",es:"La forma más simple de cambiar tu estado cuando te sientes floja.",en:"The simplest way to shift your state when you feel sluggish."},
+          src:{ro:"Experiență blândă",es:"Experiencia suave",en:"Gentle experience"} },
+        steps:[{ro:"Ridică-te în picioare.",es:"Ponte de pie.",en:"Stand up."},{ro:"Mișcă-te alert 2 minute: sărituri, genuflexiuni, dans — orice îți place.",es:"Muévete con energía 2 minutos: saltos, sentadillas, baile — lo que te guste.",en:"Move briskly for 2 minutes: jumps, squats, dancing — whatever you like."},{ro:"Lasă pulsul să urce puțin, fără să forțezi.",es:"Deja que el pulso suba un poco, sin forzar.",en:"Let your pulse rise a little, without forcing."}]},
+      {id:"light", title:{ro:"Ieși la lumină",es:"Sal a la luz",en:"Step into the light"}, desc:{ro:"2 minute la lumină, privește departe. Reglare blândă a energiei.",es:"2 minutos a la luz, mira a lo lejos. Regulación suave de la energía.",en:"2 minutes in the light, look into the distance. A gentle energy reset."}, color:"var(--sun)", dur:120,
+        purpose:{ro:"Lumină",es:"Luz",en:"Light"}, ptype:"warm",
+        edu:{ why:{ro:"Câteva minute în lumină te trezesc blând și îți limpezesc mintea.",es:"Unos minutos a la luz te despiertan suavemente y aclaran la mente.",en:"A few minutes in the light wake you gently and clear your mind."},
+          research:{ro:"Lumina de dimineață e un mod plăcut de a-ți reseta energia zilei.",es:"La luz de la mañana es una forma agradable de resetear la energía del día.",en:"Morning light is a pleasant way to reset your energy for the day."},
+          src:{ro:"Experiență blândă",es:"Experiencia suave",en:"Gentle experience"} },
+        steps:[{ro:"Mergi la o fereastră sau ieși afară.",es:"Ve a una ventana o sal fuera.",en:"Go to a window or step outside."},{ro:"Privește spre lumină și apoi în depărtare, relaxat.",es:"Mira hacia la luz y luego a lo lejos, relajada.",en:"Look toward the light, then into the distance, relaxed."},{ro:"Respiră lin și lasă lumina să te trezească.",es:"Respira suave y deja que la luz te despierte.",en:"Breathe softly and let the light wake you."}]},
+      {id:"shake", title:{ro:"Scuturare + postură",es:"Sacudida + postura",en:"Shake + posture"}, desc:{ro:"Scutură tensiunea, apoi îndreaptă-te și deschide pieptul.",es:"Sacude la tensión, luego enderézate y abre el pecho.",en:"Shake off tension, then straighten up and open your chest."}, color:"var(--olive)", dur:60,
+        purpose:{ro:"Descărcare",es:"Descarga",en:"Release"}, ptype:"olive",
+        edu:{ why:{ro:"Scuturi tensiunea din corp, apoi te îndrepți — un mic reset de energie.",es:"Sacudes la tensión del cuerpo y luego te enderezas — un pequeño reset de energía.",en:"You shake tension out of the body, then straighten up — a small energy reset."},
+          research:{ro:"Mișcarea și postura deschisă te fac să te simți mai trează și mai prezentă.",es:"El movimiento y la postura abierta te hacen sentir más despierta y presente.",en:"Movement and an open posture help you feel more awake and present."},
+          src:{ro:"Experiență blândă",es:"Experiencia suave",en:"Gentle experience"} },
+        steps:[{ro:"Scutură mâinile și brațele 20 de secunde.",es:"Sacude manos y brazos 20 segundos.",en:"Shake your hands and arms for 20 seconds."},{ro:"Apoi îndreaptă spatele, trage umerii înapoi, deschide pieptul.",es:"Luego endereza la espalda, lleva los hombros atrás, abre el pecho.",en:"Then straighten your back, draw shoulders back, open your chest."},{ro:"Respiră adânc de câteva ori în această poziție.",es:"Respira hondo varias veces en esta postura.",en:"Take a few deep breaths in this posture."}]}
+    ];
   let calmMode="breath"; let calmDir="calm"; let scanMode="tone";
   function calmById(id){ return BREATH.concat(SOMATIC, ENERGY).find(p=>p.id===id); }
   function calmLogKey(d){ return "calmlog:"+keyFor(d); }
@@ -5104,12 +5320,14 @@ Objective description, "just the facts".
     light:'<circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/>',
     shake:'<path d="M12 20V8.5"/><path d="M8 12l4-4 4 4"/><path d="M5 20h14"/>',
     ebreath:'<path d="M4 15c3-3 6-3 9 0s4 2.5 7 0"/><path d="M12 12V4M9 7l3-3 3 3"/>',
-    bodyscan:'<circle cx="12" cy="5" r="2.2"/><path d="M12 7.2v9M8 11h8M9 20l3-3 3 3"/>'
+    bodyscan:'<circle cx="12" cy="5" r="2.2"/><path d="M12 7.2v9M8 11h8M9 20l3-3 3 3"/>',
+    pmr:'<circle cx="12" cy="4.5" r="2"/><path d="M12 6.5v7"/><path d="M12 8.5l-5 2M12 8.5l5 2"/><path d="M12 13.5l-3 6M12 13.5l3 6"/>'
   };
   function calmIcon(id, color){
     const d = CALM_ICONS[id] || '<circle cx="12" cy="12" r="7"/>';
     return '<svg viewBox="0 0 24 24" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+d+'</svg>';
   }
+  const PCFAM={warm:"var(--act-accent)",sea:"var(--sea)",lav:"var(--lavender)",olive:"#7c8c6a"};
   function renderCalm(){
     $("#calmDir").querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-d")===calmDir));
     const energy = calmDir==="energy";
@@ -5123,6 +5341,23 @@ Objective description, "just the facts".
     $("#calmMode").querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-m")===calmMode));
     const list = energy? ENERGY : (calmMode==="breath"? BREATH : SOMATIC);
     const g=$("#calmGrid"); g.innerHTML="";
+    // v171 Felia 3: card featured „Gaseste-ti ritmul" la inceputul listei Respiratie
+    if(!energy && calmMode==="breath"){
+      const fc=document.createElement("div");
+      fc.className="calmcard finder-card";
+      const mine = resonancePace ? ('<span class="cc-mine">'+esc(t("finder_your_pace").replace("{p}", finderPaceLbl(resonancePace)))+'</span>') : esc(t("finder_card_dur"));
+      fc.innerHTML =
+        '<div class="cc-top">'+
+          '<span class="cc-ico" style="background:color-mix(in srgb, var(--gold-gilt) 18%, var(--surface))">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-6 4 12 2-8 2 4h5"/></svg>'+
+          '</span>'+
+          '<span class="cc-title">'+esc(t("finder_title"))+'</span>'+
+        '</div>'+
+        '<div class="cc-desc">'+esc(t("finder_card_desc"))+'</div>'+
+        '<div class="cc-dur">'+mine+'</div>';
+      fc.addEventListener("click", openFinder);
+      g.appendChild(fc);
+    }
     list.forEach(p=>{
       const c=document.createElement("div"); c.className="calmcard"; c.style.borderLeftColor=p.color;
       const top=document.createElement("div"); top.className="cc-top";
@@ -5132,25 +5367,95 @@ Objective description, "just the facts".
       const tt=document.createElement("span"); tt.className="cc-title"; tt.textContent=LL(p.title);
       top.appendChild(em); top.appendChild(tt);
       const d=document.createElement("div"); d.className="cc-desc"; d.textContent=LL(p.desc);
+      const foot=document.createElement("div"); foot.className="cc-foot";
+      if(p.purpose){
+        const pu=document.createElement("span"); pu.className="purpose";
+        pu.style.setProperty("--pc", PCFAM[p.ptype]||PCFAM.warm);
+        pu.textContent=LL(p.purpose);
+        foot.appendChild(pu);
+      }
       const du=document.createElement("div"); du.className="cc-dur";
-      du.textContent = p.cycles? (p.cycles+" "+t("cycles")) : (p.dur? ("≈ "+Math.round(p.dur/60*10)/10+" "+t("ph_min")) : t("own_rhythm"));
-      c.appendChild(top); c.appendChild(d); c.appendChild(du);
+      du.textContent = (p.tune && p.tune.dur) ? p.tune.dur.map(x=>LL(x.lbl)).join(" · ")
+        : (p.cycles? (p.cycles+" "+t("cycles"))
+        : (p.dur? ("≈ "+Math.round(p.dur/60*10)/10+" "+t("ph_min")) : t("own_rhythm")));
+      foot.appendChild(du);
+      c.appendChild(top); c.appendChild(d); c.appendChild(foot);
       c.onclick=()=>openCalm(p);
       g.appendChild(c);
     });
+    { const fn=$("#calmFootnote"); if(fn) fn.textContent=t("calm_footnote"); }
     renderCalmSummary();
   }
 
   let curPractice=null, breathStop=true, breathPhaseTimer=null, breathSecTimer=null, somaticTimer=null;
+  let breathTune={paceK:null,durK:null};
+  function paceToPattern(pc){ return [{l:IN,s:pc.ins,sc:1},{l:OUTL,s:pc.outs,sc:0.42}]; }
+  function effectivePattern(p){
+    if(!p.tune){ return {pattern:p.pattern, cycles:p.cycles}; }
+    let pat=p.pattern;
+    if(p.tune.pace){
+      const pc=p.tune.pace.find(x=>x.k===breathTune.paceK) || p.tune.pace.find(x=>x.k===p.tune.paceDefault) || p.tune.pace[0];
+      pat=paceToPattern(pc);
+    }
+    const sec=pat.reduce((a,ph)=>a+ph.s,0);
+    let cyc=p.cycles;
+    if(p.tune.dur){
+      const d=p.tune.dur.find(x=>x.k===breathTune.durK) || p.tune.dur.find(x=>x.k===p.tune.durDefault) || p.tune.dur[0];
+      cyc=Math.max(1, Math.round(d.min*60/sec));
+    }
+    return {pattern:pat, cycles:cyc};
+  }
+  function buildBreathSeg(container, opts, curK, onPick){
+    container.innerHTML="";
+    opts.forEach(o=>{
+      const b=document.createElement("button");
+      b.textContent=LL(o.lbl);
+      b.className=(o.k===curK?"sel":"");
+      b.onclick=()=>{ if(!breathStop) return; onPick(o.k);
+        container.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); };
+      container.appendChild(b);
+    });
+  }
   function openCalm(p){
     curPractice=p; stopCalm();
     $("#cpTitle").innerHTML='<span class="cp-ico">'+calmIcon(p.id, p.color)+'</span> '+LL(p.title);
     $("#cpDesc").textContent=LL(p.desc);
+    { const tg=$("#eduToggle"), pn=$("#eduPanel");
+      if(tg && pn){
+        if(p.edu){
+          tg.innerHTML=t("edu_toggle")+' <span class="edu-arw">▾</span>';
+          tg.style.display="inline-flex";
+          pn.classList.remove("open");
+          pn.innerHTML='<div class="edu-why"><b>'+t("edu_why")+'</b> '+LL(p.edu.why)+'</div>'+
+            '<div class="edu-research"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-4-2-3 2-3-2-4 2z"/><path d="M8 7h6M8 11h6"/></svg><div>'+LL(p.edu.research)+'<span class="edu-cite">'+LL(p.edu.src)+'</span></div></div>';
+        } else { tg.style.display="none"; pn.classList.remove("open"); pn.innerHTML=""; }
+      }
+    }
     const isBreath=!!p.pattern;
     $("#cpBreath").style.display=isBreath?"block":"none";
     $("#cpSomatic").style.display=isBreath?"none":"block";
     if(isBreath){ $("#breathLabel").textContent=t("ready"); $("#breathCount").textContent=""; $("#breathCycle").textContent="";
-      const cir=$("#breathCircle"); cir.style.transition="none"; cir.style.transform="scale(0.45)"; }
+      const cir=$("#breathCircle"); cir.style.transition="none"; cir.style.transform="scale(0.45)";
+      const tuneBox=$("#breathTune"), paceRow=$("#breathPaceRow"), durRow=$("#breathDurRow");
+      if(p.tune){
+        tuneBox.style.display="flex";
+        if(p.tune.pace){
+          // v171 Felia 3: ritmul gasit in „Gaseste-ti ritmul" e pre-selectat (daca e valid)
+          const savedOk = resonancePace && p.tune.pace.some(x=>x.k===resonancePace);
+          breathTune.paceK = savedOk ? resonancePace : (p.tune.paceDefault || p.tune.pace[0].k);
+          buildBreathSeg($("#breathPaceSeg"), p.tune.pace, breathTune.paceK, k=>{ breathTune.paceK=k; });
+          paceRow.style.display="flex";
+        } else { breathTune.paceK=null; paceRow.style.display="none"; }
+        if(p.tune.dur){
+          breathTune.durK = p.tune.durDefault || p.tune.dur[0].k;
+          buildBreathSeg($("#breathDurSeg"), p.tune.dur, breathTune.durK, k=>{ breathTune.durK=k; });
+          durRow.style.display="flex";
+        } else { breathTune.durK=null; durRow.style.display="none"; }
+      } else {
+        breathTune.paceK=null; breathTune.durK=null;
+        tuneBox.style.display="none";
+      }
+    }
     else { const scan=!!p.scan;
       $("#scanMode").style.display = scan? "flex" : "none";
       $("#scanStage").style.display = scan? "block" : "none";
@@ -5168,23 +5473,114 @@ Objective description, "just the facts".
   function langVoice(){ try{ const pre=({ro:"ro",es:"es",en:"en"})[lang]||"en"; const vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[]; return vs.find(v=>v.lang&&v.lang.toLowerCase().slice(0,2)===pre)||null; }catch(e){ return null; } }
   function speakCue(text){ try{ if(!("speechSynthesis" in window)) return false; const v=langVoice(); if(!v) return false; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.voice=v; u.lang=v.lang; u.rate=0.9; u.pitch=1; speechSynthesis.speak(u); return true; }catch(e){ return false; } }
   function cancelSpeak(){ try{ if("speechSynthesis" in window) speechSynthesis.cancel(); }catch(e){} }
+
+  /* ============ FINDER: „Gaseste-ti ritmul" (v171 Felia 3) ============
+     Runner propriu — NU foloseste startBreath (acela e legat de curPractice). */
+  const FINDER_PACES = [
+    {k:"5",   lbl:{ro:"5/min",  es:"5/min",  en:"5/min"},   ins:6,   outs:6,   hint:{ro:"cel mai lent", es:"el más lento", en:"the slowest"}},
+    {k:"5.5", lbl:{ro:"5,5/min",es:"5,5/min",en:"5.5/min"}, ins:5.5, outs:5.5, hint:{ro:"la mijloc",     es:"en el medio",  en:"in the middle"}},
+    {k:"6",   lbl:{ro:"6/min",  es:"6/min",  en:"6/min"},   ins:5,   outs:5,   hint:{ro:"cel mai alert",  es:"el más ágil",  en:"the most alert"}}
+  ];
+  let finderRunning=false, finderTimers=[];
+  function finderClear(){ finderTimers.forEach(clearTimeout); finderTimers.forEach(clearInterval); finderTimers=[]; }
+  function finderPaceLbl(k){ const p=FINDER_PACES.find(x=>x.k===k); return p?LL(p.lbl):k; }
+  function finderRun(pc, cycles, onDone){
+    finderRunning=true;
+    const pat=[{l:IN,s:pc.ins,sc:1},{l:OUTL,s:pc.outs,sc:0.42}];
+    const circle=$("#fCircle"), label=$("#fLabel"), count=$("#fCount");
+    let idx=0, cycle=0;
+    function phase(){
+      if(!finderRunning) return;
+      const ph=pat[idx];
+      label.textContent=LL(ph.l);
+      circle.style.transition="transform "+ph.s+"s ease-in-out";
+      requestAnimationFrame(()=>{ circle.style.transform="scale("+ph.sc+")"; });
+      let rem=Math.ceil(ph.s); count.textContent=rem;
+      const iv=setInterval(()=>{ rem--; count.textContent=rem>=1?rem:""; if(rem<=0) clearInterval(iv); },1000);
+      finderTimers.push(iv);
+      const to=setTimeout(()=>{
+        idx++;
+        if(idx>=pat.length){ idx=0; cycle++; if(cycle>=cycles){ finderRunning=false; finderClear(); count.textContent=""; if(onDone) onDone(); return; } }
+        phase();
+      }, ph.s*1000);
+      finderTimers.push(to);
+    }
+    phase();
+  }
+  function openFinder(){
+    finderRunning=false; finderClear();
+    $("#fStage").style.display="none"; $("#fCount").textContent=""; $("#fStep").textContent=""; $("#fLabel").textContent="";
+    $("#fBody").innerHTML =
+      '<div class="cp-desc" style="margin-top:4px">'+esc(t("finder_intro"))+'</div>'+
+      '<div class="tune-hint" style="margin-top:10px">'+esc(t("finder_intro_hint"))+'</div>'+
+      '<button class="cp-btn f-go" data-fgo="0">'+esc(t("finder_begin"))+'</button>';
+    $("#finder").classList.add("show");
+  }
+  function closeFinder(){ finderRunning=false; finderClear(); $("#finder").classList.remove("show"); }
+  function fRun(i){
+    const pc=FINDER_PACES[i]; if(!pc) return;
+    $("#fBody").innerHTML="";
+    $("#fStep").textContent = t("finder_step_of").replace("{n}", (i+1)) + " · " + LL(pc.lbl);
+    $("#fStage").style.display="grid";
+    const c=$("#fCircle"); c.className="breath-circle"; c.style.transition="none"; c.style.transform="scale(0.45)";
+    finderRun(pc, 3, ()=>{ fAfter(i); });
+  }
+  function fAfter(i){
+    $("#fStage").style.display="none"; $("#fCount").textContent=""; $("#fLabel").textContent="";
+    if(i<2){
+      $("#fStep").textContent = t("finder_step_of").replace("{n}", (i+1)) + " · " + t("finder_done_word");
+      $("#fBody").innerHTML =
+        '<div class="cp-desc">'+esc(t("finder_between"))+'</div>'+
+        '<button class="cp-btn f-go" data-fgo="'+(i+1)+'">'+esc(t("finder_next"))+' →</button>';
+    } else { fChoose(); }
+  }
+  function fChoose(){
+    finderRunning=false; finderClear();
+    $("#fStage").style.display="none"; $("#fCount").textContent=""; $("#fLabel").textContent="";
+    $("#fStep").textContent = t("finder_last_q");
+    let html='<div class="cp-desc" style="margin-bottom:6px">'+esc(t("finder_which"))+'</div><div class="f-choices">';
+    FINDER_PACES.forEach(p=>{ html+='<button class="f-choice" data-fpick="'+p.k+'">'+esc(LL(p.lbl))+'<small>'+esc(LL(p.hint))+'</small></button>'; });
+    html+='</div>';
+    $("#fBody").innerHTML=html;
+  }
+  function fSave(k){
+    resonancePace=k; saveSettings();
+    try{ chime(); }catch(e){}
+    $("#fStage").style.display="none"; $("#fCount").textContent=""; $("#fLabel").textContent=""; $("#fStep").textContent="";
+    $("#fBody").innerHTML =
+      '<div class="f-result">'+esc(finderPaceLbl(k))+'</div>'+
+      '<div class="cp-desc">'+esc(t("finder_result_desc"))+'</div>'+
+      '<div class="f-final-actions">'+
+        '<button class="cp-btn f-breathe">'+esc(t("finder_breathe_now"))+'</button>'+
+        '<button class="cp-btn ghost f-done">'+esc(t("finder_finish"))+'</button>'+
+      '</div>';
+    if(curView==="calm" && calmDir!=="energy" && calmMode==="breath"){ renderCalm(); }
+  }
+  $("#fBody").addEventListener("click", (e)=>{
+    const go=e.target.closest("[data-fgo]"); if(go){ fRun(parseInt(go.getAttribute("data-fgo"),10)); return; }
+    const pk=e.target.closest("[data-fpick]"); if(pk){ fSave(pk.getAttribute("data-fpick")); return; }
+    if(e.target.closest(".f-breathe")){ closeFinder(); const ex=BREATH.find(x=>x.id==="coh"); if(ex) openCalm(ex); return; }
+    if(e.target.closest(".f-done")){ closeFinder(); return; }
+  });
+
   function startCalm(){ if(!curPractice) return; ensureAudio(); if(curPractice.pattern) startBreath(curPractice); else startSomatic(curPractice); }
   function startBreath(p){
     stopCalm(); breathStop=false;
+    const eff=effectivePattern(p), pat=eff.pattern, cyc=eff.cycles;
     const circle=$("#breathCircle"), label=$("#breathLabel"), countEl=$("#breathCount"), cycEl=$("#breathCycle");
     let idx=0, cycle=0;
     function phase(){
       if(breathStop) return;
-      const ph=p.pattern[idx];
+      const ph=pat[idx];
       label.textContent=LL(ph.l);
       circle.style.transition="transform "+ph.s+"s ease-in-out";
       requestAnimationFrame(()=>{ circle.style.transform="scale("+ph.sc+")"; });
-      let rem=ph.s; countEl.textContent=rem;
+      let rem=Math.ceil(ph.s); countEl.textContent=rem;
       clearInterval(breathSecTimer);
       breathSecTimer=setInterval(()=>{ rem--; countEl.textContent=rem>=1?rem:""; if(rem<=0) clearInterval(breathSecTimer); },1000);
-      cycEl.textContent=t("cycle_word")+" "+(cycle+1)+(p.cycles?" / "+p.cycles:"");
+      cycEl.textContent=t("cycle_word")+" "+(cycle+1)+(cyc?" / "+cyc:"");
       breathPhaseTimer=setTimeout(()=>{ idx++;
-        if(idx>=p.pattern.length){ idx=0; cycle++; if(p.cycles && cycle>=p.cycles){ finishBreath(); return; } }
+        if(idx>=pat.length){ idx=0; cycle++; if(cyc && cycle>=cyc){ finishBreath(); return; } }
         phase();
       }, ph.s*1000);
     }
@@ -5448,6 +5844,8 @@ Objective description, "just the facts".
   $("#cpClose").onclick=closeCalm;
   $("#cpDone").onclick=()=>{ if(curPractice) logCalm(curPractice.id); };
   $("#calmPlayer").onclick=(e)=>{ if(e.target.id==="calmPlayer") closeCalm(); };
+  $("#finderClose").onclick=closeFinder;
+  $("#finder").onclick=(e)=>{ if(e.target.id==="finder") closeFinder(); };
 
   // language switcher
   function renderLangBar(){ const lb=$("#langBar"); if(lb) lb.querySelectorAll("button").forEach(b=>b.classList.toggle("sel", b.getAttribute("data-l")===lang)); }

@@ -26,7 +26,7 @@ test.describe('emotion routing + body scan', () => {
     await gotoApp(page);
     // open Respiro and the Somatic sub-segment
     await page.getByRole('button', { name: 'Respiro', exact: true }).click();
-    await page.getByRole('button', { name: 'Somatic / vagus nerve', exact: true }).click();
+    await page.getByRole('button', { name: 'Body', exact: true }).click();
 
     // open the Body scan exercise
     await page.locator('#calmGrid .calmcard', { hasText: 'Body scan' }).click();

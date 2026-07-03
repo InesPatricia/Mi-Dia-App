@@ -1,8 +1,10 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v168.html`** (promoted to `index.html`, sw CACHE `mi-dia-v168`, live on Cloudflare)
-> Latest arc: **Faza 3 profund + coerență cap-coadă (v157→v168)** — un singur limbaj de tokeni: token de acțiune (`--act` + `--brand`→wine în light), scară de radius pentru controale (`--r-sm`), **`.btn--primary` unic** (wine light / gilt dark uniform, înlocuiește 10+ variante), **`.card` canonic** + carduri pe ierarhia `--r-md`/`--r-lg`/`--r-xl`, fix leak-uri dark (TODAY/toggle/modal-intenție/cell.today → gilt), fix `.hero` radius (tokenul `--radius-lg` era nedefinit → 28px) + eliminat tokenul legacy `--radius`, **fix DEFINITIV drop-cap tăiat pe Home** (v168: cauza reală = `background-clip:text` taie glifa la marginea cutiei, mecanism fragil dependent de font/device — fix-urile de padding tot reveneau; fix robust = culoare gilt SOLIDĂ fără clip, `.phrase-dc` + `.onb-dc`). Audit multi-agent (3 agenți QA) → felii de reparații + sync `cycle.js`/`ritual.js`/`onboard.js`. e2e 85/85. Rămâne din plan: **navigația tip iOS** (mockup A/B, așteaptă decizia lui Ines) + device-pass Android (Ines).
+> Last updated: July 2026 · Current latest build: **`mi-dia-v172.html`** (promoted to `index.html`, sw CACHE `mi-dia-v172`, live on Cloudflare)
+> Latest arc: **Respiro breathwork/educatie (v169→v172)** — upgrade Respiro fundamentat pe 2 research-uri verificate (breathwork + terapie somatica, incl. deep-research multi-agent): **etichete de scop** pe carduri (Varianta C, familii de culori) + **note „De ce merita?"** pozitive (Varianta B, ascunse in player, onestitate prin retinere, cu sursa) + segment redenumit **„Corp"** (scos „nerv vag" din TOATA aplicatia, incl. `sc_breath`; teoria polivagala e contestata 2025) + **rezonanta reglabila** (Ritm 5/5,5/6/min + Durata 5/10/15, doza ≥5 min) + **suspin dual-mode** (Acum/5min) + **hooming ghidat** (din card static → player breath cu pattern) + **PMR** (relaxare musculara progresiva — tehnica noua de corp, cele mai bune dovezi, meta-analiza 31 RCT, tip scan) + **finder „Gaseste-ti ritmul"** (testeaza 3 ritmuri → `settings.resonancePace`, in backup, preselectat in rezonanta) + poarta de siguranta energizare. Construit prin `/revamp` (4 agenti propun, TL integreaza), o felie per vNN, e2e 85/85 la fiecare. Ramane din plan (v157→v168): **navigatia tip iOS** (mockup A/B, asteapta decizia lui Ines) + device-pass Android (Ines).
+>
+> Prev arc: **Faza 3 profund + coerență cap-coadă (v157→v168)** — un singur limbaj de tokeni: token de acțiune (`--act` + `--brand`→wine în light), scară de radius pentru controale (`--r-sm`), **`.btn--primary` unic** (wine light / gilt dark uniform, înlocuiește 10+ variante), **`.card` canonic** + carduri pe ierarhia `--r-md`/`--r-lg`/`--r-xl`, fix leak-uri dark (TODAY/toggle/modal-intenție/cell.today → gilt), fix `.hero` radius (tokenul `--radius-lg` era nedefinit → 28px) + eliminat tokenul legacy `--radius`, **fix DEFINITIV drop-cap tăiat pe Home** (v168: cauza reală = `background-clip:text` taie glifa la marginea cutiei, mecanism fragil dependent de font/device — fix-urile de padding tot reveneau; fix robust = culoare gilt SOLIDĂ fără clip, `.phrase-dc` + `.onb-dc`). Audit multi-agent (3 agenți QA) → felii de reparații + sync `cycle.js`/`ritual.js`/`onboard.js`. e2e 85/85. Rămâne din plan: **navigația tip iOS** (mockup A/B, așteaptă decizia lui Ines) + device-pass Android (Ines).
 
 ## Language
 Always respond in **Romanian, but WITHOUT diacritics** (write `a i s t` instead of
@@ -35,7 +37,7 @@ Personal use for now (localStorage only). Future: public/subscription version.
 > above is now built and live: `ritual.js` (Home section + streak + creation sheet + never-miss-twice +
 > identity card + seed + Progress backfill; check marks TODAY) + `onboard.js` (6-step guided carousel, the
 > "Floarea" step = a poem with a candle-glow seed). e2e **85** (83 functional + 2 `@visual`). Current build
-> **`mi-dia-v168.html`** = `index.html`, `sw.js` CACHE `mi-dia-v168`. See the "Changelog (v145→v155)" +
+> **`mi-dia-v172.html`** = `index.html`, `sw.js` CACHE `mi-dia-v172`. See the "Changelog (v145→v155)" +
 > `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
 > **What's still open (for the next agent) — updated after the v156 Coerență arc:**
@@ -583,7 +585,8 @@ duplicated Acasă). Now there is ONE primary navigation:
   (horizontal bars in the areas' functional colors); "Balance" (single proportion bar + "Most time in
   <area> (X%)"); "Mood ↔ productivity" correlation panel (journal mood ↔ slots done). Removed: the goals
   panel, the 4 old cards, the 28-day chart, the category/tag switch.
-- **Respiro tab (renamed from "Calm" in v101 — petal label + hero title now "Respiro", RO/ES/EN):** 5 guided breathing patterns + 7 somatic/vagus exercises, medical disclaimer. Hosts BOTH calming and energizing content via the Calmează-mă/Trezește-mă toggle (energizer arc v90–v97).
+- **Respiro tab (renamed from "Calm" in v101 — petal label + hero title now "Respiro", RO/ES/EN):** 5 guided breathing patterns + 8 body exercises, medical disclaimer. Hosts BOTH calming and energizing content via the Calmează-mă/Trezește-mă toggle (energizer arc v90–v97).
+  **Breathwork/education arc (v169→v172):** each exercise card shows a **purpose tag** (Varianta C — Calmare rapida / Echilibru / Inainte de somn / Liniste blanda / etc., colored by family via `PCFAM`), and the player has a **„De ce merita?"** collapsible note (Varianta B — a positive „De ce" + a research line + a short source; honest by restraint, NO overclaiming). The somatic sub-segment is now **„Corp"** (the phrase „nerv vag"/vagus was removed app-wide — polyvagal theory is contested 2025; we describe what you feel, not a „reset"). **Adjustable players** via an optional `tune` field on breath practices: **Respiratie de rezonanta** (`coh`, ex-„coerenta") has Ritm (5/5,5/6 breaths-min) + Durata (5/10/15 min, default 5) selectors (`effectivePattern`/`buildBreathSeg`); **Suspinul** has an Acum/5-min dual mode; **Bâzâit/hooming** was converted from a static somatic card into a **guided breath player** (inhale → hummed exhale). **PMR (Relaxare musculara progresiva)** = a new body technique with the strongest evidence (meta-analysis of 31 RCTs), scan-type (tense→release across 6 muscle groups, reuses `startScan`), leads the Corp section. **Finder „Gaseste-ti ritmul"** = a featured card in the Breathing grid that tests 3 slow paces and saves your `settings.resonancePace`, then preselects it at resonance. Energizing safety gate strengthened (sit, stop if dizzy, pregnancy/condition note).
   **Redesigned (v54, direction B):** warm LIGHT treatment (the old full dark-green `calm-mode` override
   was dropped) — soft sage/dusk wash + a gentle "spațiu de respiro" cue — and the card **emojis are now
   home-style line-icons** tinted in each exercise's functional color.
@@ -725,8 +728,9 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   (start empty by default; each `{id,name,color,key?}` where `key` maps to `PROJ_LABELS` for i18n
   display), `settings` (incl. `lang`; `name` — optional user name, max 24 chars, v68 area, feeds the
   Profil greeting; `identity` — "who you want to become", v148, the Atomic Habits vote engine; `onboarded`
-  — bool, v150, has the guided onboarding been seen). Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes
-  the old empty Inbox/Spain defaults).
+  — bool, v150, has the guided onboarding been seen; `resonancePace` — v172, ritmul ales in finder-ul Respiro
+  „Gaseste-ti ritmul" (`"5"|"5.5"|"6"|""`), preselectat la Respiratie de rezonanta, inclus in backup).
+  Migration flags: `mig_proj_v1`, `mig_proj_v2` (removes the old empty Inbox/Spain defaults).
 - `rituals` (v145→v155): array of `{ id, name, identity, cue:{type:"time"|"after", value}, twoMin, area,
   color, icon, freq:"daily", log:["YYYY-MM-DD",…], createdAt }`. `cue.type="after"` = habit stacking
   (`value` = anchor ritual id). **The streak is DERIVED from `log`, never stored** (zero desync). Checking
@@ -1087,9 +1091,12 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > tracker, D14 public/subscription version.
 >
 > **DONE since:** the Luxe Light+Dark revamp (v133→v144) AND the **Ritualuri (Atomic Habits) + Onboarding**
-> arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)** and the **Faza 3
-> profund + coerență cap-coadă arc (v157→v168)** on top. Current build **`mi-dia-v168.html`** (sw CACHE `mi-dia-v168`),
-> e2e **85/85**, prod smoke green. Ritualuri = `ritual.js` (Home section + streak + creation sheet + habit
+> arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)**, the **Faza 3
+> profund + coerență cap-coadă arc (v157→v168)**, and the **Respiro breathwork/educatie arc (v169→v172)** on top.
+> Current build **`mi-dia-v172.html`** (sw CACHE `mi-dia-v172`),
+> e2e **85/85**, prod smoke green. Respiro (v169→v172) = purpose tags + „De ce merita?" education notes + „Corp"
+> (no „nerv vag") + adjustable resonance (Ritm+Durata) + sigh dual-mode + guided hooming + PMR + finder
+> „Gaseste-ti ritmul" (`settings.resonancePace`); built via `/revamp`, one felie per vNN. Ritualuri = `ritual.js` (Home section + streak + creation sheet + habit
 > stacking + never-miss-twice + identity card + seed + Progress backfill; check marks TODAY, backfill explicit)
 > + Onboarding = `onboard.js` (6-step carousel, "Floarea" step = a poem with candle-glow). Detail in the
 > "Changelog (v145→v155)" + `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
@@ -1116,6 +1123,43 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > plan de monetizare — vezi build-plan-ul). Possible future: extend `freq` beyond "daily", idei de retenție
 > (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
 
+
+---
+
+## Changelog (v169 → v172) — Respiro breathwork/educatie (research-fundamentat, agent-assisted)
+
+Pornit de la 2 research-uri verificate (breathwork + terapie somatica) + doua rulari **deep-research
+multi-agent** (verificare adversariala a afirmatiilor cu surse primare). Concluzia care a modelat totul:
+**efectele acute ale respiratiei lente/cu expir accentuat sunt reale; „nervul vag / polivagal / detox" sunt
+contestate** (evaluarea „Why the Polyvagal Theory Is Untenable", 39 experti, 2025). Deci: descriem CE SIMTI +
+CE ITI ADUCE (beneficiu), onestitate prin **retinere** (fara promisiuni mari), nu prin demontare. Livrat prin
+`/revamp` (4 agenti-lucratori propun cod, Team-Leader integreaza), o felie per `vNN`, validare + e2e 85/85 dupa
+fiecare. Mockups sursa: `private/mockups/mi-dia-respiro-*.html`.
+
+- **v169 · Felia 1 — educatie + microcopy + „Corp".** Eticheta de **scop** pe fiecare card (Varianta C,
+  colorata pe familii prin `PCFAM` warm/sea/lav/olive) + nota **„De ce merita?"** in player (Varianta B,
+  ascunsa la un tap: „De ce" + o linie de cercetare + sursa scurta, POZITIV). Segment `seg_somatic`
+  „Somatic / nerv vag" → **„Corp"**; scos „nerv vag"/vagus din TOATA aplicatia (incl. cheia `sc_breath`).
+  `coh` redenumit „Respiratie de rezonanta". Footnote onest sub grila. 4-7-8 reincadrat (are RCT), expir
+  prelungit inmuiat. Chei i18n `edu_toggle`/`edu_why`/`calm_footnote`.
+- **v170 · Felia 2 — playere reglabile + doza.** Camp optional `tune` pe practicile breath
+  (`effectivePattern`/`buildBreathSeg`, selectoare stil `#scanMode`): **rezonanta** = Ritm (5/5,5/6 resp-min)
+  + Durata (5/10/15 min, default 5 — regula „min 5 min" din dovezi); **suspin** = mod dual Acum/5 min;
+  **hooming** convertit din card somatic static in **player breath ghidat** (inspir → expir bazait, `pattern`).
+  Poarta de siguranta pe energizare (stai comod, opreste daca ameteste, screening sarcina/afectiune).
+- **v171 · Felia 4 — PMR.** **Relaxare musculara progresiva** — tehnica NOUA de corp cu cele mai bune dovezi
+  (meta-analiza 31 RCT: scade anxietatea, imbunatateste somnul), tip „scan" (incordeaza→elibereaza 6 grupe de
+  muschi), reutilizeaza `startScan` fara logica noua; deschide sectiunea Corp.
+- **v172 · Felia 3 — finder „Gaseste-ti ritmul".** Card featured gilt in grila Respiratie → testeaza 3 ritmuri
+  lente → alegi cel mai lin → salveaza `settings.resonancePace` (in backup, re-citit la import) → preselectat
+  automat la rezonanta; overlay `#finder` propriu (runner separat), 15 chei i18n noi.
+- **Testare:** e2e **85/85** la fiecare felie. Teste actualizate la schimbari UI intentionate: label „Body"
+  (respiro + emotion-flows), „Duration" scopat la `#composer` (add-flow; app-ul are acum un al doilea label
+  „Duration" in Respiro), primul-exercitiu sare cardul featured finder (respiro). Un agent „proaspat" divergase
+  (reintrodusese „nerv vag" + forma `edu` gresita) → respins + reluat cel corect. Fix contrast dark: butoanele
+  finder foloseau `--act` (wine) → override gilt in dark.
+- **Ce NU s-a adaugat (pe dovezi/siguranta):** Wim Hof / Buteyko / scor-HRV / Havening. Optional viitor:
+  autogenic training, deep-pressure/weighted-blanket (Moderat).
 
 ---
 

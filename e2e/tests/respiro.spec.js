@@ -32,9 +32,9 @@ test.describe('respiro', () => {
 
     // capture the current first card title, then switch to the Somatic sub-segment
     const firstTitle = await page.locator('#calmGrid .cc-title').first().textContent();
-    await page.getByRole('button', { name: 'Somatic / vagus nerve', exact: true }).click();
+    await page.getByRole('button', { name: 'Body', exact: true }).click();
     // the Somatic segment is now active
-    await expect(page.getByRole('button', { name: 'Somatic / vagus nerve', exact: true })).toHaveClass(/sel/);
+    await expect(page.getByRole('button', { name: 'Body', exact: true })).toHaveClass(/sel/);
     // the list content changed
     await expect(page.locator('#calmGrid .cc-title').first()).not.toHaveText(firstTitle);
   });
@@ -44,7 +44,8 @@ test.describe('respiro', () => {
     await openRespiro(page);
 
     // opening the first exercise shows the player overlay with the breathing stage
-    await page.locator('#calmGrid .calmcard').first().click();
+    // (skip the featured "Find your rhythm" finder card which leads the Breathing grid, v172)
+    await page.locator('#calmGrid .calmcard:not(.finder-card)').first().click();
     const player = page.locator('#calmPlayer');
     await expect(player).toHaveClass(/show/);
     await expect(player.locator('#cpBreath')).toBeVisible(); // first breathing exercise
