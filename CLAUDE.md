@@ -39,13 +39,14 @@ Personal use for now (localStorage only). Future: public/subscription version.
 > `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
 > **What's still open (for the next agent) — updated after the v156 Coerență arc:**
-> - **Navigația tip iOS (așteaptă decizia lui Ines A/B).** Un audit multi-agent (raport în
->   `private/audit-coerenta-2026-07.md`) a arătat că navigația actuală (floare-meniu + bară jos + bloom +
->   centru-intenție, ~11 concepte) e sursa #1 de „făcut din bucăți". Mockup interactiv gata în
->   **`private/mockups/mi-dia-nav-tabbar-mockup.html`**: floarea → DECOR pe Home, tab-bar clasic jos vizibil
->   peste tot, fără bloom. **Varianta A** (5 taburi Azi·Jurnal·Respiro·Calendar·Tu, adăugare în conținut) =
->   recomandarea; **Varianta B** („+" central, o destinație retrogradată). **Ines nu a decis încă** — NU
->   construi până nu alege A sau B.
+> - **⭐ Arcul „Floarea vie" + Gradina + navigație tab-bar — DECIS, plan scris, NU e încă în app.** Direcția e
+>   aleasă (rezolvă „navigația = sursa #1 de făcut-din-bucăți" din auditul `private/audit-coerenta-2026-07.md`):
+>   tab-bar clasic jos (Azi·Jurnal·Respiro·Calendar·Tu); floarea = **decor viu pe Home care înflorește din
+>   PREZENȚĂ** (check-in + ritualuri; sloturi = bonus; zi de odihnă = floare plină); **centrul florii = 22%**;
+>   + **Gradina** (flori salvate/zi) + reflecție lunară identitate + monetizare (lifetime). **Foaia de parcurs
+>   completă = `private/living-flower-build-plan.md`** (feliile S1→S6). Mockup-uri în `private/mockups/`
+>   (`mi-dia-living-flower-garden-mockup.html` etc.). Memorie: `living-flower-direction.md`. Primul pas =
+>   **S1 navigație tab-bar**. (NU construi peste asta fără să citești build-plan-ul; direcția e aprobată de Ines.)
 > - **Faza 3 profund — ✅ DONE (v157→v168).** inputs/chips pe `--r-sm`; `.btn--primary` unic (wine light /
 >   gilt dark) înlocuind variantele filled; `.card` canonic + carduri pe `--r-md`/`--r-lg`/`--r-xl`; token de
 >   acțiune `--act` + `--brand`→wine în light; leak-uri dark reparate; `.hero`/`--radius` fix. (Rămâne opțional
@@ -1093,14 +1094,27 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > + Onboarding = `onboard.js` (6-step carousel, "Floarea" step = a poem with candle-glow). Detail in the
 > "Changelog (v145→v155)" + `CHANGELOG.md` + `private/ritual-implementation-plan.md`.
 >
-> **NEXT WORK →** Faza 3 profund e **livrată (v157→v168)** — un limbaj unic de tokeni (acțiune/radius/buton/
-> card) cap-coadă, ambele teme. Ce rămâne: **navigația tip iOS** (tab-bar în locul florii-meniu + bloom;
-> mockup A/B în `private/mockups/mi-dia-nav-tabbar-mockup.html`, **în așteptarea deciziei lui Ines varianta
-> A vs B** — NU construi până nu alege). Plus Ines's **real-Android device pass** (native pickers, long-press,
-> blur velvet, Ephesis gilt, chime, axe pe velvet). Opțional: sweep P3/P4 rezidual (câteva raze mici din
-> module opt-in — cosmetic). Pre-existing backlog: UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156**),
-> B6 "min" clip, D14 public/subscription. Possible future: extend `freq` beyond "daily", idei de retenție din
-> audit (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
+> **NEXT MAJOR WORK → arcul „Floarea vie" + Gradina + navigație tab-bar (APROBAT de Ines, plan detaliat scris,
+> NU e încă în app).** Direcția e decisă: navigația devine un **tab-bar clasic jos** (Azi·Jurnal·Respiro·
+> Calendar·Tu); floarea nu mai e meniu — devine **decor viu pe Home care ÎNFLOREȘTE din PREZENȚĂ** (check-in +
+> ritualuri; sloturile = petală bonus; **zi de odihnă = floare plină**), pe floarea REALĂ (petalPath 5×72°);
+> **centrul florii = 22%** (mic, doar cuvântul-intenție în inimă, eticheta+edit într-o pilulă sub floare); +
+> **Gradina** (fiecare zi o floare salvată, derulezi sezonul) + **reflecție lunară de identitate**; apoi
+> **monetizare** (lifetime 39-49€ + pay-what-fair, unlock offline, free=bucla zilnică+floarea de azi,
+> premium=teme+gradina+insight; creștere = Play wrapper + garden-card). **Foaia de parcurs completă (feliile
+> S1→S6, mecanica florii, retetă, model de date, QA):** `private/living-flower-build-plan.md`. **Mockup-uri
+> (deschide în browser):** `private/mockups/mi-dia-living-flower-garden-mockup.html` (Home prezență + Gradina),
+> `mi-dia-living-flower-real-mockup.html` (stări 0/30/50/75/100), `mi-dia-flower-center-compare.html` (22%),
+> `mi-dia-nav-tabbar-mockup.html`. Memorie: `living-flower-direction.md`. Primul pas = **S1 navigație tab-bar**.
+> Panelul (motion+botanic+brand-guardian+a11y + avatare + piață/monetizare) a stabilit regulile: inflorire
+> simetrică din bază, culoare doar din gradientul propriu, gilt=lumină, 0%=boboc demn (nu ofilit), floarea nu
+> regresează, reduced-motion static, fără procente pe floare.
+>
+> Plus Ines's **real-Android device pass** (native pickers, long-press, blur velvet, Ephesis gilt, chime, axe pe
+> velvet). Opțional: sweep P3/P4 rezidual (câteva raze mici din module opt-in — cosmetic). Pre-existing backlog:
+> UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156**), B6 "min" clip, D14 public/subscription (acum are
+> plan de monetizare — vezi build-plan-ul). Possible future: extend `freq` beyond "daily", idei de retenție
+> (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
 
 
 ---
