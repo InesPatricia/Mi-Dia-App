@@ -46,6 +46,10 @@ test.describe('garden', () => {
     // future days render as empty (dashed) cells
     expect(await grid.locator('.gcell.empty').count()).toBeGreaterThanOrEqual(0);
 
+    // S5: the monthly "noticing" reflection appears for a month with presence (never a score)
+    await expect(page.locator('#gardenReflection .refl-h')).toBeVisible();
+    await expect(page.locator('#gardenReflection .refl-line').first()).toBeVisible();
+
     // month nav changes the label
     const before = await page.locator('#gardenMonth').textContent();
     await page.locator('#gardenNext').click();
