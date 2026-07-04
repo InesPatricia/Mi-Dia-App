@@ -3,7 +3,27 @@
 > Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
 
-## v169 → v172 — Respiro breathwork/educatie (research-fundamentat, agent-assisted) (curent)
+## v173 → v184 — arcul „Floarea vie" (Living Flower) · ON STAGING (nu in prod)
+Redesign de nav + o floare care traieste din prezenta, plus Gradina si o reflectie lunara. Pe branch-ul
+`staging` (preview `staging.mi-dia-app.pages.dev`), commit-uri curate per-felie; **prod (`main`) ramane v172**.
+Fiecare felie validata (div + `node --check` + e2e + screenshot ambele teme). **e2e 85/85** (spec nou
+`garden.spec`; 14 spec-uri rescrise pt tab-bar). **Experiential S1-S5 COMPLET; S6 monetizare AMANAT.**
+- **S1 (v173/v174):** navigatie **tab-bar** (Azi·Jurnal·Respiro·Calendar·Tu); floarea → decor pur; centru 22% +
+  pilula de intentie; Progres in „Tu", Proiecte = link pe Azi; scos bloom-menu/`#addFab`.
+- **S2 (v175–v178):** motorul de inflorire `renderFlower(bloom)` (petale din baza + saturate + halou gilt;
+  reduced-motion static); reglaje + redesign floare pe dark (v178).
+- **S3 (v179/v180):** reteta din **PREZENTA** — `bloom = (checkin?0.40:0) + (rituale/due)*0.60`; **odihna +
+  check-in = floare plina**; sloturi = glow bonus; check-in 1-tap pe Home; vezi floarea inflorind la bifare.
+- **v181:** starile florii FARA „0/N" (numaratori calde; „un vot pentru {x}").
+- **v182 (Mood A):** o valoare de mood/zi; in Jurnal, cand e deja setata, pickerul e COLAPSAT ca rezumat
+  („Azi te-ai simtit: X · atinge sa schimbi"), tap → discuri; fara picker dublat.
+- **S4 (v183) — Gradina:** map `garden` (o floare salvata/zi, snapshot continuu pe prezenta, in backup); ecran
+  overlay cu grid lunar de mini-flori reale + nav luni + acces din Home.
+- **S5 (v184) — reflectie lunara:** card „Ce am observat" jos in Gradina, din date reale (prezenta + voturi +
+  odihna), ton „noticing", **fara scor/KPI**; „Fara scor. Doar tu, aratandu-te."
+- **NEfacut:** S6 monetizare (amanat), `/ship` in prod, device-pass Android. Redesign estetic floare = abandonat.
+
+## v169 → v172 — Respiro breathwork/educatie (research-fundamentat, agent-assisted)
 Upgrade Respiro pornit de la 2 research-uri verificate + 2 rulari deep-research multi-agent. Concluzia:
 efectele acute ale respiratiei lente sunt reale, „nervul vag/polivagal" e contestat (2025) → descriem CE SIMTI,
 onestitate prin retinere. Livrat prin `/revamp` (4 agenti propun, TL integreaza), o felie per `vNN`, e2e 85/85.

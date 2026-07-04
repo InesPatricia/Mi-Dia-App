@@ -1,8 +1,41 @@
 # Mi Día — Project Context for Claude (canonical filename: CLAUDE.md)
 
 > **Authoritative spec. Read this first, every session, before any work.**
-> Last updated: July 2026 · Current latest build: **`mi-dia-v172.html`** (promoted to `index.html`, sw CACHE `mi-dia-v172`, live on Cloudflare)
-> Latest arc: **Respiro breathwork/educatie (v169→v172)** — upgrade Respiro fundamentat pe 2 research-uri verificate (breathwork + terapie somatica, incl. deep-research multi-agent): **etichete de scop** pe carduri (Varianta C, familii de culori) + **note „De ce merita?"** pozitive (Varianta B, ascunse in player, onestitate prin retinere, cu sursa) + segment redenumit **„Corp"** (scos „nerv vag" din TOATA aplicatia, incl. `sc_breath`; teoria polivagala e contestata 2025) + **rezonanta reglabila** (Ritm 5/5,5/6/min + Durata 5/10/15, doza ≥5 min) + **suspin dual-mode** (Acum/5min) + **hooming ghidat** (din card static → player breath cu pattern) + **PMR** (relaxare musculara progresiva — tehnica noua de corp, cele mai bune dovezi, meta-analiza 31 RCT, tip scan) + **finder „Gaseste-ti ritmul"** (testeaza 3 ritmuri → `settings.resonancePace`, in backup, preselectat in rezonanta) + poarta de siguranta energizare. Construit prin `/revamp` (4 agenti propun, TL integreaza), o felie per vNN, e2e 85/85 la fiecare. Ramane din plan (v157→v168): **navigatia tip iOS** (mockup A/B, asteapta decizia lui Ines) + device-pass Android (Ines).
+> Last updated: July 2026 · **PROD (`main`, live on Cloudflare) = `mi-dia-v172.html`** (`index.html`, sw CACHE `mi-dia-v172`).
+> **WIP arc on branch `staging` = `mi-dia-v184.html`** (preview `staging.mi-dia-app.pages.dev`, NOT promoted to prod).
+>
+> ⭐ **CURRENT ARC — „Floarea vie" (Living Flower), v173→v184, ON STAGING (NOT in prod).** The experiential
+> part **S1–S5 is COMPLETE**; **S6 (monetization) is DEFERRED** by Ines. Built as clean per-felie commits on
+> `staging`, each validated (div-balance + `node --check` + e2e + screenshots both themes). **e2e = 85/85**
+> (added `garden.spec.js`; 14 specs rewritten for the tab-bar; `respiro.spec.js`+`emotion-flows.spec.js`
+> untouched). Full detail: **"Changelog (v173 → v184)"** below + memory `living-flower-build-progress` +
+> decisions `private/design-decisions.md` (D-01…D-12) + plan `private/living-flower-build-plan.md`.
+> - **S1 (v173/v174)** — navigation → **tab-bar** (Azi·Jurnal·Respiro·Calendar·Tu); flower becomes DECOR
+>   (`pointer-events:none`); centre = 22% (intention WORD only); intention edited only from the pill below;
+>   Progres lives in „Tu" segment; Proiecte = a link on Azi; bloom-menu/`#addFab` removed.
+> - **S2 (v175–v178)** — bloom ENGINE: `renderFlower(bloom 0..1)` (petals scale from base + saturate/brightness
+>   + gilt glow; reduced-motion static; anim only in-session). Tuning v176/v177; dark-velvet flower redesign v178.
+> - **S3 (v179/v180)** — bloom recipe from **PRESENCE, not performance**: `bloom = clamp01((checkin?0.40:0) +
+>   (ritualsDone/due)*0.60)`; **rest day + a check-in = full bloom**; slots = glow bonus only; identity toast at
+>   100%; low activation threshold. Home 1-tap **check-in** (reuses the journal mood); „see the flower bloom on
+>   a check" (`revealFlower`/`bloomVisibly`).
+> - **v181** — states **without zero** (no „0/N" anywhere; warm counts; „a vote for {x}").
+> - **v182** — **Mood A**: check-in mood = ONE value, TWO depths. On the Journal, when the day's mood is already
+>   set, the picker opens COLLAPSED as a summary pill („Today you felt: X · tap to change", `#jMoodSet`); tap
+>   reveals the discs (`_moodEditing`); a fresh day shows the picker. No duplicate mood picker.
+> - **S4 (v183)** — **the Garden**: a `garden` localStorage map (`YYYY-MM-DD → {bloom, intention?, rest, mood?}`),
+>   snapshotted continuously in `paintFlower` when there's presence (check-in/ritual/rest), else cleared — past
+>   days freeze (no midnight cron). Screen „Your garden" = an OVERLAY (`#gardenOverlay`, NOT a 6th tab) opened
+>   from `#gardenLink` on Azi; a 6-col month grid of real mini-flowers (`buildMiniFlower`, shared petalPath);
+>   month nav; „N days bloomed in <month>"; today=gilt ring, future=dashed. In backup.
+> - **S5 (v184)** — **monthly identity reflection**: a „What I noticed" card at the BOTTOM of the Garden overlay
+>   for the viewed month (`renderMonthReflection`), computed from real data (presence days + identity votes from
+>   `rituals.log` + full blooms + rest days), first-person „noticing" tone, **never a score/percent/KPI** —
+>   closes with „No score. Just you, showing up."
+> - **NOT done:** S6 monetization (deferred — needs pricing + an external payment page + offline license) ·
+>   `/ship` to prod · Ines's real-Android device pass.
+>
+> Prev arc: **Respiro breathwork/educatie (v169→v172)** — upgrade Respiro fundamentat pe 2 research-uri verificate (breathwork + terapie somatica, incl. deep-research multi-agent): **etichete de scop** pe carduri (Varianta C, familii de culori) + **note „De ce merita?"** pozitive (Varianta B, ascunse in player, onestitate prin retinere, cu sursa) + segment redenumit **„Corp"** (scos „nerv vag" din TOATA aplicatia, incl. `sc_breath`; teoria polivagala e contestata 2025) + **rezonanta reglabila** (Ritm 5/5,5/6/min + Durata 5/10/15, doza ≥5 min) + **suspin dual-mode** (Acum/5min) + **hooming ghidat** (din card static → player breath cu pattern) + **PMR** (relaxare musculara progresiva — tehnica noua de corp, cele mai bune dovezi, meta-analiza 31 RCT, tip scan) + **finder „Gaseste-ti ritmul"** (testeaza 3 ritmuri → `settings.resonancePace`, in backup, preselectat in rezonanta) + poarta de siguranta energizare. Construit prin `/revamp` (4 agenti propun, TL integreaza), o felie per vNN, e2e 85/85 la fiecare. Ramane din plan (v157→v168): **navigatia tip iOS** (mockup A/B, asteapta decizia lui Ines) + device-pass Android (Ines).
 >
 > Prev arc: **Faza 3 profund + coerență cap-coadă (v157→v168)** — un singur limbaj de tokeni: token de acțiune (`--act` + `--brand`→wine în light), scară de radius pentru controale (`--r-sm`), **`.btn--primary` unic** (wine light / gilt dark uniform, înlocuiește 10+ variante), **`.card` canonic** + carduri pe ierarhia `--r-md`/`--r-lg`/`--r-xl`, fix leak-uri dark (TODAY/toggle/modal-intenție/cell.today → gilt), fix `.hero` radius (tokenul `--radius-lg` era nedefinit → 28px) + eliminat tokenul legacy `--radius`, **fix DEFINITIV drop-cap tăiat pe Home** (v168: cauza reală = `background-clip:text` taie glifa la marginea cutiei, mecanism fragil dependent de font/device — fix-urile de padding tot reveneau; fix robust = culoare gilt SOLIDĂ fără clip, `.phrase-dc` + `.onb-dc`). Audit multi-agent (3 agenți QA) → felii de reparații + sync `cycle.js`/`ritual.js`/`onboard.js`. e2e 85/85. Rămâne din plan: **navigația tip iOS** (mockup A/B, așteaptă decizia lui Ines) + device-pass Android (Ines).
 
@@ -769,6 +802,13 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   Migrates old single `start` → list, and old string-list (`v105–v107`) → objects. Cycle length is computed
   from start-to-start intervals (`avgLength`); bleed duration averaged separately (`avgBleed`, also drives the
   menstrual-phase threshold). Included in backup.
+- `garden` (v183, S4 — the Living Flower arc, ON STAGING): a map `YYYY-MM-DD → { bloom:0..1, intention?:string,
+  rest:bool, mood?:1..5 }` — a saved flower per day. Written by `saveGardenToday()` on every `paintFlower`, but
+  ONLY for a day with presence (a check-in / a ritual done / a rest day); otherwise the key is removed. The
+  continuous write IS the snapshot (past days freeze — no midnight cron). Included in backup export/import.
+  Rendered by the Garden overlay (`#gardenOverlay`) via `buildMiniFlower`; the monthly reflection (v184, S5)
+  reads it + `rituals.log` + `settings.identity`.
+- `rest:YYYY-MM-DD` (v179, S3) — a per-day rest-day flag (`"1"` / `""`); with a check-in it yields a full bloom.
 - `lastBackup` (ISO date) + `persistDismiss` (ISO date) — used by the Persistence module (v102).
 
 ---
@@ -1149,6 +1189,55 @@ habits, extended-exhale already existed (`ext`), so it was not duplicated.
 > plan de monetizare — vezi build-plan-ul). Possible future: extend `freq` beyond "daily", idei de retenție
 > (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
 
+
+---
+
+## Changelog (v173 → v184) — arcul „Floarea vie" (Living Flower) · ON STAGING, NOT in prod
+
+> Construit ca **commit-uri curate per-felie pe branch-ul `staging`** (preview `staging.mi-dia-app.pages.dev`),
+> fiecare validat (div-balance + `node --check` + e2e + screenshot ambele teme). **Prod (`main`) ramane v172** —
+> nimic promovat inca. Deciziile confirmate cu Ines: `private/design-decisions.md` (D-01…D-12). Foaia de parcurs:
+> `private/living-flower-build-plan.md`. **Experiential S1-S5 COMPLET; S6 monetizare AMANAT.** Verificarea de
+> device pe Android real ramane pasul lui Ines (headless ≠ device: blur velvet, tap-targets tab-bar, pickere).
+
+- **v173/v174 · S1 — navigatie tab-bar + floarea = decor.** Bara jos inlocuita cu **tab-bar** 5 taburi
+  (Azi·Jurnal·Respiro·Calendar·Tu, nume accesibile stabile ca sa nu strice `respiro.spec`/`emotion-flows`);
+  floarea iese din rol de meniu → **decor pur** (`pointer-events:none`), fara `data-v`/labels; centrul redus la
+  **22%** (doar cuvantul-intentie); **pilula de intentie** sub floare = singurul editor; **Progres** mutat in
+  segmentul „Tu" (owner-map in `setView`); **Proiecte** = link pe Azi; scos bloom-menu/`#addFab`. 14 spec-uri
+  e2e rescrise pt tab-bar.
+- **v175–v178 · S2 — motorul de inflorire.** `renderFlower(bloom 0..1)`: petale care cresc din baza
+  (`--bloom-s`) + saturate/brightness pe gradient + stroke-opacity + halou gilt (`::before`), `role=progressbar`
+  + aria, animatie DOAR in-sesiune, reduced-motion static; hranit initial de un STUB. Reglaje v176/v177 (floare
+  mai putin dominanta, boboc demn care nu se micsoreaza dramatic). **v178: redesign floare pe DARK** (inima =
+  fantana adanca `#571530→#20070E` + inel gilt; petale muchie lit `#A8365B`→baza `#3C0E1D` = dimensiune).
+- **v179/v180 · S3 — reteta reala din PREZENTA** (nu performanta): `bloom = clamp01((checkin?0.40:0) +
+  (ritualeBifate/due)*0.60)`; **zi de odihna + un check-in = floare plina**; sloturi = doar glow bonus; prag jos
+  de activare; toast de identitate la 100%. **Check-in 1-tap pe Home** (reutilizeaza mood-ul din `journal`,
+  compact/premium); **vezi floarea inflorind la bifare** (`revealFlower`/`bloomVisibly`, respecta reduced-motion).
+- **v181 · starile florii FARA zero.** Nicaieri „0/N"; header ritual = numaratoare calda; strip identitate la 0
+  voturi = invitatie („Show up with one small thing"); toast „un vot pentru {x}". (Regula #3 din bible-ul de brand.)
+- **v182 · Mood A — check-in mood = doua roluri.** O singura valoare/zi. In **Jurnal**, cand starea e deja
+  setata (din check-in-ul de pe Azi), pickerul se deschide **COLAPSAT** ca pilula-rezumat („Azi te-ai simtit:
+  <stare> · atinge sa schimbi", `#jMoodSet`); tap → discurile se dezvaluie (`_moodEditing`); zi fara stare =
+  picker direct; colaps DOAR la deschidere (dupa un pick activ raman discurile). Roata emotiilor/scris/4F =
+  adancimea, neatinse. Chei `jmood_felt`/`jmood_change`. `journal.spec` autosave actualizat.
+- **v183 · S4 — Gradina.** Model `garden` = map `YYYY-MM-DD → {bloom, intention?, rest, mood?}`; **snapshot
+  continuu** in `paintFlower` DOAR cand exista prezenta (check-in/ritual/odihna), altfel sterge intrarea →
+  zilele trecute ingheata (fara cron de miezul noptii, corect pt PWA). In **backup** (export+import) + `loadGarden`
+  la boot. Ecran „Gradina ta" = **overlay** `#gardenOverlay` (NU al 6-lea tab) deschis din `#gardenLink` pe Azi;
+  grid 6-col de **mini-flori reale** (`buildMiniFlower(size,bloom)`, petalPath partajat, culori pe tema din
+  contextul `.flower`); nav pe luni; „N zile inflorite in <luna>"; azi=inel gilt, viitor=dashed, trecut fara
+  prezenta=celula linistita. Spec nou `garden.spec.js`.
+- **v184 · S5 — reflectia lunara de identitate.** Card **„Ce am observat"** JOS in overlay-ul Gradinii, pt luna
+  vizualizata (`renderMonthReflection`): 2-4 randuri „noticing" persoana intai din DATE REALE — prezenta (zile
+  aratate) + voturi identitate (din `rituals.log` pe luna + `settings.identity`) + flori depline + zile de
+  odihna (recunoscute) → inchidere **„Fara scor. Doar tu, aratandu-te."** DOAR numaratori de aratat, ZERO
+  KPI/procent/streak; luna goala = invitatie blanda. Chei i18n `refl_*`. `garden.spec` verifica si reflectia.
+- **Ce NU s-a facut (deliberat):** **S6 monetizare** (gating premium + cod de licenta offline + paywall bland —
+  AMANAT de Ines, cere decizii de pret + pagina externa de plata); **`/ship` in prod** (index.html + bump CACHE
+  + push `main`); **device-pass Android**. Redesign estetic al florii = ABANDONAT (D-10) — floarea ramane
+  geometrica wine actuala.
 
 ---
 
