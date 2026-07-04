@@ -8,7 +8,7 @@ const openCalendar = async (page) => {
   await expect(page.locator('body')).toHaveAttribute('data-view', 'cal');
 };
 const openSettings = async (page) => {
-  await page.getByRole('button', { name: 'Profile', exact: true }).click();
+  await page.getByRole('button', { name: 'You', exact: true }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
 };
 
@@ -36,7 +36,7 @@ test.describe('cycle (opt-in)', () => {
     await expect(sw).toBeChecked();
 
     // back to the Calendar -> the Rhythm lens now exists; selecting it reveals access
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await page.getByRole('button', { name: 'Today', exact: true }).click();
     await openCalendar(page);
 
     // the Rhythm lens now exists; selecting it reveals the "Ritmul meu" access

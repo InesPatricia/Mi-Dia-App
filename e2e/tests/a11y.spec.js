@@ -16,14 +16,14 @@ const RULES = [
 const scan = (page) => new AxeBuilder({ page }).withRules(RULES).analyze();
 const fmt = (vs) => vs.map((v) => `${v.id} (${v.nodes.length}): ${v.help}`).join('\n');
 
-// views reachable from the flower / bottom bar
+// views reachable from the bottom tab bar (Progres lives under the "You" tab segment)
 const VIEWS = [
   { name: 'Day', open: async (p) => {} },
   { name: 'Journal', open: async (p) => p.getByRole('button', { name: 'Journal', exact: true }).click() },
   { name: 'Calendar', open: async (p) => p.getByRole('button', { name: 'Calendar', exact: true }).click() },
-  { name: 'Progress', open: async (p) => p.getByRole('button', { name: 'Progress', exact: true }).click() },
+  { name: 'Progress', open: async (p) => { await p.getByRole('button', { name: 'You', exact: true }).click(); await p.getByRole('button', { name: 'Progress', exact: true }).click(); } },
   { name: 'Respiro', open: async (p) => p.getByRole('button', { name: 'Respiro', exact: true }).click() },
-  { name: 'Profile', open: async (p) => p.getByRole('button', { name: 'Profile', exact: true }).click() },
+  { name: 'Profile', open: async (p) => p.getByRole('button', { name: 'You', exact: true }).click() },
 ];
 
 test.describe('accessibility (axe, curated rules)', () => {

@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { gotoApp, seedStorage, dayKey } = require('./helpers');
 
 async function openProfile(page) {
-  await page.getByRole('button', { name: 'Profile', exact: true }).click();
+  await page.getByRole('button', { name: 'You', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-view', 'profil');
 }
 // the segment shares the name "Profile" with the bottom bar -> scope to #profMode

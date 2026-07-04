@@ -58,7 +58,7 @@ test.describe('onboarding', () => {
     const onb = page.locator('#onbOverlay');
     await expect(onb).toHaveCount(0);
     // Profile -> Settings -> "Revisit what you can do"
-    await page.locator('.bnav[data-v="profil"]').click();
+    await page.locator('.tabbar .tab[data-v="profil"]').click();
     await page.locator('#profMode button[data-m="setari"]').click();
     await page.locator('#onbReplayBtn').click();
     await expect(page.locator('#onbOverlay')).toHaveClass(/show/);

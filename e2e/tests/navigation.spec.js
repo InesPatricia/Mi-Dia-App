@@ -1,85 +1,63 @@
-// Navigation tests: the flower petals, bottom bar, hero back, bloom menu and
-// intention modal all route to the right view / state.
+// Navigation tests: the iOS-style bottom TAB BAR (S1 "living flower" arc) routes every
+// view; the flower is now decor (no longer a menu). Progres lives under the "You" tab
+// (a Profil/Progres/Setari segment); Proiecte is reached from a "My projects" link on Home.
 //
-// Locator strategy: lead with user-facing locators. Nav controls now carry i18n
-// aria-labels (default UI language = EN), modals expose role="dialog" — so we use
-// getByRole by accessible name. View/menu STATE has no semantic locator, so it is
-// asserted on attributes (data-view, aria-expanded). The bloom scrim is a structural
-// overlay with no accessible name, so it is reached by id (#bloomScrim).
+// Locator strategy: lead with user-facing locators. Tabs carry i18n aria-labels
+// (default UI language = EN) so we use getByRole by accessible name. View STATE has no
+// semantic locator, so it is asserted on the body[data-view] attribute.
 const { test, expect } = require('@playwright/test');
 const { gotoApp } = require('./helpers');
 
-// Accessible name (EN) of each petal -> the view id suffix it activates (#view-<v>).
-const PETALS = [
+// Accessible name (EN) of each bottom tab -> the view id it activates (#view-<v>).
+const TABS = [
   { name: 'Journal', v: 'journal' },
   { name: 'Respiro', v: 'calm' },
   { name: 'Calendar', v: 'cal' },
-  { name: 'Progress', v: 'stats' },
-  { name: 'Projects', v: 'proj' },
+  { name: 'You', v: 'profil' },
+  { name: 'Today', v: 'day' },
 ];
 
 test.describe('navigation', () => {
-  test('each flower petal switches to its view', async ({ page }) => {
+  test('the bottom tab bar switches to each view', async ({ page }) => {
     await gotoApp(page);
-    // The flower lives inside #view-day, so it is only visible on the Day view —
-    // return Home (bottom bar) between petals to reach the next one.
-    for (const { name, v } of PETALS) {
-      // Tapping a petal should switch to its view
+    for (const { name, v } of TABS) {
       await page.getByRole('button', { name, exact: true }).click();
       await expect(page.locator('body')).toHaveAttribute('data-view', v);
-      // Tapping Home should return to the Day view
-      await page.getByRole('button', { name: 'Home', exact: true }).click();
-      await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
     }
   });
 
-  test('bottom bar routes Home and Profile', async ({ page }) => {
+  test('Progres is reached from the "You" tab segment', async ({ page }) => {
     await gotoApp(page);
-    // Tapping Profile should open the Profile view
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    await page.getByRole('button', { name: 'You', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'profil');
+    // the Profil/Progres/Setari segment: tapping Progress opens the stats view
+    await page.getByRole('button', { name: 'Progress', exact: true }).click();
+    await expect(page.locator('body')).toHaveAttribute('data-view', 'stats');
+    // the "You" tab stays active while on Progres (owner-map)
+    await expect(page.locator('.tabbar .tab[data-v="profil"]')).toHaveClass(/active/);
+  });
 
-    // Tapping Home should return to the Day view
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
-    await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
+  test('Proiecte is reached from the "My projects" link on Home', async ({ page }) => {
+    await gotoApp(page);
+    await page.getByRole('button', { name: 'My projects', exact: true }).click();
+    await expect(page.locator('body')).toHaveAttribute('data-view', 'proj');
   });
 
   test('hero back arrow returns to the Day view from a secondary view', async ({ page }) => {
     await gotoApp(page);
-    // Open a secondary view (Journal)
     await page.getByRole('button', { name: 'Journal', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'journal');
 
-    // The hero back arrow (distinct name from the bottom-bar "Home") should go back to Day
     await page.getByRole('button', { name: 'Back to home', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
   });
 
-  test('the + button toggles the bloom quick-add menu', async ({ page }) => {
-    await gotoApp(page);
-    const fab = page.getByRole('button', { name: 'Quick add', exact: true });
-    const bloom = page.getByRole('dialog', { name: /add/i });
-
-    // Should start collapsed
-    await expect(fab).toHaveAttribute('aria-expanded', 'false');
-    // Tapping + should open the bloom menu
-    await fab.click();
-    await expect(fab).toHaveAttribute('aria-expanded', 'true');
-    await expect(bloom).toBeVisible();
-
-    // Tapping the scrim should close it again
-    await page.locator('#bloomScrim').click();
-    await expect(fab).toHaveAttribute('aria-expanded', 'false');
-    await expect(bloom).toBeHidden();
-  });
-
-  test('the flower centre opens the daily-intention modal', async ({ page }) => {
+  test('the intention pill opens the daily-intention modal', async ({ page }) => {
     await gotoApp(page);
     const modal = page.getByRole('dialog', { name: /intention/i });
-    // Should start hidden
     await expect(modal).toBeHidden();
 
-    // Tapping the flower centre should open the intention dialog with its text field
+    // the flower is decor now; the pill under it (accessible name "What's your intention?") is the editor
     await page.getByRole('button', { name: /intention/i }).click();
     await expect(modal).toBeVisible();
     await expect(modal.getByRole('textbox')).toBeVisible();

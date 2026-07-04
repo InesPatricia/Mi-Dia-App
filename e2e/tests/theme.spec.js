@@ -39,8 +39,8 @@ test.describe('theme switcher', () => {
   test('the Settings "Dark theme" toggle switches the theme both ways', async ({ page }) => {
     await gotoApp(page);
 
-    // Profile -> Settings segment
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    // "You" tab -> Settings segment
+    await page.getByRole('button', { name: 'You', exact: true }).click();
     await page.locator('#profMode').getByRole('button', { name: 'Settings' }).click();
 
     const setToggle = page.locator('#themeToggleSet');

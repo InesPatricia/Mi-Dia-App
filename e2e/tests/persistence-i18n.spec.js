@@ -28,8 +28,8 @@ test.describe('persistence', () => {
   test('the backup export produces a JSON download', async ({ page }) => {
     await gotoApp(page);
 
-    // open Profile -> Settings where the backup controls live
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    // open the "You" tab -> Settings where the backup controls live
+    await page.getByRole('button', { name: 'You', exact: true }).click();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
 
     // tapping Export should trigger a file download

@@ -8,7 +8,8 @@ const { test, expect } = require('@playwright/test');
 const { gotoApp } = require('./helpers');
 
 async function openProjects(page) {
-  await page.getByRole('button', { name: 'Projects', exact: true }).click();
+  // Proiecte is reached from the "My projects" link on Home (it lost its petal in S1)
+  await page.getByRole('button', { name: 'My projects', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-view', 'proj');
 }
 // create the "Books & reading" project from the empty-state idea chip

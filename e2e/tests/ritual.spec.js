@@ -90,7 +90,8 @@ test.describe('rituals', () => {
   test('Progress shows the history block; a past calendar cell backfills a day', async ({ page }) => {
     await seedStorage(page, { rituals: [ritual({ id: 'r_h', name: 'Breathe', log: [dayKey(0)] })] });
     await gotoApp(page);
-    await page.locator('.petal[data-v="stats"]').click();
+    await page.getByRole('button', { name: 'You', exact: true }).click();
+    await page.getByRole('button', { name: 'Progress', exact: true }).click();
     await expect(page.locator('#ritStatsMount .rst-panel')).toBeVisible();
     // tap the cell 3 days ago -> it becomes done in the log
     const target = dayKey(-3);

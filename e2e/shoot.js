@@ -18,32 +18,34 @@
  */
 const { chromium } = require('playwright');
 
-// view -> how to navigate to it from the Day view
+// view -> how to navigate to it from the Day view (S1: nav is the bottom tab bar; the flower is decor).
+// Progres lives under the "You" (profil) tab segment; Proiecte is reached from a Home link.
 const NAV = {
   day:       null,                                   // default
-  journal:   { petal: 'journal' },
-  respiro:   { petal: 'calm' },                      // Respiro's internal view id is "calm"
-  calendar:  { petal: 'cal' },
-  progress:  { petal: 'stats' },
-  projects:  { petal: 'proj' },
-  profile:   { bnav: 'profil' },
-  settings:  { bnav: 'profil', segment: 'settings' },
+  journal:   { tab: 'journal' },
+  respiro:   { tab: 'calm' },                        // Respiro's internal view id is "calm"
+  calendar:  { tab: 'cal' },
+  progress:  { tab: 'profil', segment: 'progres' },  // You tab -> Progress segment
+  projects:  { projlink: true },                     // "My projects" link on Home
+  profile:   { tab: 'profil' },
+  settings:  { tab: 'profil', segment: 'setari' },
 };
 
 async function gotoView(page, view) {
   const spec = NAV[view];
   if (!spec) return; // day
-  // always return to Day first (flower petals only exist there)
-  await page.evaluate(() => { const b = document.querySelector('.bnav[data-v="day"]'); if (b) b.click(); });
+  // always return to Day first
+  await page.evaluate(() => { const b = document.querySelector('.tabbar .tab[data-v="day"]'); if (b) b.click(); });
   await page.waitForTimeout(300);
-  if (spec.petal) {
-    await page.evaluate((v) => { const el = document.querySelector('.petal[data-v="' + v + '"]'); if (el) el.click(); }, spec.petal);
-  } else if (spec.bnav) {
-    await page.evaluate((v) => { const el = document.querySelector('.bnav[data-v="' + v + '"]'); if (el) el.click(); }, spec.bnav);
+  if (spec.projlink) {
+    await page.evaluate(() => { const el = document.getElementById('projLink'); if (el) el.click(); });
+  } else if (spec.tab) {
+    await page.evaluate((v) => { const el = document.querySelector('.tabbar .tab[data-v="' + v + '"]'); if (el) el.click(); }, spec.tab);
   }
   await page.waitForTimeout(500);
-  if (spec.segment === 'settings') {
-    await page.evaluate(() => { const b = document.querySelector('#profMode button:last-child, [data-pm="settings"]'); if (b) b.click(); });
+  if (spec.segment) {
+    // profil view: Profil/Progres/Setari segment (Progres routes to the stats view)
+    await page.evaluate((m) => { const b = document.querySelector('#profMode button[data-m="' + m + '"]'); if (b) b.click(); }, spec.segment);
     await page.waitForTimeout(400);
   }
 }
@@ -53,6 +55,10 @@ async function shoot({ file, out, view = 'day', theme = 'light' }) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 412, height: 900 }, deviceScaleFactor: 2 });
   const page = await ctx.newPage();
+  // mark onboarded so the guided overlay doesn't cover Home (mirrors gotoApp in the e2e suite)
+  await page.addInitScript(() => {
+    try { const s = JSON.parse(localStorage.getItem('settings') || '{}'); if (s.onboarded !== true) { s.onboarded = true; localStorage.setItem('settings', JSON.stringify(s)); } } catch (e) {}
+  });
   await page.goto(url);
   await page.waitForFunction(() => document.body.hasAttribute('data-view')).catch(() => {});
   await page.waitForTimeout(900);

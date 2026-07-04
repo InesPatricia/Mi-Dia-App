@@ -37,7 +37,7 @@ test.describe('backup roundtrip', () => {
     await expect(page.locator('#list').getByText('Roundtrip task')).toBeVisible();
 
     // 2) export -> capture the downloaded backup file
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    await page.getByRole('button', { name: 'You', exact: true }).click();
     await page.locator('#profMode').getByRole('button', { name: 'Settings', exact: true }).click();
     const [download] = await Promise.all([
       page.waitForEvent('download'),
@@ -46,19 +46,19 @@ test.describe('backup roundtrip', () => {
     const backupPath = await download.path();
 
     // 3) delete the slot back on the Day view
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await page.getByRole('button', { name: 'Today', exact: true }).click();
     const del = block(page, 'Roundtrip task').locator('.del');
     await del.click();
     await del.click();
     await expect(page.locator('#list').getByText('Roundtrip task')).toHaveCount(0);
 
     // 4) import the backup (hidden file input) -> importData re-renders the day
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
+    await page.getByRole('button', { name: 'You', exact: true }).click();
     await page.locator('#profMode').getByRole('button', { name: 'Settings', exact: true }).click();
     await page.locator('#importFile').setInputFiles(backupPath);
 
     // 5) back to the Day view -> the slot is restored from the backup
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await page.getByRole('button', { name: 'Today', exact: true }).click();
     await expect(page.locator('#list').getByText('Roundtrip task')).toBeVisible();
   });
 });

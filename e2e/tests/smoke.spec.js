@@ -33,15 +33,12 @@ test.describe('smoke', () => {
 
   test('core navigation chrome is present', async ({ page }) => {
     await gotoApp(page);
-    // Should show all 5 flower petals (by their EN i18n aria-labels)
-    for (const name of ['Journal', 'Respiro', 'Calendar', 'Progress', 'Projects']) {
+    // Should show all 5 bottom tabs (by their EN i18n aria-labels)
+    for (const name of ['Today', 'Journal', 'Respiro', 'Calendar', 'You']) {
       await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     }
-    // Should show the bottom bar (Home + Profile)
-    await expect(page.getByRole('button', { name: 'Home', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Profile', exact: true })).toBeVisible();
-    // Should show the quick-add (+) button and the flower-centre intention button
-    await expect(page.getByRole('button', { name: 'Quick add', exact: true })).toBeVisible();
+    // Should show the flower-centre intention button + the "My projects" link on Home
     await expect(page.getByRole('button', { name: /intention/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'My projects', exact: true })).toBeVisible();
   });
 });

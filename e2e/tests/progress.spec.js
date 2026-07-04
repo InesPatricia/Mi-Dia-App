@@ -9,6 +9,8 @@ function doneBlock(id, dur, off = 0) {
 }
 
 async function openProgress(page) {
+  // Progres lives under the "You" tab (Profil/Progres/Setari segment)
+  await page.getByRole('button', { name: 'You', exact: true }).click();
   await page.getByRole('button', { name: 'Progress', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-view', 'stats');
 }

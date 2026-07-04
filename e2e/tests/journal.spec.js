@@ -61,14 +61,23 @@ test.describe('journal + mood', () => {
     await page.locator('#mood').getByRole('button', { name: 'Fair', exact: true }).click();
     await page.getByPlaceholder(PH_JOURNAL).fill('Reflection entry 123');
 
-    // navigating away flushes the debounced save; then reload from storage
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    // navigating away flushes the debounced save; then reload from storage.
+    // Scope to the tab bar: the Journal date-nav also has a "Today" button (jump-to-today).
+    await page.locator('.tabbar').getByRole('button', { name: 'Today', exact: true }).click();
     await page.reload();
     await page.waitForFunction(() => document.body.hasAttribute('data-view'));
     await openJournal(page);
 
-    // text + selected mood are restored from storage
+    // text is restored from storage
     await expect(page.getByPlaceholder(PH_JOURNAL)).toHaveValue('Reflection entry 123');
+
+    // Mood A (v182): reopening the Journal with a mood already set shows the collapsed
+    // summary ("Today you felt: Fair"), not the duplicate picker. The restored mood proves
+    // it round-tripped. Tapping the summary reveals the discs with the right one selected.
+    const summary = page.locator('#jMoodSet');
+    await expect(summary).toBeVisible();
+    await expect(page.locator('#jMoodSetWord')).toHaveText('Fair');
+    await summary.click();
     await expect(page.locator('#mood').getByRole('button', { name: 'Fair', exact: true })).toHaveClass(/sel/);
   });
 
