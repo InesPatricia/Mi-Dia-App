@@ -30,6 +30,13 @@ Unde traieste versiunea in acest proiect (descoperit, NU e un `var VERSION`):
 ## Pas 1 — Stabileste versiunea de livrat
 - In mod normal exista deja un `mi-dia-v(N+1).html` construit (cel mai nou fisier din tree).
   Confirma cu Ines ca ACELA e build-ul de livrat. Retine numarul ca `vNEW`.
+- **Promovare PARTIALA (un feature, tinand restul deoparte):** `vNEW` poate fi un `vNN` INTERMEDIAR, nu
+  neaparat cel mai nou. In aplicatia de-un-singur-fisier NU se poate `git cherry-pick` cod de feature —
+  promovarea partiala = alegi build-ul de taiere (`vNN`-ul la care feature-ul dorit e complet SI nimic
+  nedorit nu e inca prezent) si il promovezi ca `index.html`. Posibil DOAR daca munca a fost ordonata cu
+  feature-ul de tinut deoparte ULTIMUL (vezi principiul din skill-ul `/staging` + `CLAUDE.md`). Daca livrezi
+  un `vNN` intermediar, **reconciliaza e2e**: specurile care testeaza feature-uri de mai tarziu (ex.
+  `garden.spec.js`) NU trebuie sa mearga pe acel build — tine-le deoparte odata cu feature-ul lor.
 - Daca `index.html` e deja byte-identic cu `mi-dia-vNEW.html` SI `sw.js` e deja pe `vNEW`
   (validate.mjs a zis "version sync OK" la Pas 0 si `vOLD == vNEW`), promovarea e gata —
   sari peste Pas 2 si spune asta.

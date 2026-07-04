@@ -245,9 +245,24 @@ returning user keeps their saved `settings.theme`. (No open decisions remain bef
   localStorage from prod (no collisions). Commit **per-felie** on `staging` (each `mi-dia-vNN.html` is a
   clean per-slice snapshot) so a single slice can later be `git cherry-pick`-ed to `main`. `sw.js` is
   network-first, so previews show the new build even with an old `CACHE` — don't bump `CACHE` for staging
-  (that's a `/ship` step). Promotion: whole arc → `/ship`; one slice → cherry-pick via PR (`main` is
-  branch-protected). First-time only: Cloudflare → Workers & Pages → mi-dia-app → Settings → Builds &
+  (that's a `/ship` step). First-time only: Cloudflare → Workers & Pages → mi-dia-app → Settings → Builds &
   deployments → Preview deployments → "All non-production branches". Full step list = the `/staging` skill.
+- **⭐ Partial-promotion principle (single-file app — a rule every new agent must know).** Because the app
+  is ONE monolithic HTML file (`index.html` = a copy of a whole `mi-dia-vNN.html`), **`git cherry-pick` does
+  NOT isolate a feature** — cherry-picking a per-felie commit only adds a dormant `mi-dia-vNN.html` file, it
+  never changes `index.html`, so the feature doesn't go live. **Partial promotion = choosing which build
+  goes live:** you promote the `vNN` at which the wanted feature is complete AND nothing unwanted is present
+  yet, making THAT `vNN` the new `index.html` (a `/ship` targeted at an intermediate `vNN`, not the newest).
+  To KEEP partial promotion possible, **build this way:** (1) **order the work** so anything you might ship
+  earlier is complete at an earlier `vNN`, and optional/risky/**additive** features come **LAST** (e.g. the
+  „Floarea vie" arc put Garden/S4 last → the flower can promote at v182 while Garden waits at v183); (2) a
+  genuinely independent feature → its **own branch off `main`** or an **additive module** (`ritual.js`/
+  `cycle.js`/`onboard.js`/`garden` = separate file + a small mount) — the closest thing to an independently
+  promotable unit; (3) every `vNN` must be a **coherent, shippable state** (validates + e2e green, no half
+  features) or it isn't a valid cut-line; (4) when promoting an intermediate `vNN`, **reconcile e2e** — specs
+  testing later features (e.g. `garden.spec.js` for S4) must not run against that build. Cherry-pick is only
+  clean for **orthogonal** changes (a doc, a test, `sw.js`, an additive module file), never for feature code
+  inside the monolith. See the `/staging` skill for the full rationale + steps.
 - **The promoted build is `index.html`** (a copy of the latest `mi-dia-vNN.html`). `index.html` is the
   universal filename every static host serves at `/` automatically — so NO root rewrite is needed on
   any host. (A root rewrite to `mi-dia.html` fought Cloudflare's automatic `.html` clean-URL handling

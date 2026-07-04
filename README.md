@@ -90,6 +90,13 @@ npm run test:report # interactive HTML report
   browsers require to be a separate file).
 - **Deployed on Cloudflare Pages**, auto-deploying from `main` on every push; `index.html`
   is the promoted build. One-click dashboard rollback as a safety net.
+- **Isolated staging previews:** a permanent `staging` branch gets its own Cloudflare preview
+  deployment (separate subdomain → cache, service worker and `localStorage` fully isolated from
+  production), so work-in-progress is validated live before it ever reaches `main`.
+- **Partial promotion by build selection:** in a single-file app, releasing one feature while
+  holding others isn't a `git cherry-pick` of code — the served build *is* one whole file. Work is
+  therefore **ordered so optional/additive features land last** (each `mi-dia-vNN.html` is a coherent,
+  independently shippable snapshot), letting a release target an intermediate build and hold the rest.
 - **New features as self-contained modules** (e.g. [`cycle.js`](cycle.js),
   [`ritual.js`](ritual.js), [`onboard.js`](onboard.js)) following a clean 5-layer pattern
   (data / calc / i18n / view / wiring) with pure, testable calc functions — an

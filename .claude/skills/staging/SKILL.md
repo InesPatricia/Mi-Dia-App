@@ -27,8 +27,10 @@ izolata de prod. Raspunde in **romana fara diacritice**. Ruleaza din radacina re
 3. **URL-ul de preview e public** (dar nedescoperibil). Repo-ul e oricum public + `private/` e
    gitignored, deci nu se expune nimic sensibil in plus — dar nu pune date reale in ce se serveste.
 4. **Fiecare push pe `staging` reimprospateaza ACELASI URL.** Ai mereu ultima versiune acolo.
-5. **Commit-uri per-felie, nu un monolit** — asa poti promova selectiv o singura felie in prod cu
-   `git cherry-pick <commit>` pe `main` (via /ship / PR). Un commit urias nu se poate desparti.
+5. **Commit-uri per-felie, nu un monolit** — dau puncte curate de rollback si marcheaza EXACT unde intra
+   fiecare feature (linia de taiere pentru o promovare partiala). **Atentie la ce inseamna „cherry-pick"
+   aici** (vezi principiul de mai jos): intr-o aplicatie de-un-singur-fisier NU poti despica cod de feature
+   cu `git cherry-pick`.
 
 ## Pasii
 
@@ -81,7 +83,38 @@ Cloudflare -> Workers & Pages -> **mi-dia-app** -> Settings -> Builds & deployme
 **Preview deployments -> "All non-production branches"**. (Nu pot verifica setarea din CLI/MCP fara
 autentificare — e un pas manual al lui Ines daca subdomeniul nu se genereaza.)
 
+## ⭐ Principiul de constructie pentru promovare partiala (single-file app — CITESTE)
+
+Mi Día e **un singur fisier HTML**; ce se serveste in prod = `index.html`, o copie a unui `mi-dia-vNN.html`
+**intreg**. Fiecare felie/`vNN` e un snapshot COMPLET al aplicatiei, nu un petic de cod. De aici, doua
+adevaruri pe care orice agent nou trebuie sa le stie:
+
+- **`git cherry-pick` NU izoleaza un feature aici.** Un cherry-pick al unui commit de felie doar adauga
+  fisierul `mi-dia-vNN.html` (inactiv) pe branch — NU schimba `index.html`, deci nu face feature-ul live.
+  Cherry-pick e util curat DOAR pentru schimbari ortogonale (un doc, un test, `sw.js`, un fisier-modul
+  aditiv), nu pentru feature-uri care traiesc in monolitul `index.html`.
+- **Promovarea partiala = alegerea BUILD-ului.** „Duc feature-ul X in prod, tin restul" = promovezi `vNN`-ul
+  la care X e complet SI nimic nedorit nu e inca prezent → acel `vNN` devine `index.html` (un `/ship` tintit
+  pe un vNN intermediar, nu pe cel mai nou).
+
+**Regula de constructie care PASTREAZA capacitatea de promovare partiala (asa construiesti):**
+1. **Ordoneaza munca** asa incat ce ai putea vrea sa livrezi mai devreme sa fie COMPLET la un `vNN` mai
+   timpuriu, iar feature-urile **optionale / riscante / aditive sa vina ULTIMELE**. Atunci le poti tine
+   deoparte pur si simplu nepromovand dincolo de linia lor. (Ex. arcul „Floarea vie": Gradina/S4 = ultima →
+   se poate promova floarea la v182 tinand Gradina la v183.)
+2. **Un feature cu adevarat independent** → pe **branch propriu din `main`** (nu stivuit peste WIP-ul de pe
+   staging) SAU ca **modul aditiv** (`ritual.js`/`cycle.js`/`onboard.js`/`garden` — fisier separat + un mount
+   mic), cel mai apropiat de o unitate promovabila singura.
+3. **Fiecare `vNN` trebuie sa fie o stare coerenta, livrabila** (valideaza + e2e verde, fara jumatati de
+   feature) — altfel nu e o linie de taiere valida. Ordoneaza feature-urile, nu le intercala.
+4. **Reconciliaza si testele:** daca promovezi un `vNN` intermediar, specurile e2e care testeaza feature-uri
+   de mai tarziu (ex. `garden.spec.js` pt S4) NU trebuie sa mearga pe acel build — le tii deoparte odata cu
+   feature-ul lor.
+
 ## Promovare din staging in prod
-- **Tot arcul:** cand e gata, `/ship` (promoveaza `index.html`, bumpeaza `CACHE`, sync docs, push `main`).
-- **Doar o felie:** `git cherry-pick <commit-ul feliei>` pe `main` (via PR, `main` e branch-protected)
-  — de-asta commit-urile per-felie conteaza.
+- **Tot arcul:** `/ship` (promoveaza cel mai nou `vNN` → `index.html`, bumpeaza `CACHE`, sync docs, push `main`).
+- **Partial (un feature, tinand restul):** `/ship` **tintit pe `vNN`-ul de taiere** (nu pe cel mai nou) —
+  vezi Pas 1 din `/ship`. NU `git cherry-pick` de cod de feature (nu functioneaza — vezi principiul de sus).
+  Posibil DOAR daca munca a fost ordonata cu feature-ul de tinut deoparte ULTIMUL.
+- **Ortogonal (doc / test / sw.js / modul aditiv):** acela chiar se poate `git cherry-pick` pe `main` via PR
+  (`main` e branch-protected).
