@@ -8,6 +8,8 @@
 ![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
 ![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
+![Perf](https://img.shields.io/badge/perf-Lighthouse%20CI%20budgets%20%2B%20k6-F76935)
+![Security](https://img.shields.io/badge/security-CSP%20%2B%20headers%20%C2%B7%20ZAP%20baseline-6A1B9A)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
 
@@ -24,7 +26,7 @@ I'm a **QA / AI professional**, and I built this as a real, shipped product to p
 - 🧪 **Test-independence by design:** an *implementer* and a *black-box tester* meet only at a written contract (acceptance criteria + stable selector handles) — an anti-bias pattern documented in [`e2e/SPEC-TEMPLATE.md`](e2e/SPEC-TEMPLATE.md).
 - 🤖 **AI-assisted engineering:** developed with Claude Code using a spec-driven workflow ([`CLAUDE.md`](CLAUDE.md) is the living spec) — designed, reviewed and verified in tight human-in-the-loop iterations.
 - 🚀 **Performance baseline:** a post-deploy **Lighthouse CI** job asserts budgets (perf / a11y / best-practices / PWA) against the live URL — thresholds set from a *measured* baseline, each with a written rationale in [`lighthouserc.cjs`](lighthouserc.cjs) — plus a polite **k6 smoke** ([`perf/smoke.js`](perf/smoke.js), 5 VUs / 30 s) that baselines CDN/edge delivery.
-- 🔐 **Security baseline:** a weekly **passive OWASP ZAP** scan of production; findings are triaged into fixes or explicitly accepted risks — nothing is silently ignored.
+- 🔐 **Security baseline:** a weekly **passive OWASP ZAP** scan of production, with every finding triaged in [`SECURITY-NOTES.md`](SECURITY-NOTES.md) into either a shipped fix — a hardened [`_headers`](_headers) set (CSP allow-list, anti-clickjacking, HSTS, Permissions-Policy, COOP/CORP) validated on a preview deployment before production — or an explicitly accepted risk with its one-line rationale. A re-scan documents the before/after delta; nothing is silently ignored.
 
 > **Honest scope note:** the e2e suite covers logic / DOM / navigation / persistence / i18n / a11y in headless Chromium. Native-Android specifics (OS time pickers, backdrop blur, fonts, touch gestures) are validated by a manual device pass — and that limit is stated, not hidden. Knowing what your automation *doesn't* cover is part of the job. The same honesty applies to the newer layers: the k6 smoke measures **CDN/edge delivery of a static PWA** (this app has no backend — after five files arrive, everything is client-side, which the e2e suite covers), and the ZAP scan is **passive only** (response inspection, no attack payloads) — an intentional match for a zero-backend, local-storage-only app, not a substitute for a pentest of a server application.
 
