@@ -55,3 +55,26 @@ would silently break. Caught on the branch preview before production.
    (network-first SW; a new deploy must be picked up on next load, offline falls back to cache).
 5. **Informational: Suspicious Comments / Modern Web Application** — words like "TODO" in
    shipped JS; the repository is public, the source is the artifact. No information leak.
+
+---
+
+## Round 2 — 2026-07-27 (re-scan after `_headers` shipped)
+
+**Delta vs round 1 — resolved (6):** CSP Header Not Set, Missing Anti-clickjacking Header,
+Cross-Domain Misconfiguration, Strict-Transport-Security Not Set, Permissions Policy Not Set,
+COOP Missing. All four original Medium alerts about missing defenses are gone.
+
+**Now that a CSP exists, ZAP inspects its *content*** and raises two new Medium alerts —
+`CSP: script-src unsafe-inline` and `CSP: style-src unsafe-inline`. These are not new
+weaknesses: they are accepted risk **#1** above, now visible under its precise name. Expected
+and kept.
+
+**New Low:** `Cross-Origin-Resource-Policy Header Missing` → **fixed** in this round
+(`Cross-Origin-Resource-Policy: same-origin` — no other origin legitimately embeds this
+app's files). Illustrates a normal property of iterative scanning: hardening one layer
+makes the scanner look at the next one.
+
+**Steady state going forward:** remaining alerts = accepted risks #1–#5 only. Next planned
+step: encode them in a `.zap/rules.tsv` ignore list and flip the workflow's `fail_action`
+to `true`, so any *new* alert turns the scheduled scan red instead of relying on a human
+reading reports.
