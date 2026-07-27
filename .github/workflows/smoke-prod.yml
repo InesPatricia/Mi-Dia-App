@@ -8,6 +8,11 @@ name: smoke-prod
 # Informational only: it triggers post-merge on main, so it NEVER gates a PR. It is separate
 # from e2e.yml (which tests the build in CI against a local http-server before merge) and from
 # the Cloudflare deploy itself. Can also be run on demand via the Actions tab (workflow_dispatch).
+#
+# A second job (lighthouse) runs AFTER the smoke: the performance/a11y/best-practices/PWA
+# baseline against the same live URL. It lives here (not in its own workflow) because it has
+# the same trigger, the same target and the same "post-deploy net" semantics — and `needs: smoke`
+# reuses the wait-for-deploy guarantee, so Lighthouse always measures the build that just shipped.
 
 on:
   push:
@@ -49,3 +54,32 @@ jobs:
           name: smoke-prod-report
           path: e2e/playwright-report
           retention-days: 7
+
+  lighthouse:
+    name: lighthouse baseline
+    # After the smoke: (1) don't measure a build that failed basic checks, and (2) the smoke
+    # job's wait-for-deploy already proved the NEW build is live, so no stale measurements.
+    needs: smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Override the workflow-level `e2e` default: lighthouserc.cjs lives at the repo root.
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 18 }
+      # PINNED: 0.13.x = Lighthouse 11, the last major with the PWA category (removed in
+      # Lighthouse 12). Full rationale + budgets with per-threshold comments: lighthouserc.cjs.
+      - run: npm install -g @lhci/cli@0.13.x
+      # autorun = collect (3 runs, median) + assert (budgets) + upload (filesystem).
+      # Uses the Chrome preinstalled on the ubuntu-latest runner.
+      - run: lhci autorun --config=lighthouserc.cjs
+      - name: Upload Lighthouse reports
+        # Upload even when an assertion fails — that's exactly when the report matters most.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: .lighthouseci-report
+          retention-days: 14

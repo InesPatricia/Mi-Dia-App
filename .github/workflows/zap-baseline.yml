@@ -1,0 +1,39 @@
+name: zap-baseline
+
+# PASSIVE security baseline (OWASP ZAP) against the live production site.
+#
+# "Baseline" = ZAP spiders the site and passively inspects the responses (headers,
+# cookies, content). It sends NO attack payloads — safe to run against production.
+# This is our own application (we own both the code and the Cloudflare project),
+# so the scan is authorized.
+#
+# Weekly + on demand, not per-merge: passive findings on a static site change when
+# the delivery configuration changes (headers, new files), not on every app tweak.
+# Findings are triaged into: fixes (e.g. security headers via a Cloudflare Pages
+# `_headers` file) or accepted risks documented in SECURITY-NOTES.md.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC — weekly drift check, quiet hours
+  workflow_dispatch: {}
+
+# Least privilege: the report goes to a workflow artifact, not to GitHub Issues,
+# so we keep the repo-wide read-only permissions pattern.
+permissions:
+  contents: read
+
+jobs:
+  zap-baseline:
+    name: zap baseline (passive)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "https://mi-dia-app.pages.dev/"
+          # No GitHub issue creation — report as artifact only (matches least-privilege above).
+          allow_issue_writing: false
+          artifact_name: zap-baseline-report
+          # Informational scan: findings are triaged by a human into fixes or
+          # documented accepted risks; a red X here would only invite alert fatigue.
+          fail_action: false
