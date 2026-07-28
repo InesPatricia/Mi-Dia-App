@@ -1,0 +1,24 @@
+# ZAP baseline ignore-list - the tripwire allow-list.
+# Format: <pluginId><TAB>IGNORE   Lines starting with # are comments; blank lines ignored.
+# (Two columns only. A third column would be a URL regex, NOT a comment - keep notes here.)
+#
+# Each id is a DOCUMENTED ACCEPTED RISK in SECURITY-NOTES.md, confirmed present on production
+# by a fresh scan (2026-07-28). IGNORE = the scan stays silent about it. With fail_action:true
+# in zap-baseline.yml, ANY alert NOT listed here turns the run red. Known-accepted = quiet;
+# anything new = loud. To accept a NEW risk: add its id here AND a note in SECURITY-NOTES.md.
+#
+#   10055 = CSP unsafe-inline (script/style)      -> accepted risk #1 (zero-build app, no nonces)
+#   90003 = Subresource Integrity missing         -> accepted risk #2 (Google Fonts UA-variant CSS)
+#   90004 = Cross-Origin-Embedder-Policy missing  -> accepted risk #3 (no cross-origin isolation)
+#   10027 = Information Disclosure: Suspicious Comments -> accepted risk #5 (public repo)
+#   10015 = Re-examine Cache-control              -> accepted risk #4 (single-file PWA strategy)
+#   10049 = Storable but Non-Cacheable            -> accepted risk #4 (same strategy)
+#   10109 = Modern Web Application                -> informational detection, not a vulnerability
+
+10055	IGNORE
+90003	IGNORE
+90004	IGNORE
+10027	IGNORE
+10015	IGNORE
+10049	IGNORE
+10109	IGNORE
