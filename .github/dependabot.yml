@@ -1,0 +1,24 @@
+# Dependabot keeps our dependencies current so that SHA-pinning (see the workflows) doesn't
+# quietly leave us on old, possibly-vulnerable versions. It opens a PR when an update exists;
+# each PR still goes through the same e2e + preview-smoke gates before it can merge.
+version: 2
+updates:
+  # GitHub Actions used in .github/workflows/*. Dependabot understands the
+  # "uses: owner/action@<sha> # v1.2.3" convention and bumps BOTH the SHA and the comment.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # The Playwright/test toolchain in e2e/ (the only package.json in the repo).
+  - package-ecosystem: "npm"
+    directory: "/e2e"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for all minor/patch dev-dependency bumps instead of a flood of tiny PRs.
+      dev-minor:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]

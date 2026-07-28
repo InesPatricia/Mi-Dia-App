@@ -75,6 +75,10 @@ jobs:
       # autorun = collect (3 runs, median) + assert (budgets) + upload (filesystem).
       # Uses the Chrome preinstalled on the ubuntu-latest runner.
       - run: lhci autorun --config=lighthouserc.cjs
+      - name: Write Lighthouse scores to the run summary
+        # Runs even if the budgets failed above, so the scores are visible exactly when it matters.
+        if: ${{ !cancelled() }}
+        run: node scripts/lh-summary.mjs
       - name: Upload Lighthouse reports
         # Upload even when an assertion fails — that's exactly when the report matters most.
         if: ${{ !cancelled() }}

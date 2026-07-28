@@ -15,6 +15,13 @@ on:
 permissions:
   contents: read
 
+# If a newer commit lands on the same ref (e.g. a second push to a PR), cancel the now-stale
+# in-progress run instead of paying for two full suites. Grouped per ref so different PRs and
+# the main branch never cancel each other.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     working-directory: e2e
@@ -47,7 +54,25 @@ jobs:
           cache: npm
           cache-dependency-path: e2e/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Cache the downloaded browser (~150 MB) keyed by the exact Playwright version, so we only
+      # re-download it when that version changes. Read the version AFTER npm ci so it's resolvable.
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.pw.outputs.version }}
+      # Cache MISS: full install (browser binary + OS libs). Cache HIT: the binary is restored,
+      # so we only need the OS libraries (apt), which aren't stored in the cached folder.
+      - name: Install Playwright (full, on cache miss)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install OS deps only (on cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Run shard ${{ matrix.shard }} of 2
         # skip @visual: snapshot baselines are OS-specific (generated on the dev machine)
         run: npx playwright test --shard=${{ matrix.shard }}/2 --grep-invert "@visual"
