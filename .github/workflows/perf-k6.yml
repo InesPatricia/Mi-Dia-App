@@ -30,7 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install k6
-        uses: grafana/setup-k6-action@v1
+        # Pinned to a full commit SHA (see zap-baseline.yml for the rationale); tag kept in the comment.
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1
       - name: Run k6 smoke
         # --summary-export writes the end-of-test metrics as JSON for the artifact;
         # thresholds in the script make k6 exit non-zero if the baseline is breached.

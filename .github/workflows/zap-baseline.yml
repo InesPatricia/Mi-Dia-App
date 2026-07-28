@@ -35,7 +35,9 @@ jobs:
       # checkout because it read nothing from the repo — the ignore-list changes that).
       - uses: actions/checkout@v4
       - name: ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.14.0
+        # Pinned to a full commit SHA (not the movable v0.14.0 tag) so the code that runs with
+        # access to our workspace can't change under us. Dependabot proposes SHA bumps via PR.
+        uses: zaproxy/action-baseline@7c4deb10e6261301961c86d65d54a516394f9aed # v0.14.0
         with:
           target: "https://mi-dia-app.pages.dev/"
           # The tripwire allow-list: accepted risks marked IGNORE so only NEW findings can fail.
