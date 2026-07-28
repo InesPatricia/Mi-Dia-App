@@ -1,43 +1,43 @@
 name: smoke-preview
 
 # PRE-MERGE gate: runs the 7-check smoke against the Cloudflare Pages PREVIEW deployment of a
-# PR, so a broken build can never reach production. Cloudflare Pages builds a unique preview URL
-# for every PR/branch push and fires a GitHub `deployment_status` event when it finishes — we
-# read that event's environment_url and smoke it. No polling, no third-party action.
+# PR, so a broken build can never reach production.
 #
-# This is the "test before promoting" gate (vs smoke-prod.yml, which is the post-deploy net on
-# main). To make it block merges: after it has run once, add the check "smoke-preview / preview
-# smoke" to the branch-protection required checks on main. Preview deployments must be enabled
-# for all branches in the Cloudflare Pages project (the default).
+# HISTORY / why the trigger changed: this originally listened for `deployment_status`, but the
+# Cloudflare Pages GitHub integration stopped creating GitHub deployments — it reports a check
+# run named "Cloudflare Pages" instead — so the workflow silently never fired (found by auditing
+# the Actions history: zero runs ever). Now it triggers on `pull_request`, derives the
+# branch-alias preview URL from the branch name, waits for the "Cloudflare Pages" check on the
+# head commit (e2e/wait-for-preview.js), and smokes that URL.
+#
+# This is the "test before promoting" gate (vs smoke-prod.yml, the post-deploy net on main).
+# To make it block merges: after it has run once, add the check "smoke-preview / preview smoke"
+# to the branch-protection required checks on main.
 
 on:
-  deployment_status: {}
+  pull_request:
 
 permissions:
   contents: read
+  checks: read # wait-for-preview.js polls the "Cloudflare Pages" check-run status
 
 jobs:
   preview-smoke:
     name: preview smoke
-    # Only for SUCCESSFUL Cloudflare deployments that are NOT production (exclude the live URL).
-    # Filtering on the URL (not the environment label) is robust to Cloudflare's naming.
-    if: >
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment_status.environment_url != '' &&
-      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev' &&
-      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev/'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: e2e
     env:
-      # The spec + config read PROD_URL as baseURL — point it at the PR's preview deployment.
-      PROD_URL: ${{ github.event.deployment_status.environment_url }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # Check out the exact commit that was deployed, so the smoke spec matches the built app.
+      # Check out the exact commit Cloudflare deployed (the PR head), not the synthetic
+      # pull_request merge commit, so the smoke spec matches the built app.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.deployment.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -45,7 +45,18 @@ jobs:
           cache-dependency-path: e2e/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Compute the branch-alias preview URL
+        # Cloudflare Pages alias rule: branch name lowercased, non-alphanumerics -> "-",
+        # truncated to 28 chars, no leading/trailing "-". HEAD_REF comes in via env (not
+        # inline ${{ }} interpolation) so a hostile branch name cannot inject shell code.
+        run: |
+          alias=$(echo "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | cut -c1-28 | sed 's/^-*//; s/-*$//')
+          echo "PROD_URL=https://${alias}.mi-dia-app.pages.dev" >> "$GITHUB_ENV"
+          echo "Preview URL: https://${alias}.mi-dia-app.pages.dev"
+      - name: Wait for the Cloudflare Pages preview deployment
+        run: PREVIEW_URL="$PROD_URL" node wait-for-preview.js
       - name: Smoke the preview URL
+        # The spec + config read PROD_URL as baseURL — pointed at the PR's preview above.
         run: |
           echo "Smoking preview: $PROD_URL"
           npx playwright test --config=playwright.prod.config.js
