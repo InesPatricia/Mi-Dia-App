@@ -35,6 +35,9 @@ jobs:
         # --summary-export writes the end-of-test metrics as JSON for the artifact;
         # thresholds in the script make k6 exit non-zero if the baseline is breached.
         run: k6 run --summary-export=k6-summary.json -e BASE_URL="${{ inputs.base_url }}" perf/smoke.js
+      - name: Write k6 results to the run summary
+        if: ${{ !cancelled() }}
+        run: node scripts/k6-summary.mjs
       - name: Upload k6 summary
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
