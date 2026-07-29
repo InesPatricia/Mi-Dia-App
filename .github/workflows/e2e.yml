@@ -33,7 +33,7 @@ jobs:
     name: validate build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 18 }
       - run: node validate-build.js
@@ -47,7 +47,7 @@ jobs:
       matrix:
         shard: [1, 2] # SHARD_TOTAL = 2 (keep the /2 below in sync with this list)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 18
@@ -90,7 +90,7 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 18
