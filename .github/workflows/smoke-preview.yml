@@ -13,6 +13,9 @@ name: smoke-preview
 # This is the "test before promoting" gate (vs smoke-prod.yml, the post-deploy net on main).
 # To make it block merges: after it has run once, add the check "smoke-preview / preview smoke"
 # to the branch-protection required checks on main.
+#
+# It also runs Lighthouse against the preview (informational/shift-left) so a perf or a11y
+# regression shows up on the PR before merge, complementing the authoritative post-deploy gate.
 
 on:
   pull_request:
@@ -66,4 +69,28 @@ jobs:
         with:
           name: smoke-preview-report
           path: e2e/playwright-report
+          retention-days: 7
+
+      # SHIFT-LEFT: run the SAME Lighthouse budgets against the PR's preview, so a perf/a11y
+      # regression is visible BEFORE merge — not only after (smoke-prod.yml). INFORMATIONAL on
+      # purpose: a cold preview can score below a warm production edge, so continue-on-error
+      # keeps a perf blip from false-blocking a PR. The authoritative error-gate stays post-deploy.
+      # (lighthouserc.cjs + scripts/ live at the repo root, hence working-directory: .)
+      - name: Lighthouse on the preview (informational)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        working-directory: .
+        run: |
+          npm install -g @lhci/cli@0.13.x
+          lhci autorun --config=lighthouserc.cjs --collect.url="$PROD_URL"
+      - name: Write preview Lighthouse scores to the summary
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: node scripts/lh-summary.mjs
+      - name: Upload preview Lighthouse report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-preview-report
+          path: .lighthouseci-report
           retention-days: 7
