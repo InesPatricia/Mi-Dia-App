@@ -1,5 +1,5 @@
 # Cloudflare Pages redirects (Netlify-compatible syntax).
-# Cloudflare reads this file; it ignores netlify.toml.
+# Cloudflare reads this file to configure redirects at the edge.
 #
 # The promoted build is index.html, which every static host serves at "/"
 # automatically — so NO root rewrite is needed (and a root rewrite fought

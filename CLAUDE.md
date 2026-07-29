@@ -235,16 +235,14 @@ returning user keeps their saved `settings.theme`. (No open decisions remain bef
 
 **Deployment + infra files (do NOT delete as "single-file violations"):**
 - The app is deployed on **Cloudflare Pages** (primary), auto-deploying from GitHub `main` on every
-  push. Live site: **`mi-dia-app.pages.dev`**. (Netlify config is kept as a fallback host — its free
-  tier hit a bandwidth limit, which is why we moved to Cloudflare Pages.)
+  push. Live site: **`mi-dia-app.pages.dev`**. (We moved off Netlify after its free tier hit a
+  bandwidth limit; the old `netlify.toml` fallback config was removed 2026-07-29 as unused.)
 - **The promoted build is `index.html`** (a copy of the latest `mi-dia-vNN.html`). `index.html` is the
   universal filename every static host serves at `/` automatically — so NO root rewrite is needed on
   any host. (A root rewrite to `mi-dia.html` fought Cloudflare's automatic `.html` clean-URL handling
   and caused a 308 loop / 522 — that is why the promoted file is `index.html`, not `mi-dia.html`.)
 - Infra files in the repo root are intentional (NOT part of the single-file app):
   - **`_redirects`** — Cloudflare Pages redirects (Netlify syntax): hides old `/mi-dia-*` builds → `/`.
-  - **`netlify.toml`** — fallback Netlify config; no build step; hides old `/mi-dia-*` builds → `/`
-    (301). No root rewrite (index.html is auto-served).
   - **`sw.js`** — the PWA service worker (offline). A service worker MUST be a separate same-origin
     file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".
     The app HTML itself stays one self-contained file; the manifest is inline (data URI).
