@@ -65,7 +65,7 @@ jobs:
           npx playwright test --config=playwright.prod.config.js
       - name: Upload preview smoke report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-preview-report
           path: e2e/playwright-report
@@ -89,7 +89,7 @@ jobs:
         run: node scripts/lh-summary.mjs
       - name: Upload preview Lighthouse report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-preview-report
           path: .lighthouseci-report

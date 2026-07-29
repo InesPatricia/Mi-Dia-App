@@ -78,7 +78,7 @@ jobs:
         run: npx playwright test --shard=${{ matrix.shard }}/2 --grep-invert "@visual"
       - name: Upload blob report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: blob-report-${{ matrix.shard }}
           path: e2e/blob-report
@@ -106,7 +106,7 @@ jobs:
       - name: Merge into one HTML report
         run: npx playwright merge-reports --reporter html ./all-blob-reports
       - name: Upload merged HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: html-report
           path: e2e/playwright-report
