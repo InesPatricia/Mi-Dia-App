@@ -74,7 +74,15 @@ and kept.
 app's files). Illustrates a normal property of iterative scanning: hardening one layer
 makes the scanner look at the next one.
 
-**Steady state going forward:** remaining alerts = accepted risks #1–#5 only. Next planned
-step: encode them in a `.zap/rules.tsv` ignore list and flip the workflow's `fail_action`
-to `true`, so any *new* alert turns the scheduled scan red instead of relying on a human
-reading reports.
+**Steady state going forward:** remaining alerts = accepted risks #1–#5 only.
+
+## Tripwire — 2026-07-28
+
+The accepted risks are now encoded in [`.zap/rules.tsv`](.zap/rules.tsv) as `IGNORE`, and the
+workflow runs with `fail_action: true`. Effect: the known-and-accepted findings stay silent,
+but **any new alert turns the scheduled scan red** — the scan is now a guard, not just a
+logbook. A fresh scan (2026-07-28) confirmed the steady-state ignore-list is exactly:
+`10055` (CSP unsafe-inline), `90003` (SRI), `90004` (COEP), `10027`, `10015`, `10049`, `10109`.
+
+**Process rule:** to accept a *new* risk, add its plugin id to `.zap/rules.tsv` **and** a note
+here. Never silence an alert in the rules file without a matching justification in this file.
