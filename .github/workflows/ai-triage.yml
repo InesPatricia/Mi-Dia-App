@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
-        with: { node-version: 18 }
+        with: { node-version: 20 }
       - name: Triage the failure with Claude
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
