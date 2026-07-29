@@ -38,7 +38,7 @@ jobs:
     steps:
       # Check out the exact commit Cloudflare deployed (the PR head), not the synthetic
       # pull_request merge commit, so the smoke spec matches the built app.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v7

@@ -33,7 +33,7 @@ jobs:
     steps:
       # Needed so the scan can read .zap/rules.tsv from the repo (the old version had no
       # checkout because it read nothing from the repo — the ignore-list changes that).
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: ZAP baseline scan
         # Pinned to a full commit SHA (not the movable v0.14.0 tag) so the code that runs with
         # access to our workspace can't change under us. Dependabot proposes SHA bumps via PR.
