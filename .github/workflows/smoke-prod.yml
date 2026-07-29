@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 18
           cache: npm
@@ -67,7 +67,7 @@ jobs:
         working-directory: .
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 18 }
       # PINNED: 0.13.x = Lighthouse 11, the last major with the PWA category (removed in
       # Lighthouse 12). Full rationale + budgets with per-threshold comments: lighthouserc.cjs.
