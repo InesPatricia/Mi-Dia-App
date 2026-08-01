@@ -4,6 +4,7 @@
 
 **🔗 Live app:** https://mi-dia-app.pages.dev &nbsp;·&nbsp; **📱 Installable PWA** (works offline)
 
+[![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
 ![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20offline-5a8a5a)
 ![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
@@ -23,7 +24,7 @@ I'm a **QA / AI professional**, and I built this as a real, shipped product to p
 - ✅ **85 end-to-end tests across 20 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
 - ♿ **Accessibility audited** with axe-core on a curated rule set across all 7 views; semantic locators (`getByRole`/`getByLabel`) drive the suite — testing the app the way a screen-reader user experiences it.
 - 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation.
-- 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**.
+- 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**. The whole pipeline — gates vs. nets — is diagrammed in [`docs/QA-ARCHITECTURE.md`](docs/QA-ARCHITECTURE.md).
 - 🧪 **Test-independence by design:** an *implementer* and a *black-box tester* meet only at a written contract (acceptance criteria + stable selector handles) — an anti-bias pattern documented in [`e2e/SPEC-TEMPLATE.md`](e2e/SPEC-TEMPLATE.md).
 - 🤖 **AI-assisted engineering:** developed with Claude Code using a spec-driven workflow ([`CLAUDE.md`](CLAUDE.md) is the living spec) — designed, reviewed and verified in tight human-in-the-loop iterations.
 - 🚀 **Performance baseline:** **Lighthouse CI** asserts budgets (perf / a11y / best-practices / PWA) against the live URL after every deploy *and* against each PR's preview (shift-left, so a regression shows up before merge) — thresholds set from a *measured* baseline, each with a written rationale in [`lighthouserc.cjs`](lighthouserc.cjs) — plus a polite **k6 smoke** ([`perf/smoke.js`](perf/smoke.js), 5 VUs / 30 s, per-route thresholds) that baselines CDN/edge delivery.
