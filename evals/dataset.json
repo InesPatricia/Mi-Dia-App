@@ -1,0 +1,66 @@
+{
+  "task": "Extract a structured day-planner activity from a natural-language sentence.",
+  "categories": ["work", "health", "social", "rest", "errands", "learning"],
+  "cases": [
+    {
+      "id": "coffee-ana",
+      "input": "Coffee with Ana at 3pm",
+      "reference": { "title": "Coffee with Ana", "time": "15:00", "category": "social" },
+      "expect": { "hasTime": true, "category": "social" }
+    },
+    {
+      "id": "gym-morning",
+      "input": "Gym session tomorrow at 7 in the morning",
+      "reference": { "title": "Gym session", "time": "07:00", "category": "health" },
+      "expect": { "hasTime": true, "category": "health" }
+    },
+    {
+      "id": "standup",
+      "input": "Team standup 9:30",
+      "reference": { "title": "Team standup", "time": "09:30", "category": "work" },
+      "expect": { "hasTime": true, "category": "work" }
+    },
+    {
+      "id": "groceries",
+      "input": "Buy groceries after work",
+      "reference": { "title": "Buy groceries", "time": null, "category": "errands" },
+      "expect": { "hasTime": false, "category": "errands" }
+    },
+    {
+      "id": "read-evening",
+      "input": "Read my book for an hour tonight",
+      "reference": { "title": "Read my book", "time": null, "category": "rest" },
+      "expect": { "hasTime": false, "category": "rest" }
+    },
+    {
+      "id": "spanish-class",
+      "input": "Spanish class at 18:00",
+      "reference": { "title": "Spanish class", "time": "18:00", "category": "learning" },
+      "expect": { "hasTime": true, "category": "learning" }
+    },
+    {
+      "id": "dentist",
+      "input": "Dentist appointment at quarter past ten",
+      "reference": { "title": "Dentist appointment", "time": "10:15", "category": "health" },
+      "expect": { "hasTime": true, "category": "health" }
+    },
+    {
+      "id": "call-mom",
+      "input": "Call mom in the evening",
+      "reference": { "title": "Call mom", "time": null, "category": "social" },
+      "expect": { "hasTime": false, "category": "social" }
+    },
+    {
+      "id": "deploy",
+      "input": "Deploy the release at noon",
+      "reference": { "title": "Deploy the release", "time": "12:00", "category": "work" },
+      "expect": { "hasTime": true, "category": "work" }
+    },
+    {
+      "id": "nap",
+      "input": "Short nap after lunch",
+      "reference": { "title": "Short nap", "time": null, "category": "rest" },
+      "expect": { "hasTime": false, "category": "rest" }
+    }
+  ]
+}

@@ -68,6 +68,10 @@ as the safety net, never replaced by the agent.
 
 ## Part 2 — How to test an *agentic AI system*
 
+> **This section is runnable, not just theory:** [`evals/`](../evals/) is a working eval harness
+> (golden dataset + property assertions + LLM-as-judge + pass-rate floor) over a representative
+> extraction task. Trigger the `evals` workflow or run `node evals/run.mjs`.
+
 If the product under test is itself built on LLM agents, classic assertions break. The good news:
 the *principles* are the ones already used in this repo — baseline, thresholds with tolerance,
 triage, fail-loudly — only the object being measured is now probabilistic. The bridge:
