@@ -193,11 +193,67 @@ quality work that never shows up in a test count.
 | `e2e/wait-for-deploy.js`, `wait-for-preview.js` | Polls until the CDN has actually published the build, so post-deploy smoke tests do not race the deployment. |
 | `e2e/make-report.js` | Turns a run into a short Markdown summary, for when the HTML report is more than you need. |
 | `e2e/shoot.js`, `e2e/theme-grid.js` | Screenshots every view in both themes as one review grid, which is how theme bugs get caught before they ship. |
+| `scripts/check-docs.mjs` | Gates the documentation: dead links, stale test counts, and build numbers written into a file that lives on three branches. |
 
 There are also three repeatable QA procedures written as executable checklists in
 `.claude/skills/`: a ZAP triage loop, a performance run with a rule for when a threshold may be
 tightened, and a pipeline audit that encodes the incidents below. They exist so the reasoning
 survives me forgetting it.
+
+---
+
+## Documentation architecture
+
+The project's context file had grown to 1,852 lines, and an agent read all of it before every
+session. That was the visible problem. The real one was that it had quietly become an interface:
+five other files read its internal structure, and nothing checked that what they read still existed.
+
+Three defects were present in the repository at the same time, and none of them was caught by
+anything:
+
+- Three skills routed work to a section heading that had been deleted.
+- Two files stated different test counts without either being wrong, and nothing reconciled them.
+- `Mi-Dia-App` and `Mi-Dia-QA` are worktrees of this repository at different branches, so the same
+  filename described two different states of the app. The QA worktree was instructing agents to build
+  a feature that had shipped on `staging` fourteen commits earlier.
+
+The fix was to split the file by audience, and then to treat the result the way the app is treated —
+as something a machine checks, not something a person remembers.
+
+```mermaid
+graph LR
+    A["CLAUDE.md<br/>111 lines<br/><i>how to work here</i>"] --> B["docs/DATA_SCHEMA.md<br/><i>what is stored</i>"]
+    A --> C["docs/DESIGN_SYSTEM.md<br/><i>themes and tokens</i>"]
+    A --> D["docs/APP-REFERENCE.md<br/><i>how it behaves now</i>"]
+    A --> E["CHANGELOG.md<br/><i>what changed</i>"]
+    E --> F["docs/history/BUILD-LOG.md<br/><i>the full archive</i>"]
+    G(["scripts/check-docs.mjs<br/>CI gate"]) -.->|verifies| A
+    G -.->|verifies| B
+    G -.->|verifies| C
+    G -.->|verifies| D
+    G -.->|verifies| E
+```
+
+| File | Holds | Read by |
+|---|---|---|
+| `README.md` | why this exists and how it is engineered | people |
+| `CHANGELOG.md` | what changed, per arc | people reviewing the work |
+| `CLAUDE.md` | orientation, hard rules, where everything else is | agents, every session |
+| `docs/*.md` | the depth: storage, design system, current behaviour | whoever needs it |
+| `docs/history/BUILD-LOG.md` | every build since v23, verbatim | rarely anyone, but nothing was lost |
+
+**Nothing that varies by branch is written down.** The current build, the test count and the current
+arc are commands to run, not sentences to read, because a file shared by `main`, `staging` and the QA
+branches cannot state a build number without being wrong on two of them.
+
+**The mandatory per-session context went from 170,934 bytes to 6,184** — a 96% reduction — with no
+history lost. The archive is complete and a rule proves it.
+
+`scripts/check-docs.mjs` runs in CI and fails the build on a dead path, a build number in the router,
+a test count that disagrees with the runner, an archived section that went missing, or a router that
+has forked between branches. It has **its own tests, including negative cases**, for the reason given
+in the first incident below: this repository has already shipped a gate that ran green without
+checking anything, and a checker nobody checks is the same mistake with a different filename.
 
 ---
 
@@ -303,7 +359,9 @@ consolidated progress view, optional cycle tracking, and Word, PDF and JSON expo
 - **Tag** (`tag`): cross-cutting context. Several per slot.
 - **Slot** (`block`): `{ id, title, cat, time, dur, tags[], done, date }`
 
-The full specification, decisions and changelog live in [`CLAUDE.md`](CLAUDE.md).
+The full contract is in [`docs/DATA_SCHEMA.md`](docs/DATA_SCHEMA.md), with the design system in
+[`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) and current behaviour in
+[`docs/APP-REFERENCE.md`](docs/APP-REFERENCE.md).
 
 ---
 
