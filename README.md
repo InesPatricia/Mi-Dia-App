@@ -97,7 +97,15 @@ diagram, is in [`docs/QA-ARCHITECTURE.md`](docs/QA-ARCHITECTURE.md).
 dependencies, seconds), then the suite split across two parallel shards, each with two workers,
 each emitting a blob report that a final job merges into one HTML report. In parallel, Cloudflare
 builds a preview deployment for the pull request and a smoke suite runs against that real URL.
-`main` is branch-protected, so a red gate physically stops the merge.
+
+"Blocks the merge" is a claim about configuration, so here is the configuration. The required
+status checks on `main` are exactly `validate build`, `test (shard 1/2)`, `test (shard 2/2)` and
+`preview smoke`. Anything not on that list runs, reports, and stops nothing, however gate-like it
+looks in a diagram. The preview smoke sat in exactly that state for a while: the workflow had
+already been repaired once, after an audit found it had never fired at all, but nobody had added
+it to the required list, so it ran green and enforced nothing. Repairing a check and arming it are
+two separate acts. This is the failure mode I now check for by habit, because it is invisible from
+the inside: everything looks green precisely because nothing is being tested.
 
 Sharding and workers are different things and the config says so: workers parallelise across the
 cores of one machine, shards split the suite across different machines. They multiply.
@@ -159,10 +167,17 @@ and drive the `playwright-test` MCP server. They draft plans and first-pass spec
 repairs. The hand-written deterministic suite stays the source of truth; the agents are for speed
 at the edges, with a human reading every diff.
 
-I have also written up how you would test a system that is itself agentic: property assertions
-instead of exact equality, a golden dataset scored as a pass-rate instead of per-case assertions,
-trajectory checks, guardrails against prompt injection, and cost and latency treated as real
-non-functional requirements.
+**Testing a system that is itself agentic**, which is a different problem, is handled in
+[`evals/`](evals/) and it runs rather than being described. A golden dataset of inputs with
+reference answers is scored two ways against a small extraction task: deterministic property
+assertions (valid JSON, category within the allowed set, a time present only when one is implied)
+and an LLM acting as judge for the semantics that properties cannot see. The suite passes on a
+**pass-rate floor**, not per case, for the same reason the k6 layer asserts p(95) rather than the
+mean: with a non-deterministic system, one unlucky case is noise and a dropped rate is a
+regression. Missing an API key makes it no-op cleanly rather than turning a build red.
+
+The honest gaps, which are listed in that directory's own README rather than glossed over:
+guardrail and prompt-injection cases, and cost and latency treated as budgets.
 
 ---
 

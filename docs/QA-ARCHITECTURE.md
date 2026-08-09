@@ -43,6 +43,15 @@ flowchart TD
 
 - **Gates (wine):** `e2e` and `smoke-preview` run on every PR; `main` is branch-protected, so a red
   gate physically stops the merge. Zero tolerance — these must be green.
+
+  "Blocks the merge" is a claim about **configuration**, not about intent, so here is the
+  configuration it rests on. The required status checks on `main` are exactly:
+  `validate build`, `test (shard 1/2)`, `test (shard 2/2)`, `preview smoke`.
+  Anything not on that list runs and reports but does not block, however gate-like it looks in a
+  diagram. `smoke-preview` spent a while in precisely that state: the workflow had been repaired
+  after it was found never to fire, but it was never added to the required list, so it ran green
+  and stopped nothing. Verify this list against the branch-protection settings, not against the
+  existence of a workflow file — a workflow and a rule that enforces it are two different things.
 - **Nets (green):** `smoke-prod` re-checks the live site after deploy; `zap-baseline` scans weekly.
   They report and, where budgets apply, fail only on hard regressions — headroom is built in so
   network noise doesn't raise false alarms.
