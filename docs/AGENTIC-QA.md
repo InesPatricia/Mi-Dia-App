@@ -44,7 +44,7 @@ Until then the workflow runs and cleanly no-ops.
 
 ### 1b. The native Playwright agents (`e2e/.claude/agents/`)
 
-Playwright 1.61 ships three agent definitions, scaffolded here with
+Playwright ships three agent definitions, scaffolded here with
 `npx playwright init-agents --loop claude`. They drive the `playwright-test` MCP server (see
 `e2e/.mcp.json`), which gives the agent real browser tools (navigate, snapshot, run a test, read
 console). Each is a Markdown file with a role, a toolset, and instructions:
@@ -55,14 +55,16 @@ console). Each is a Markdown file with a role, a toolset, and instructions:
 | **generator** | Turns a plan into **real Playwright specs** | You have a plan and want the tests written |
 | **healer** | Debugs a **failing** test using live browser tools and proposes a fix | A test breaks and you want a first-pass repair |
 
-**How this pairs with what already exists.** The 85-test suite is hand-authored and deterministic —
+**How this pairs with what already exists.** The e2e suite is hand-authored and deterministic —
 that stays the trustworthy core. The agents are for *speed at the edges*: drafting a plan for a new
 feature, generating first-pass specs to refine, or proposing a repair for a flaky/broken test that a
 human then verifies. This is the "self-healing tests" idea, grounded — with the deterministic suite
 as the safety net, never replaced by the agent.
 
-> **Portability note:** `e2e/.mcp.json` was generated on Windows and wraps the server in `cmd /c`.
-> On macOS/Linux use `"command": "npx", "args": ["playwright", "run-test-mcp-server"]`.
+`e2e/.mcp.json` invokes `npx` directly, so the same file works on Windows, macOS and Linux. It was
+originally scaffolded with a `cmd /c` wrapper, which pinned it to Windows; that was documented as a
+known limitation for a while, which was the wrong call. A two-minute portability fix should be
+fixed, not written down.
 
 ---
 

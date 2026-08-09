@@ -73,6 +73,13 @@ jobs:
       - name: Install OS deps only (on cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+      # Drift guard: the README publishes a test count, and a hand-maintained number in docs goes
+      # stale silently. This asks the runner for the real count and fails if the badge disagrees.
+      # Runs on shard 1 only: it needs the deps this job already installed, so reusing them costs
+      # about two seconds, where a separate job would pay for another checkout and npm ci.
+      - name: Check the README test count has not drifted
+        if: matrix.shard == 1
+        run: node count-tests.js --check
       - name: Run shard ${{ matrix.shard }} of 2
         # skip @visual: snapshot baselines are OS-specific (generated on the dev machine)
         run: npx playwright test --shard=${{ matrix.shard }}/2 --grep-invert "@visual"
