@@ -34,7 +34,13 @@ const MAX_ROUTER_LINES = 160;
 const HEADINGS_BASELINE = 'docs/history/.headings-baseline.txt';
 const BUILD_LOG = 'docs/history/BUILD-LOG.md';
 
-/** Docs that are scanned for dead paths and count drift. */
+/**
+ * Docs that are scanned for dead paths and count drift.
+ *
+ * The skills are in here on purpose. The defect that prompted this checker was three skills routing
+ * agents to a CLAUDE.md heading that had been deleted, so the files that *point* at documentation
+ * are exactly as worth gating as the documentation itself.
+ */
 const SCANNED = [
   ROUTER,
   'README.md',
@@ -44,7 +50,19 @@ const SCANNED = [
   'docs/APP-REFERENCE.md',
   'docs/QA-ARCHITECTURE.md',
   'docs/AGENTIC-QA.md',
+  ...skillDocs(),
 ];
+
+/** Every markdown file under .claude/skills, which is where the routing instructions live. */
+function skillDocs(dir = join(ROOT, '.claude', 'skills'), acc = []) {
+  if (!existsSync(dir)) return acc;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) skillDocs(full, acc);
+    else if (entry.name.endsWith('.md')) acc.push(full.slice(ROOT.length + 1).replace(/\\/g, '/'));
+  }
+  return acc;
+}
 
 const results = [];
 const record = (rule, status, detail) => results.push({ rule, status, detail });
@@ -64,7 +82,11 @@ const PATH_EXT = /\.(md|mjs|js|cjs|json|html|yml|yaml|txt|png|svg|css)$/i;
  * Artifacts a command produces on demand, so they are legitimately absent from a clean checkout.
  * Keep this list short and justified — an allowlist is how a gate stops gating.
  */
-const GENERATED = new Set(['e2e/TEST-REPORT.md']);
+const GENERATED = new Set([
+  'e2e/TEST-REPORT.md',        // npm run report
+  'report_json.json',          // ZAP baseline output
+  'theme-grid-out/index.html', // node e2e/theme-grid.js
+]);
 
 /** Paths a doc points at, from markdown links and from backticked tokens that look like files. */
 function pathsIn(text) {
@@ -79,7 +101,7 @@ function pathsIn(text) {
     if (/\s/.test(t) || !PATH_EXT.test(t)) continue;
     if (/^(https?:|#)/.test(t)) continue;
     // wildcards, ranges and placeholders are patterns, not paths
-    if (/[*?]|\.\.|vNN|NNN?\b/.test(t)) continue;
+    if (/[*?()]|\.\.|vNN|vNEW|vOLD|NNN?\b/.test(t)) continue;
     // a bare extension (`.html`, `.json`) is prose, not a reference
     if (/^\./.test(t) && !t.slice(1).includes('.')) continue;
     out.add(t);
@@ -110,6 +132,8 @@ function checkDeadPaths() {
     for (const p of pathsIn(read(doc))) {
       const clean = p.replace(/^\.?\//, '');
       if (GENERATED.has(clean)) continue;
+      // private/ is the product worktree's gitignored corpus — real, but never present here
+      if (clean.startsWith('private/')) continue;
       const resolves =
         existsSync(resolve(base, p)) ||
         existsSync(resolve(ROOT, clean)) ||

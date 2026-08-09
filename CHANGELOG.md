@@ -115,7 +115,7 @@ audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerenț�
   în petale); FAB gilt; toate cardurile/componentele + toate cele 7 view-uri tematizate dark (remap de tokeni
   + `paleTint`/`applyJWash` theme-aware). Construit incremental, o felie per `vNN`, mult asistat de agenți.
 - **Polish + emoji (v140–v142):** casetă date-band Home făcută invizibilă pe dark, titluri secundare
-  champagne-gold, banner-ul de instalare (persist.js) tematizat; **toate emoji-urile pictografice înlocuite cu
+  champagne-gold, banner-ul de instalare (modulul de persistenta) tematizat; **toate emoji-urile pictografice înlocuite cu
   SVG line-art** (inclusiv reflecția 4F, iconițele de arii, empty states, export, streak, scan, mutare,
   shuffle) — păstrate doar marcajele tipografice ✓ ✕ ✎ ☾ ☀. Regresie prinsă + reparată onest: un `esc` cu
   scope local a rupt randarea sloturilor (13 teste e2e) — fix cu un `esc` global; `node --check` trece
@@ -157,7 +157,7 @@ audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerenț�
 - Antet foto **refolosit din `.hero`** global (jpeg mutat in `--hero-bg`) — fara dublura de antet.
 - **Date-nav unificat** cu Home (compact): repara sageata `›` taiata pe Android; unifica Jurnal+Calendar.
 - Tot cablajul pastrat: jMood, permPause (roata emotiilor), autosave, 4F, export, i18n.
-- PENDING (mockup aprobat `mi-dia-jsol2.html`): olive ca **rama** in cardul de scris + placeholder
+- PENDING (mockup aprobat, in private/mockups): olive ca **rama** in cardul de scris + placeholder
   original + „+ reflecție ghidată" / export subtil jos.
 
 ## v122–v124 — Calendar redesign (lentile)
@@ -172,7 +172,7 @@ audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerenț�
 ## v98–v110 — Cycle / Respiro / persistence
 - „Ritmul meu" (`cycle.js`, opt-in, default OFF, gender-neutral): faza lunii in Calendar, logare reala a
   menstruatiei + istoric, „Luna ta" + disclaimer ferm (estimativ, nu medical, nu contraceptiv).
-- „Calm" → **„Respiro"** (v101). Modul de persistenta `persist.js` (backup-reminder / install banner).
+- „Calm" → **„Respiro"** (v101). Modul de persistenta (backup-reminder / install banner), inlinuit.
 
 ## v90–v97 — Energizer / feel-better
 - Toggle Calmează-mă / Trezește-mă, respiratie energizanta, body scan (TTS), permission pause + roata

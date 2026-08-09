@@ -14,9 +14,10 @@ description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, t
 > One-line split: **`/marketing-design` = architect of new brand surfaces · `/design-check` = QA inspector of
 > the app.** Shared palette, opposite jobs.
 
-**Read the "⭐ NEXT UP" section of `CLAUDE.md` first** — it holds the full locked decisions + the phased
-build plan (v133→v142). Mi Día is ONE self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every
-change → a **NEW `vNN` file** (never overwrite a version in place). **Respond in Romanian without diacritics.**
+**Read `docs/DESIGN_SYSTEM.md` first** — it holds the locked decisions: the theme mechanics, the token
+families, the rose family that must never be redefined, and the verification chain. Mi Día is ONE
+self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every change → a **NEW `vNN` file**
+(never overwrite a version in place). **Respond in Romanian without diacritics.**
 
 ## The design system (LOCKED with Ines)
 
@@ -70,9 +71,9 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 ## Mandatory verification AFTER any layout/CSS/color change (before claiming done)
 
-1. **Div balance** — opens == closes for `<div>` in the body (use the Python snippet in CLAUDE.md
-   "CRITICAL: Validation after EVERY edit").
-2. **`node --check`** on each `<script>` block (extract them first; delete temp files after).
+1. **Div balance** — opens == closes for `<div>` in the body.
+2. **`node --check`** on each `<script>` block.
+   Both are one command: **`node e2e/validate-build.js`**.
 3. **Screenshot the changed view in BOTH themes** (light + dark) at 412px and confirm:
    - no label/word spills OUT of any flower petal;
    - hero text stays legible over the bougainvillea photo (the dark veil must be strong enough);
@@ -104,7 +105,7 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 - **`.claude/skills/theme-qa/module-css.md`** — CSS injected by persist.js (`.pb*`) / cycle.js (`.cy-*`) lives
   OUTSIDE the main `<style>`; theme those too (the persist banner shipped invisible because it was missed).
 
-## Phased plan (reference — full detail in CLAUDE.md "⭐ NEXT UP")
+## Phased plan (reference — per-version detail in `docs/history/BUILD-LOG.md`)
 
 `v133` Faza 0 foundation (Ephesis + gold tokens + semantic tokens + `data-theme` block, **zero visual change**
 in light) → `v134` switcher plumbing → `v135` hero & brand → `v136` flower + bottom bar → `v137` cards &

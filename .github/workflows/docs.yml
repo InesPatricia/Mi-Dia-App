@@ -1,0 +1,42 @@
+name: docs
+
+# Gates the documentation the same way the app is gated.
+#
+# CLAUDE.md is read by every agent session and by five skills, so it is an interface, not prose.
+# This workflow keeps it honest: no dead paths, no build numbers hard-coded into a file that lives
+# on several branches, no test counts drifting away from what the runner actually reports, and no
+# archived history quietly disappearing.
+#
+# The checker is itself tested — see scripts/check-docs.test.mjs. A gate that never fails is not a
+# gate, and this repo has already shipped one of those.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Rule 6 compares CLAUDE.md against main, so the history has to be there.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with: { node-version: 20 }
+
+      # Negative cases first: prove the checker still fails when it should, before trusting it.
+      - name: test the checker
+        run: node --test scripts/check-docs.test.mjs
+
+      - name: check the docs
+        run: node scripts/check-docs.mjs

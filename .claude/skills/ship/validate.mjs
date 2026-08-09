@@ -6,7 +6,7 @@
 //   [2] Syntax         — node --check on every <script> block in index.html
 //   [3] DIV balance    — <div> opens == </div> closes (single-file app integrity)
 //   [4] Smart quotes   — curly “ ” ‘ ’ inside HTML tags (break attributes) — WARN
-//   [5] Docs drift      — CLAUDE.md "Current latest build" + CHANGELOG mention vNN — WARN
+//   [5] Docs drift      — CHANGELOG mentions vNN; CLAUDE.md stays branch-neutral — WARN
 //   [6] Stale builds    — superseded mi-dia-v*.html still lying in the tree — WARN
 //
 // FAIL (exit 1) = never ship. WARN (exit 0) = tell Ines, don't block.
@@ -101,12 +101,19 @@ if (html) {
 }
 
 // ── [5] Docs drift — WARN (docs shouldn't hard-block a ship) ──
+//
+// CLAUDE.md deliberately no longer records which build is current. It is one tracked file shared by
+// main, staging and the QA worktrees, so any build number written into it is wrong on every branch
+// but one. The release therefore updates CHANGELOG.md, and the only thing checked here is that the
+// router did not quietly re-acquire a version. `node scripts/check-docs.mjs` enforces the same rule
+// on every push; this is the shipping-time reminder.
 if (vNN) {
   try {
     const claude = read('CLAUDE.md');
-    const cm = claude.match(/Current latest build:\s*\*\*`mi-dia-(v\d+)\.html`\*\*/);
-    if (!cm) warn('[5] CLAUDE.md: "Current latest build" line not found — update it before commit.');
-    else if (cm[1] !== vNN) warn(`[5] CLAUDE.md says latest build is ${cm[1]}, but you are shipping ${vNN}.`);
+    const pinned = claude.match(/\bmi-dia-(v\d+)\.html\b/);
+    if (pinned) {
+      warn(`[5] CLAUDE.md pins ${pinned[1]} — the router must stay branch-neutral; move it to CHANGELOG.md.`);
+    }
   } catch { warn('[5] CLAUDE.md not readable.'); }
 
   try {
