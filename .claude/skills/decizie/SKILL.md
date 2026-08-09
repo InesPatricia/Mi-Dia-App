@@ -27,16 +27,29 @@ Daca ceva e inca in discutie / neconfirmat, NU inregistra — intreaba scurt sau
 - **DOMENIU** (nav / floare / copy-voce / culoare / layout / monetizare / date …).
 - **STARE** (directie aprobata · implementat in `vNN` · livrat) + data ABSOLUTA.
 
-**2. Adauga in jurnalul canonic `private/design-decisions.md`** (creeaza-l daca lipseste — vezi structura mai
+**2. Adauga in jurnalul canonic `private/Decision Log/design-decisions.md`** (creeaza-l daca lipseste — vezi structura mai
 jos). O intrare noua, NUMEROTATA (D-NN), cea mai recenta sus sub un antet scurt. NU duplica: daca o decizie
 o inlocuieste pe alta, marcheaza vechea „(inlocuita de D-NN)" si scrie noua.
 
+**2b. Verifica conformitatea cu FUNDATIA** — Constitutia (`private/Constitution.md`,
+versiunea curenta in header) + **Theory of Change** (`private/Knowledge/00 Philosophy/Theory of Change.md` — modelul
+cauzal; o decizie de produs care contrazice cele 7 legi sau lantul Siguranta→…→Libertate se
+semnaleaza) + **BOS Vol. I** (`private/marketing/mi-dia-bos-vol1.md` — legea
+experientei, incl. §22 „what should never exist" + Golden Question §33). Ierarhia (clauza de primat,
+D-14): Constitutie → Research OS + BOS → bible/brief → acest jurnal → restul, INCLUSIV app-ul deja
+construit. O decizie care contrazice un non-negotiable NU se inregistreaza ca precedent — semnaleaza
+conflictul lui Ines: fie decizia se reformuleaza, fie legea se amendeaza explicit, in scris (niciodata
+tacit). Daca decizia priveste o abatere marcata in `private/reconciliation-register.md` (R-NN),
+actualizeaza si statusul intrarii — in AMBELE oglinzi (md + html raman 100% mapate).
+
 **3. Propaga in sursa de adevar** — actualizeaza DOAR ce e atins de decizie (nu tot, de fiecare data):
-- **`CLAUDE.md`** — sectiunea relevanta (caseta „What's still open" / „NEXT MAJOR WORK" / spec design /
-  changelog). Daca decizia schimba o regula LOCKED de design, actualizeaza regula, nu adauga langa ea.
+- **`APP-HERITAGE.md`** (spec-ul tehnic al zestrei — fostul CLAUDE.md) si/sau **`CLAUDE.md`** slim
+  (faza / ritualul de start / structura corpusului) — care din ele e atins. In APP-HERITAGE.md:
+  sectiunea relevanta (caseta „What's still open" / „NEXT MAJOR WORK" / spec design / changelog).
+  Daca decizia schimba o regula LOCKED de design, actualizeaza regula, nu adauga langa ea.
 - **Memorie** (`~/.claude/projects/.../memory/`) — fisierul relevant (`living-flower-*`, `luxe-revamp-plan`,
   `coherence-arc-v156`, etc.) + un rand in `MEMORY.md` daca e o memorie noua. Vezi regulile de memorie.
-- **Planul** `private/living-flower-build-plan.md` — daca decizia schimba o felie / mecanica / reteta.
+- **Planul** `private/Archive/historical/living-flower-build-plan.md` — daca decizia schimba o felie / mecanica / reteta.
 - **Skill-urile afectate** — daca decizia schimba o regula de design pe care o impune un skill:
   `design-check` (sistem de design), `theme-qa/color-roles.md` (rol de culoare), `marketing-design`
   (DNA de brand pt suprafete noi). Actualizeaza regula in skill ca sa ramana gardian corect.
@@ -47,7 +60,7 @@ corecte peste tot (daca s-a atins). Fara drift.
 **5. Confirma-i lui Ines, scurt:** ce ai inregistrat (D-NN) + exact ce fisiere ai atins. Fara promovare/commit
 (aia e `/ship`).
 
-## Structura `private/design-decisions.md`
+## Structura `private/Decision Log/design-decisions.md`
 
 ```
 # Mi Día — Jurnal de decizii de design & viziune

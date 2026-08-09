@@ -22,7 +22,7 @@ I'm a **QA / AI professional**, and I built this as a real, shipped product to p
 - 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation.
 - 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**.
 - 🧪 **Test-independence by design:** an *implementer* and a *black-box tester* meet only at a written contract (acceptance criteria + stable selector handles) — an anti-bias pattern documented in [`e2e/SPEC-TEMPLATE.md`](e2e/SPEC-TEMPLATE.md).
-- 🤖 **AI-assisted engineering:** developed with Claude Code using a spec-driven workflow ([`CLAUDE.md`](CLAUDE.md) is the living spec) — designed, reviewed and verified in tight human-in-the-loop iterations.
+- 🤖 **AI-assisted engineering:** developed with Claude Code using a spec-driven workflow ([`APP-HERITAGE.md`](APP-HERITAGE.md) is the living spec) — designed, reviewed and verified in tight human-in-the-loop iterations.
 
 > **Honest scope note:** the e2e suite covers logic / DOM / navigation / persistence / i18n / a11y in headless Chromium. Native-Android specifics (OS time pickers, backdrop blur, fonts, touch gestures) are validated by a manual device pass — and that limit is stated, not hidden. Knowing what your automation *doesn't* cover is part of the job.
 
@@ -107,7 +107,7 @@ npm run test:report # interactive HTML report
 - **Tag** (`tag`): cross-cutting context. Several per slot.
 - **Slot / activity** (`block`): `{ id, title, cat, time, dur, tags[], done, date }`
 
-The full design spec, decisions and changelog live in [`CLAUDE.md`](CLAUDE.md).
+The full design spec, decisions and changelog live in [`APP-HERITAGE.md`](APP-HERITAGE.md).
 
 ---
 

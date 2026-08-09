@@ -43,5 +43,5 @@ bump, no `!important` needed (except vs inline styles).
 - [ ] The persist banner is conditional (shows when no/old backup) — to eyeball it, inject the `.pb` markup
       in a headless page (see the session's preview trick) or clear `lastBackup`.
 - [ ] The cycle UI is opt-in/off by default — enable it in Settings to review its dark+light rendering.
-- [ ] New modules built on this pattern (per CLAUDE.md's incremental-migration plan) get added to THIS list
+- [ ] New modules built on this pattern (per APP-HERITAGE.md's incremental-migration plan) get added to THIS list
       the moment they inject CSS.

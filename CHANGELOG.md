@@ -1,7 +1,25 @@
 # Mi Día — Changelog (sumar pe arcuri)
 
-> Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
+> Detaliul fin per-versiune (v108–v124) e in `APP-HERITAGE.md`-ul canonic (fostul CLAUDE.md) de pe masina ta /
 > Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
+
+## v185 — redesign floarea = ILUSTRATIE ACUARELA (WIP LOCAL, necommis)
+Ines a reactivat redesign-ul florii (D-10 era abandonat) cu **assets reale de acuarela** (bougainvillea
+bloom-series). Floarea SVG geometrica (petalPath, 5 petale) e inlocuita pe **Home + mini-florile din Gradina**
+cu o **ilustratie care infloreste** printr-un **crossfade cu SNAP la cadrul cel mai apropiat** — un amestec
+continuu a 2 cadre diferite = imagine „fantoma"/blurata la repaus, deci fiecare stare de repaus arata UN singur
+cadru CLAR; tranzitia dintre cadre ramane un crossfade elegant. Mecanica `renderFlower(bloom,bonus)` **pastrata**
+(reteta din PREZENTA, `role=progressbar`, reduced-motion, reveal la check-in, micro-scale + halou gilt +
+respiratie la 100%); doar randarea petalelor → stiva de `<img.wcf>` din `const WCFRAMES`; `buildMiniFlower` →
+cadrul cel mai apropiat de bloom-ul zilei. Discul-centru roz ascuns (acuarela isi are inima pictata; intentia
+ramane in pilula de sub floare). Acelasi asset pe ambele teme + lift de saturatie/contrast pe dark. Floare facuta
+**mai mica** (340→266px) + umbra difuza restransa („mai profi"). **Sursa** (in `bougFlowers/`, necommis): seria
+individuala hi-res `bloom1..bloom6` + `bloom9` (1536px, transparente) → **7 stagii** extrase prin canvas
+(bbox+centrat+rampa de crestere+alpha-clean+**unsharp mask**+WebP q0.90), inflorire naturala boboc→plina.
+Validat (div 241/241, node --check 3/3). Fisier ~1.09MB (de la 678KB). **Ramas:** `bloom7`+`bloom8` (mijlocul,
+Ines maine) → extind la ~9 stagii (dispare ultimul salt); imbogatire culoare+aur (prompt ChatGPT dat); curat CSS
+mort (`.petal`/`.gpetal`/`#petalPath`) pe felie separata; sync `flowerIllus` onboarding; re-run e2e pe setul
+final; `/staging` (device pass) + eventual `/ship`. **NU e pe staging live inca — doar preview local :8185.**
 
 ## v173 → v184 — arcul „Floarea vie" (Living Flower) · ON STAGING (nu in prod)
 Redesign de nav + o floare care traieste din prezenta, plus Gradina si o reflectie lunara. Pe branch-ul

@@ -6,7 +6,7 @@
 //   [2] Syntax         — node --check on every <script> block in index.html
 //   [3] DIV balance    — <div> opens == </div> closes (single-file app integrity)
 //   [4] Smart quotes   — curly “ ” ‘ ’ inside HTML tags (break attributes) — WARN
-//   [5] Docs drift      — CLAUDE.md "Current latest build" + CHANGELOG mention vNN — WARN
+//   [5] Docs drift      — APP-HERITAGE.md "Current latest build" + CHANGELOG mention vNN — WARN
 //   [6] Stale builds    — superseded mi-dia-v*.html still lying in the tree — WARN
 //
 // FAIL (exit 1) = never ship. WARN (exit 0) = tell Ines, don't block.
@@ -103,11 +103,11 @@ if (html) {
 // ── [5] Docs drift — WARN (docs shouldn't hard-block a ship) ──
 if (vNN) {
   try {
-    const claude = read('CLAUDE.md');
+    const claude = read('APP-HERITAGE.md');
     const cm = claude.match(/Current latest build:\s*\*\*`mi-dia-(v\d+)\.html`\*\*/);
-    if (!cm) warn('[5] CLAUDE.md: "Current latest build" line not found — update it before commit.');
-    else if (cm[1] !== vNN) warn(`[5] CLAUDE.md says latest build is ${cm[1]}, but you are shipping ${vNN}.`);
-  } catch { warn('[5] CLAUDE.md not readable.'); }
+    if (!cm) warn('[5] APP-HERITAGE.md: "Current latest build" line not found — update it before commit.');
+    else if (cm[1] !== vNN) warn(`[5] APP-HERITAGE.md says latest build is ${cm[1]}, but you are shipping ${vNN}.`);
+  } catch { warn('[5] APP-HERITAGE.md not readable.'); }
 
   try {
     const changelog = read('CHANGELOG.md');

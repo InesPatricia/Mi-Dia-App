@@ -5,6 +5,14 @@ description: Duce munca in curs (WIP) din working tree pe branch-ul permanent `s
 
 # /staging — preview izolat inainte de livrare
 
+> **⭐ SCOPE (D-42, iul 2026): acest skill acopera DOAR aplicatia veche** (`mi-dia-vNN.html`,
+> proiectul Cloudflare `mi-dia-app`). **Laboratorul MVP / noua identitate NU trece pe aici** —
+> el traieste pe un proiect Cloudflare SEPARAT (`mi-dia-lab.pages.dev`), cu sursa in
+> `private/Prototype/site/` (gitignored in repo-ul public, git local propriu) si deploy DIRECT:
+> `cd private/Prototype && npx wrangler pages deploy site --project-name=mi-dia-lab
+> --branch=main --commit-dirty=true`. NICIODATA nu urca prototipul/identitatea noua prin
+> repo-ul public. Context complet: `private/mi-dia-status.md`.
+
 Mi Día se deployeaza pe **Cloudflare Pages din GitHub**: `main` -> productie
 (`mi-dia-app.pages.dev`); orice **branch non-productie** -> preview propriu la
 `<branch>.mi-dia-app.pages.dev`. Acest skill foloseste un branch **permanent `staging`**

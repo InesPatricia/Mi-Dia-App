@@ -1,22 +1,34 @@
 ---
 name: design-check
-description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change INSIDE the Mi Día PWA file (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches the app's CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make the app look…". For a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription version, App Store / social / promo, onboarding/paywall) use /marketing-design instead — this skill does NOT cover new brand surfaces.
+description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change INSIDE the Mi Día PWA file (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches the app's CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make the app look…". For a NEW outward-facing / marketing surface built as its own file (landing page, public/lifetime version, App Store / social / promo, onboarding/paywall) use /marketing-design instead — this skill does NOT cover new brand surfaces.
 ---
 
 # Revamp — Mi Día luxe design check
 
 > **Scope: IN-APP ONLY.** This skill governs changes INSIDE the app file `mi-dia-vNN.html` — it VERIFIES an
 > existing, locked design system and gates it (nothing regresses). It does NOT design new pages. If the task
-> is a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription
+> is a NEW outward-facing / marketing surface built as its own file (landing page, public/lifetime
 > version, App Store / social / promo, onboarding/paywall), STOP and use **`/marketing-design`** — that skill
 > CREATES from the brand DNA; this one CHECKS the app against it.
 >
 > One-line split: **`/marketing-design` = architect of new brand surfaces · `/design-check` = QA inspector of
 > the app.** Shared palette, opposite jobs.
 
-**Read the "⭐ NEXT UP" section of `CLAUDE.md` first** — it holds the full locked decisions + the phased
+**Read the "⭐ NEXT UP" section of `APP-HERITAGE.md` first** — it holds the full locked decisions + the phased
 build plan (v133→v142). Mi Día is ONE self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every
 change → a **NEW `vNN` file** (never overwrite a version in place). **Respond in Romanian without diacritics.**
+
+> **⭐ Foundation guard (D-14/D-16, July 2026).** Above this design system sits the foundation:
+> the Constitution + **BOS Vol. I** (`private/marketing/mi-dia-bos-vol1.md` — how the product
+> must FEEL; the current version lives in each document's own header). When validating any app change:
+> 1. **Never edit foundation documents to match the app** — the app is measured against them.
+> 2. **Do not opportunistically "fix" items from `private/reconciliation-register.md` (R-NN — the
+>    live list is in the register)** — each is remediated ONLY via an explicit per-entry Ines
+>    decision (`/decizie` → D-NN).
+> 3. **A new change must not create a NEW divergence from the BOS** — no new streaks/counters/
+>    badges/urgency/celebration/comparison patterns (BOS §22, 19 interdictions). If a requested
+>    change would, flag it and propose a register entry instead of silently shipping it.
+> 4. Judge every screen by BOS §34: *does this help the user return to themselves?*
 
 ## The design system (LOCKED with Ines)
 
@@ -70,7 +82,7 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 ## Mandatory verification AFTER any layout/CSS/color change (before claiming done)
 
-1. **Div balance** — opens == closes for `<div>` in the body (use the Python snippet in CLAUDE.md
+1. **Div balance** — opens == closes for `<div>` in the body (use the Python snippet in APP-HERITAGE.md
    "CRITICAL: Validation after EVERY edit").
 2. **`node --check`** on each `<script>` block (extract them first; delete temp files after).
 3. **Screenshot the changed view in BOTH themes** (light + dark) at 412px and confirm:
@@ -104,7 +116,7 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 - **`.claude/skills/theme-qa/module-css.md`** — CSS injected by persist.js (`.pb*`) / cycle.js (`.cy-*`) lives
   OUTSIDE the main `<style>`; theme those too (the persist banner shipped invisible because it was missed).
 
-## Phased plan (reference — full detail in CLAUDE.md "⭐ NEXT UP")
+## Phased plan (reference — full detail in APP-HERITAGE.md "⭐ NEXT UP")
 
 `v133` Faza 0 foundation (Ephesis + gold tokens + semantic tokens + `data-theme` block, **zero visual change**
 in light) → `v134` switcher plumbing → `v135` hero & brand → `v136` flower + bottom bar → `v137` cards &

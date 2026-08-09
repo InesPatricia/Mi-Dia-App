@@ -17,7 +17,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: e2e
+    working-directory: e2e # toate comenzile `run` pornesc din e2e/
 
 jobs:
   # Fast gate: the single-file build is structurally sound (div balance + JS parses).
@@ -61,7 +61,7 @@ jobs:
 
   merge-report:
     name: merge reports
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() }}  #urca raportul CHIAR SI cand testele pica, pentru ca exact atunci ai nevoie de el.
     needs: [test]
     runs-on: ubuntu-latest
     steps:

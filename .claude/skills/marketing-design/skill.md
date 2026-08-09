@@ -1,6 +1,6 @@
 ---
 name: marketing-design
-description: NEW BRAND SURFACES ONLY. Guidance for distinctive, on-brand visual design when CREATING a new outward-facing Mi Día surface as its own file — a marketing/landing page, the future public/subscription version, an App Store / social / promo layout, an onboarding or paywall screen, or any "make a page/site/hero for Mi Día". Grounds the work in Mi Día's locked brand DNA (Mediterranean quiet-luxury, wine + gilt + champagne, Fraunces + Ephesis + Nunito Sans), its persona, and its voice, so nothing reads as a templated default. NOT for editing the app itself — for any change inside mi-dia-vNN.html (theme/CSS/flower/hero/cards/fonts) use /design-check + /theme-qa instead.
+description: NEW BRAND SURFACES ONLY. Guidance for distinctive, on-brand visual design when CREATING a new outward-facing Mi Día surface as its own file — a marketing/landing page, the future public/lifetime version, an App Store / social / promo layout, an onboarding or paywall screen, or any "make a page/site/hero for Mi Día". Grounds the work in Mi Día's locked brand DNA (Mediterranean quiet-luxury, wine + gilt + champagne, Fraunces + Ephesis + Nunito Sans), its persona, and its voice, so nothing reads as a templated default. NOT for editing the app itself — for any change inside mi-dia-vNN.html (theme/CSS/flower/hero/cards/fonts) use /design-check + /theme-qa instead.
 license: Complete terms in LICENSE.txt
 ---
 
@@ -10,10 +10,19 @@ license: Complete terms in LICENSE.txt
 
 Approach this as the design lead for **Mi Día** — a Mediterranean "old rich" / quiet-luxury daily planner for
 reflection + structure + wellness. This is NOT a blank brief: Mi Día already has a locked identity (below).
-Your job on any new surface — a **landing page, the public/subscription version, an App Store page, a social
+Your job on any new surface — a **landing page, the public/lifetime version, an App Store page, a social
 tile, an onboarding/paywall, a promo still** — is to extend that identity into a distinctive, intentional
 design, never a templated default, and never a re-derivation of the palette from scratch. The brand is the
 brief. Take one real aesthetic risk you can justify *within* the brand, not against it.
+
+> **⭐ WHICH BRAND? (D-38…D-47, July 2026).** Mi Día now has TWO identities. The luxe DNA below
+> (wine + gilt + champagne, Ephesis) belongs to the **HERITAGE app** — use it for surfaces about that app.
+> For any surface of the **NEW identity (Mi Día Lab / the MVP)**: the final palette is deliberately OPEN
+> (D-40, R-06, `private/Open Questions/OQ-004.md` — a marketing surface must NOT decide it); use the
+> **lab-coat** field (`#FBF7F0→#EAE2D4`, ink `#4A4238`, warm glow) + the **watercolor bougainvillea**
+> (form carries life, motion only whispers) + Fraunces/Nunito Sans + the WITNESS voice, per the
+> "MI DÍA LAB layer" at the top of `private/marketing/brand-brief.md`. Lab marketing's goal = BELIEF
+> (provoke the experience, never sell the theory — D-41); every lab growth surface passes `/product-review`.
 
 > **Scope: NEW BRAND SURFACES ONLY.** This skill CREATES new outward-facing / marketing files from the brand
 > DNA. If the task is a change INSIDE the app (`mi-dia-vNN.html` — its theme/CSS/flower/hero/cards/fonts),
@@ -50,7 +59,8 @@ A woman who wants **structure + reflection + wellness in one calm place** — no
 Mediterranean/Spanish warmth resonates; she values *femininity, gentleness, quiet luxury* over gamified
 streak-shaming. She reads EN / ES / RO. She's on a phone (Android Chrome first). She's put off by cold SaaS
 dashboards, loud gradients, and hustle-culture copy. She'll pay for something that feels *personal and
-premium*, like a well-made paper journal — that's the public/subscription bet.
+premium*, like a well-made paper journal — that's the public/lifetime bet (pay-what-fair, one-time;
+never a subscription — constitutional non-negotiable).
 
 Aesthetic north star (locked): **omogenitate, fluenta, naturalete, simplitate, feminitate, blandete** — calm,
 not overwhelming.
@@ -153,7 +163,26 @@ columns — off-brand unless a specific editorial moment calls for it. Mi Día's
 
 ## References (use these — don't re-derive)
 
-- **`CLAUDE.md`** — the "⭐ Luxury old-rich Light+Dark revamp" section + the "Visual design system (LOCKED)"
+- **`private/Constitution.md`** — the SUPREME vision/ethics law (D-13, v1.2). Every new
+  surface must pass its 12-question decision filter; hard lines: no shame/guilt/hurry, no FOMO or
+  fake urgency, privacy as a precondition (never imply tracking/accounts), truthfulness by
+  restraint (no overclaiming), rest respected as much as action. **Category discipline:** in
+  outward copy never "habit tracker" / "productivity app" — say *a ritual-journal, a corner, a
+  gentle ritual*. The public **manifesto** (`mi-dia-manifesto.md`, trilingual) is approved hero
+  copy — reuse its lines before writing new ones.
+- **`private/marketing/mi-dia-bos-vol1.md`** — BOS Vol. I, the experience law (current version in
+  its header). **Category (D-18): a self-connection companion** — never "habit tracker /
+  productivity / journal app / mindfulness app" (those are instruments).
+  Binding for marketing surfaces: **§14 Visual Language** — photography communicates *humanity
+  rather than perfection*; nothing suggests an unattainable lifestyle; nothing invites comparison
+  ("Beauty exists to create comfort. Never inadequacy." — see register R-14 before leaning on
+  luxury imagery); **§18 UX Writing** — invite, never direct ("What would feel right today?" over
+  "You should"); **§22** — 19 never-exist patterns (incl. artificial urgency, endless scrolling);
+  **§39 The Listening Principle** — never prescribe, help her listen ("which part of you asks for
+  attention now?"); **§40 Flower as Witness** — recap copy is a mirror, never a grade;
+  **§41 Product Manifesto** — ready-made lines ("Not more tasks. More truth."). The Golden
+  Question (§33) governs every surface: does this strengthen her relationship with herself?
+- **`APP-HERITAGE.md`** — the "⭐ Luxury old-rich Light+Dark revamp" section + the "Visual design system (LOCKED)"
   section: full palette, type, flower, hero, and the origin mood board.
 - **`private/mockups/mi-dia-luxe-mockup.html`** — the approved luxe direction (live theme switcher) +
   `private/mockups/luxe-previews/` PNGs. Match it.
