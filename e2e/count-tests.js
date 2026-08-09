@@ -14,10 +14,10 @@
 //
 // WHY THREE NUMBERS, NOT ONE
 //   They are three different suites and none of them ever run together:
-//     local  - what `npm test` runs on a dev machine.
-//     ci     - local minus @visual, whose screenshot baselines are OS-specific and are therefore
-//              generated on Windows and skipped on the Linux runners.
-//     prod   - the post-deploy smoke, which runs against a live URL under a different config.
+//     functional - the deterministic suite, what runs on a dev machine and in CI.
+//     visual     - screenshot regression, gated behind PW_VISUAL because pixel baselines are only
+//                  meaningful in a pinned environment (see the note in playwright.config.js).
+//     prod       - the post-deploy smoke, which runs against a live URL under a different config.
 //
 // USAGE
 //   node count-tests.js            print the counts (human + JSON)
@@ -29,20 +29,24 @@ const path = require('path');
 const README = path.join(__dirname, '..', 'README.md');
 
 // Ask the runner, then read the count off its "Total: N tests in M files" summary line.
-function count(args) {
+function count(args, env = {}) {
   const out = cp.execSync(`npx playwright test --list ${args}`, {
     cwd: __dirname,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, ...env },
   });
   const m = out.match(/Total:\s+(\d+)\s+tests?\s+in\s+(\d+)\s+files?/);
   if (!m) throw new Error(`could not parse a total from --list ${args}`);
   return { tests: Number(m[1]), files: Number(m[2]) };
 }
 
+const functional = count('');
+const withVisual = count('', { PW_VISUAL: '1' });
+
 const counts = {
-  local: count(''),
-  ci: count('--grep-invert "@visual"'),
+  functional,
+  visual: { tests: withVisual.tests - functional.tests },
   prod: count('--config=playwright.prod.config.js'),
 };
 
@@ -59,8 +63,8 @@ if (process.argv.includes('--check')) {
     process.exit(1);
   }
   const claimed = Number(m[1]);
-  if (claimed !== counts.local.tests) {
-    console.error(`count-tests: README badge says ${claimed}, the runner reports ${counts.local.tests}.`);
+  if (claimed !== counts.functional.tests) {
+    console.error(`count-tests: README badge says ${claimed}, the runner reports ${counts.functional.tests}.`);
     console.error(`Fix the badge in README.md, then re-run: node e2e/count-tests.js --check`);
     process.exit(1);
   }
@@ -68,7 +72,7 @@ if (process.argv.includes('--check')) {
   process.exit(0);
 }
 
-console.log(`local (npm test)      ${counts.local.tests} tests in ${counts.local.files} files`);
-console.log(`ci    (minus @visual) ${counts.ci.tests} tests in ${counts.ci.files} files`);
-console.log(`prod  (smoke config)  ${counts.prod.tests} tests in ${counts.prod.files} files`);
+console.log(`functional (dev + CI)   ${counts.functional.tests} tests in ${counts.functional.files} files`);
+console.log(`visual     (PW_VISUAL)  ${counts.visual.tests} tests`);
+console.log(`prod       (smoke)      ${counts.prod.tests} tests in ${counts.prod.files} files`);
 console.log(JSON.stringify(counts));

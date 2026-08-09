@@ -22,6 +22,14 @@ module.exports = defineConfig({
   // On CI each shard emits a 'blob' report; the merge job combines them into one HTML report
   // (`playwright merge-reports`). Locally we keep the human-friendly html + list reporters.
   reporter: process.env.CI ? [['blob']] : [['html', { open: 'never' }], ['list']],
+  // @visual (screenshot regression) runs ONLY where the environment is pinned. Pixel baselines are
+  // a function of OS, browser build and font stack, so a baseline captured on a developer laptop
+  // asserts nothing about anyone else's machine — and the previous ones proved it: generated on
+  // Windows, excluded from CI, they went ~30 builds unchecked and were silently invalidated by a
+  // routine Playwright bump. Nothing noticed, because nothing was running them.
+  // The switch is an explicit env var rather than `CI`, so the same rule covers both the e2e job
+  // that ASSERTS the baselines and the visual-baselines workflow that REGENERATES them.
+  grepInvert: process.env.PW_VISUAL ? undefined : /@visual/,
   use: {
     baseURL: `http://localhost:${PORT}`,
     // CI: capture a screenshot of EVERY test (pass or fail) so the merged HTML report

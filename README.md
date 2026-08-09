@@ -6,7 +6,7 @@
 
 [![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
 ![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20offline-5a8a5a)
-![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)
 ![a11y](https://img.shields.io/badge/a11y-axe--core%20audited-blueviolet)
 ![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF)
 ![Perf](https://img.shields.io/badge/perf-Lighthouse%20CI%20budgets%20%2B%20k6-F76935)
@@ -21,9 +21,9 @@
 
 I'm a **QA / AI professional**, and I built this as a real, shipped product to practise engineering and quality end-to-end — not a toy. The interesting part isn't just the app; it's **how it's tested and shipped**:
 
-- ✅ **85 end-to-end tests across 20 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render".
+- ✅ **83 end-to-end tests across 19 specs** (Playwright, mobile-Chromium) covering every view and deep user flows — assertions on both the **DOM and the persisted data model**, not just "does it render". The count is asserted in CI against `playwright test --list`, so it cannot drift.
 - ♿ **Accessibility audited** with axe-core on a curated rule set across all 7 views; semantic locators (`getByRole`/`getByLabel`) drive the suite — testing the app the way a screen-reader user experiences it.
-- 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation.
+- 📸 **Visual-regression tests** (`toHaveScreenshot`) on the design-locked navigation. Currently **off**: the baselines were captured on a developer laptop and excluded from CI, so nothing asserted them for ~30 builds and a routine dependency bump invalidated them unnoticed. They are being moved to CI-generated baselines, where the environment is pinned and the check actually gates. A screenshot test that only runs on one machine is a fossil, not a gate.
 - 🚦 **Layered quality gates in CI/CD** (GitHub Actions): a fast build-validation gate → **sharded** parallel test runs → a **pre-merge smoke gate** against the live Cloudflare preview deployment → a **post-deploy smoke** against production. A broken build cannot reach `main`, and `main` is **branch-protected**. The whole pipeline — gates vs. nets — is diagrammed in [`docs/QA-ARCHITECTURE.md`](docs/QA-ARCHITECTURE.md).
 - 🧪 **Test-independence by design:** an *implementer* and a *black-box tester* meet only at a written contract (acceptance criteria + stable selector handles) — an anti-bias pattern documented in [`e2e/SPEC-TEMPLATE.md`](e2e/SPEC-TEMPLATE.md).
 - 🤖 **AI-assisted engineering:** developed with Claude Code using a spec-driven workflow ([`CLAUDE.md`](CLAUDE.md) is the living spec) — designed, reviewed and verified in tight human-in-the-loop iterations.

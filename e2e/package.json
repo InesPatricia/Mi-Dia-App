@@ -14,7 +14,6 @@
     "validate": "node validate-build.js",
     "count": "node count-tests.js",
     "count:check": "node count-tests.js --check",
-    "test:visual": "playwright test visual.spec.js --update-snapshots=missing",
     "test:report": "playwright show-report",
     "wait:deploy": "node wait-for-deploy.js",
     "smoke:prod": "playwright test --config=playwright.prod.config.js",

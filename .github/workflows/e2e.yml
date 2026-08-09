@@ -80,9 +80,11 @@ jobs:
       - name: Check the README test count has not drifted
         if: matrix.shard == 1
         run: node count-tests.js --check
+      # @visual is filtered by the config (grepInvert), not by a flag here, so the same rule holds
+      # for every entry point. It stays off until Linux baselines exist; the visual-baselines
+      # workflow generates them, and enabling this gate is the commit that adds them.
       - name: Run shard ${{ matrix.shard }} of 2
-        # skip @visual: snapshot baselines are OS-specific (generated on the dev machine)
-        run: npx playwright test --shard=${{ matrix.shard }}/2 --grep-invert "@visual"
+        run: npx playwright test --shard=${{ matrix.shard }}/2
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
