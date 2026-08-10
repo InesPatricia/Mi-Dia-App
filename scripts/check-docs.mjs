@@ -5,13 +5,14 @@
  * The repo's own argument is that a change should be gated by something that runs, not by a
  * convention someone remembers. This applies that to the docs themselves.
  *
- * Six rules:
+ * Seven rules:
  *   [1] no dead paths          — every file path mentioned in the docs exists on disk
  *   [2] no state in the router — CLAUDE.md must not hard-code build numbers or point at private/
  *   [3] router stays small     — CLAUDE.md under MAX_ROUTER_LINES
  *   [4] no count drift         — every test count in the docs matches what the runner reports
  *   [5] history is complete    — every archived changelog heading is still in the build log
  *   [6] router does not fork   — CLAUDE.md is identical on every branch
+ *   [7] diagrams render        — no HTML in mermaid labels; GitHub strips it and fuses words
  *
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
@@ -191,6 +192,12 @@ function checkRouterSize() {
 /**
  * Guards against drift, not against ambiguity: a number in the docs must be one the runner can
  * actually produce. Phrasing them consistently is an editorial job, not this script's.
+ *
+ * The README badge is deliberately NOT judged here. `count-tests.js --check` already owns it and
+ * requires it to equal the functional count exactly, while this rule accepts any figure the runner
+ * can produce — so for a while the two disagreed, and a badge could pass one and fail the other.
+ * Two graders for one number is the defect this whole checker exists to prevent, so the badge has
+ * one authority and this rule calls it rather than re-deciding.
  */
 function checkTestCounts() {
   let counts;
@@ -202,6 +209,18 @@ function checkTestCounts() {
     counts = JSON.parse(raw.slice(raw.indexOf('{')));
   } catch (err) {
     return fail(4, `could not run e2e/count-tests.js: ${err.message.split('\n')[0]}`);
+  }
+
+  // the badge: delegated
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js'), '--check'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (err) {
+    const why = String(err.stderr || err.stdout || err.message).trim().split('\n')[0];
+    return fail(4, `count-tests --check rejected the README badge: ${why}`);
   }
 
   const f = counts.functional.tests;
@@ -233,7 +252,7 @@ function checkTestCounts() {
   }
   bad.length
     ? fail(4, `test counts drifted:\n      ${bad.join('\n      ')}`)
-    : pass(4, `counts match the runner (${f} functional · ${v} visual · ${p} prod smoke)`);
+    : pass(4, `badge verified by count-tests --check; prose matches the runner (${f} functional · ${v} visual · ${p} prod smoke)`);
 }
 
 // ---------------------------------------------------------------- [5] history is complete
