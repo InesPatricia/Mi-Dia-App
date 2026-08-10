@@ -192,6 +192,12 @@ function checkRouterSize() {
 /**
  * Guards against drift, not against ambiguity: a number in the docs must be one the runner can
  * actually produce. Phrasing them consistently is an editorial job, not this script's.
+ *
+ * The README badge is deliberately NOT judged here. `count-tests.js --check` already owns it and
+ * requires it to equal the functional count exactly, while this rule accepts any figure the runner
+ * can produce — so for a while the two disagreed, and a badge could pass one and fail the other.
+ * Two graders for one number is the defect this whole checker exists to prevent, so the badge has
+ * one authority and this rule calls it rather than re-deciding.
  */
 function checkTestCounts() {
   let counts;
@@ -203,6 +209,18 @@ function checkTestCounts() {
     counts = JSON.parse(raw.slice(raw.indexOf('{')));
   } catch (err) {
     return fail(4, `could not run e2e/count-tests.js: ${err.message.split('\n')[0]}`);
+  }
+
+  // the badge: delegated
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js'), '--check'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (err) {
+    const why = String(err.stderr || err.stdout || err.message).trim().split('\n')[0];
+    return fail(4, `count-tests --check rejected the README badge: ${why}`);
   }
 
   const f = counts.functional.tests;
@@ -234,7 +252,7 @@ function checkTestCounts() {
   }
   bad.length
     ? fail(4, `test counts drifted:\n      ${bad.join('\n      ')}`)
-    : pass(4, `counts match the runner (${f} functional · ${v} visual · ${p} prod smoke)`);
+    : pass(4, `badge verified by count-tests --check; prose matches the runner (${f} functional · ${v} visual · ${p} prod smoke)`);
 }
 
 // ---------------------------------------------------------------- [5] history is complete
