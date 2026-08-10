@@ -53,6 +53,7 @@ const SCANNED = [
   'docs/AGENTIC-QA.md',
   'docs/SECURITY-NOTES.md',
   'docs/RUNBOOK.md',
+  'docs/DEVICE-PASS.md',
   ...skillDocs(),
 ];
 

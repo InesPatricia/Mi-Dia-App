@@ -162,4 +162,5 @@ cd quality/e2e && npx playwright test --grep-invert @visual
 
 Zero failures on all three, then promote. The device pass on a real Android phone is still a manual
 step, and headless Chromium does not replace it: native pickers, `backdrop-filter` and font
-rendering all differ.
+rendering all differ. The list is [`DEVICE-PASS.md`](DEVICE-PASS.md), organised by what a headless
+browser cannot tell you rather than by feature.
