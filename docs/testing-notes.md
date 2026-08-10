@@ -1,7 +1,8 @@
 # Testing notes — Smoke vs Sanity (and on complex systems)
 
-> Reference notes (general testing theory + how it maps to Mi Día). Not a spec — the
-> project's concrete test setup lives in `CLAUDE.md` ("Test harness" section).
+> Reference notes: general testing theory, and how it maps to this project. Not a spec — the
+> concrete setup is in [`QA-ARCHITECTURE.md`](QA-ARCHITECTURE.md), and what each suite covers is in
+> the [README](../README.md).
 
 ## 1. Definitions
 - **Smoke** = "is it up? did the build boot?" — **broad and shallow**, many screens, zero depth,

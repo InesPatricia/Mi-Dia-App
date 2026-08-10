@@ -63,3 +63,9 @@ flowchart TD
 Measure first, then set thresholds below the measurement so real problems ring the alarm and noise
 doesn't — and audit the pipeline itself, because a gate that never runs is worse than no gate: it
 looks like coverage while providing none.
+
+## Why these words
+
+Smoke, sanity and full regression mean specific things here, and the distinction decides which suite
+a new test belongs in. The reasoning, with how it maps to this project, is in
+[`testing-notes.md`](testing-notes.md).
