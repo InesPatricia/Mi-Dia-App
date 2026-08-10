@@ -44,3 +44,27 @@ quality/e2e/TEST-REPORT.md
 # Local scratch: assets and experiments mid-flight. One folder, so the root never collects them again.
 scratch/
 .wrangler/
+
+# Content skills — local, not part of the public repository.
+#
+# All six read private/marketing/, which is gitignored, so anyone cloning this repo gets skills that
+# cannot run. They also serve a paused initiative, while this repository is about how the app is
+# tested and shipped. They stay on disk and stay usable; they just do not belong in the showcase.
+# (The same reasoning keeps interview-drill out, via .git/info/exclude.)
+.claude/skills/brand-brief/
+.claude/skills/content-coach/
+.claude/skills/post-writer/
+.claude/skills/post-grader/
+.claude/skills/viral-hooks/
+.claude/skills/repurpose/
+
+# Laboratory and brand skills — local for the same reason.
+#
+# decizie writes the decision log, experiment runs on private/Prototype and private/Experiments,
+# product-review executes a protocol that lives in private/, and marketing-design takes its authority
+# from the Constitution, the brand law and the approved mockups. Every one of them is inert without
+# the private corpus, so shipping them in a public repository ships something that cannot run.
+.claude/skills/decizie/
+.claude/skills/experiment/
+.claude/skills/product-review/
+.claude/skills/marketing-design/
