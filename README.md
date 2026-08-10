@@ -7,7 +7,7 @@ nothing to a server.
 **Live:** https://mi-dia-app.pages.dev
 
 [![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
-![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
 ![Stack](https://img.shields.io/badge/Playwright%201.62-Node%2020-blue)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
@@ -56,7 +56,7 @@ fully isolated from production.
 
 ## How it is tested
 
-**83 end-to-end tests across 19 specs**, Playwright on mobile Chromium, because the app is
+**85 end-to-end tests across 20 specs**, Playwright on mobile Chromium, because the app is
 phone-first and a desktop viewport would test a layout nobody uses. Plus 7 smoke tests that run
 against the live site under a separate config.
 
@@ -221,18 +221,21 @@ The fix was to split the file by audience, and then to treat the result the way 
 as something a machine checks, not something a person remembers.
 
 ```mermaid
-graph LR
-    A["CLAUDE.md<br/>111 lines<br/><i>how to work here</i>"] --> B["docs/DATA_SCHEMA.md<br/><i>what is stored</i>"]
-    A --> C["docs/DESIGN_SYSTEM.md<br/><i>themes and tokens</i>"]
-    A --> D["docs/APP-REFERENCE.md<br/><i>how it behaves now</i>"]
-    A --> E["CHANGELOG.md<br/><i>what changed</i>"]
-    E --> F["docs/history/BUILD-LOG.md<br/><i>the full archive</i>"]
-    G(["scripts/check-docs.mjs<br/>CI gate"]) -.->|verifies| A
-    G -.->|verifies| B
-    G -.->|verifies| C
-    G -.->|verifies| D
-    G -.->|verifies| E
+flowchart TB
+    ROUTER["CLAUDE.md"]
+    ROUTER --> LOG["CHANGELOG.md"]
+    LOG --> ARCHIVE["docs/history/BUILD-LOG.md"]
+    ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
+    ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
+    ROUTER --> REF["docs/APP-REFERENCE.md"]
+    GATE["scripts/check-docs.mjs"] -. verifies .-> ROUTER
+    GATE -. verifies .-> SCHEMA
+    GATE -. verifies .-> DESIGN
+    GATE -. verifies .-> REF
+    GATE -. verifies .-> LOG
 ```
+
+The router names the file; the table names what is in it.
 
 | File | Holds | Read by |
 |---|---|---|
