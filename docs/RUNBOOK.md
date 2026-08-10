@@ -148,7 +148,8 @@ whether it shipped on the other branch.
 
 **Propagating a change**: it flows `branch → main → staging`, never sideways. When merging `main`
 into `staging`, the rule is **structure from `main`, product content from `staging`** — the layout,
-the tooling and the router come from `main`; the current build and its tests stay on `staging`.
+the tooling and the router come from `main`; the current build and its tests stay on `staging`. The
+full procedure, including the conflict table and the traps, is the `reconcile` skill.
 
 ---
 
