@@ -127,7 +127,7 @@ real regressions ring and noise does not.
 
 **Performance.** Lighthouse CI asserts budgets against the live URL after every deploy and against
 each pull request's preview, so a regression shows up before merge rather than after. Every
-threshold in [`lighthouserc.cjs`](lighthouserc.cjs) carries the measured baseline it was derived
+threshold in [`quality/perf/lighthouserc.cjs`](quality/perf/lighthouserc.cjs) carries the measured baseline it was derived
 from in a comment next to it, for example a 6500 ms budget for first contentful paint against a
 5.2 s baseline. Alongside it, a deliberately polite k6 smoke ([`quality/perf/smoke.js`](quality/perf/smoke.js), 5
 virtual users for 30 seconds) baselines CDN delivery, with one overall budget and one per route.
@@ -139,9 +139,9 @@ and the tail is what users feel.
 response inspection with no attack payloads, which is the honest match for a static site with no
 backend to probe. Every finding becomes either a shipped fix or a written accepted risk. Nothing
 is silently ignored, and the full triage with before-and-after deltas is in
-[`SECURITY-NOTES.md`](SECURITY-NOTES.md).
+[`docs/SECURITY-NOTES.md`](docs/SECURITY-NOTES.md).
 
-The fixes ship through a hardened [`_headers`](_headers) file: a CSP allow-list, anti-clickjacking,
+The fixes ship through a hardened [`public/_headers`](public/_headers) file: a CSP allow-list, anti-clickjacking,
 HSTS, Permissions-Policy, COOP and CORP. The accepted risks are encoded in
 [`quality/security/rules.tsv`](quality/security/rules.tsv) with `fail_action: true`, which turns the scan into a tripwire:
 known findings stay quiet, any **new** finding turns the scan red. Accepting a new risk requires
@@ -335,7 +335,7 @@ is currently off, for the reason given above.
 
 ## Running it
 
-The app is one file. Open [`index.html`](index.html) in a browser. There is nothing to install and
+The app is one file. Open [`public/index.html`](public/index.html) in a browser. There is nothing to install and
 nothing to build.
 
 The tests:

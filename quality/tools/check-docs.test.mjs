@@ -187,6 +187,27 @@ test('rule 1 accepts an artifact that only exists after a command runs', () => {
   }
 });
 
+// A markdown link is resolved literally by GitHub, relative to the file it sits in. Four links in
+// the README survived a reorganisation because the checker accepted "the file exists somewhere" —
+// and all four were 404s on the rendered page. A mention in prose still gets that leniency; a link
+// does not.
+test('rule 1 rejects a link to a file that exists, but not where the link points', () => {
+  expectRuleFails(1, (root, write) => {
+    write('docs/moved.md', '# Moved\n');
+    write('CLAUDE.md', `${CLEAN_ROUTER}\nSee [the moved file](moved.md).\n`);
+  });
+});
+
+test('rule 1 still accepts a prose mention of a file that lives elsewhere', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(join(root, 'CLAUDE.md'), `${CLEAN_ROUTER}\nThe counter is \`count-tests.js\`.\n`, 'utf8');
+    assert.equal(run(root).byRule[1], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rule 1 accepts a bare filename that exists somewhere in the repo', () => {
   const root = makeFixture();
   try {

@@ -103,13 +103,23 @@ const GENERATED_FILES = new Set([
 const isGenerated = (p) =>
   GENERATED_FILES.has(p) || GENERATED_PREFIXES.some((prefix) => p.startsWith(prefix));
 
-/** Paths a doc points at, from markdown links and from backticked tokens that look like files. */
+/**
+ * Paths a doc points at, split by how strictly they have to resolve.
+ *
+ * `link` — a markdown link. A reader clicks it, and GitHub resolves it literally, relative to the
+ * file it sits in. `[x](lighthouserc.cjs)` from the README is a 404 the moment that file moves into
+ * a folder, even though the file still exists. These get no leniency.
+ *
+ * `mention` — a backticked filename in prose. Naming `count-tests.js` in a sentence is not a
+ * promise about where it lives, so a match anywhere in the repo is enough.
+ */
 function pathsIn(text) {
-  const out = new Set();
+  const links = new Set();
+  const mentions = new Set();
 
   for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
     if (/^(https?:|mailto:|#)/.test(target)) continue;
-    out.add(target.split('#')[0]);
+    links.add(target.split('#')[0]);
   }
   for (const [, token] of text.matchAll(/`([^`\n]+)`/g)) {
     const t = token.trim();
@@ -119,9 +129,9 @@ function pathsIn(text) {
     if (/[*?()]|\.\.|vNN|vNEW|vOLD|NNN?\b/.test(t)) continue;
     // a bare extension (`.html`, `.json`) is prose, not a reference
     if (/^\./.test(t) && !t.slice(1).includes('.')) continue;
-    out.add(t);
+    mentions.add(t);
   }
-  return [...out];
+  return { links: [...links], mentions: [...mentions] };
 }
 
 /** Every filename in the repo, so a doc may name a file without spelling out its directory. */
@@ -144,11 +154,20 @@ function checkDeadPaths() {
   const dead = [];
   for (const doc of present()) {
     const base = dirname(join(ROOT, doc));
-    for (const p of pathsIn(read(doc))) {
+    const { links, mentions } = pathsIn(read(doc));
+
+    // a link gets clicked, so it has to resolve exactly where it points
+    for (const p of links) {
       const clean = p.replace(/^\.?\//, '');
-      if (isGenerated(clean)) continue;
+      if (isGenerated(clean) || clean.startsWith('private/')) continue;
+      if (!existsSync(resolve(base, p))) dead.push(`${doc} -> ${p}  (broken link)`);
+    }
+
+    // a mention in prose only has to name something that exists
+    for (const p of mentions) {
+      const clean = p.replace(/^\.?\//, '');
       // private/ is the product worktree's gitignored corpus — real, but never present here
-      if (clean.startsWith('private/')) continue;
+      if (isGenerated(clean) || clean.startsWith('private/')) continue;
       const resolves =
         existsSync(resolve(base, p)) ||
         existsSync(resolve(ROOT, clean)) ||
