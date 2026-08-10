@@ -1,7 +1,8 @@
 # Mi Día — module-injected CSS inventory
 
 The blind spot that cost us reactive fixes: **not all CSS lives in the main `<style>`**. The self-contained
-modules `persist.js` and `cycle.js` (the v98+ "clean 5-layer module" pattern) **inject their own `<style>`
+modules — the persistence banner (v102, inlined; there is no longer a standalone source file) and
+`cycle.js` — follow the v98+ "clean 5-layer module" pattern and **inject their own `<style>`
 at runtime**. A `grep` of the main stylesheet misses them, so they get themed late (the persist banner
 shipped as invisible champagne-on-pink until Ines flagged it). Theme these EVERY time you touch a theme.
 
@@ -15,7 +16,7 @@ bump, no `!important` needed (except vs inline styles).
 
 ## The themeable classes (theme ALL of these, both light + dark)
 
-### persist.js — the backup/install banner (`.pb…`)
+### Persistence module — the backup/install banner (`.pb…`)
 | Class | What | Watch out for |
 |---|---|---|
 | `.pb` | banner card | uses `--rose-0` bg / `--rose-1` border → a PALE-PINK card. In dark it kept the pink bg while `.pb-tx` (`--ink`) flipped to champagne → **champagne-on-pink = invisible**. Theme the card to `--surface-2` (dark) / `--page-2` (light-luxe). |

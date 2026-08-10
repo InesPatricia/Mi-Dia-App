@@ -1,12 +1,12 @@
 ---
 name: ship
-description: Ritualul complet de release pentru Mi Día — promoveaza cel mai nou mi-dia-vNN.html in index.html, bumpeaza CACHE in sw.js, ruleaza validari deterministe (validate.mjs: sync versiune + node --check + echilibru div) + suita e2e, apoi la Pas 4 **sincronizeaza PROACTIV si COMPLET toata documentatia + memoria + skill-urile** (CHANGELOG, CLAUDE.md — data model/features/module/test-count/status/changelog, README, toate fisierele de memorie + MEMORY.md, skill-urile afectate; consecventa versiune + numar teste peste tot; nu astepta ca Ines sa ceara), apoi commit + tag vNN + push DIRECT pe main cu confirmare (push = auto-deploy Cloudflare). Foloseste cand Ines spune "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
+description: Ritualul complet de release pentru Mi Día — promoveaza cel mai nou mi-dia-vNN.html in index.html, bumpeaza CACHE in sw.js, ruleaza validari deterministe (validate.mjs: sync versiune + node --check + echilibru div) + suita e2e, apoi la Pas 4 **sincronizeaza PROACTIV si COMPLET documentatia + memoria + skill-urile** (CHANGELOG + satelitul potrivit din docs/ — DATA_SCHEMA pentru chei noi, DESIGN_SYSTEM pentru tokeni, APP-REFERENCE pentru comportament, history/BUILD-LOG pentru detaliul per-versiune; README, toate fisierele de memorie + MEMORY.md, skill-urile afectate; consecventa verificata cu check-docs.mjs, nu cu ochiul; CLAUDE.md NU se atinge la livrare; nu astepta ca Ines sa ceara), apoi commit + tag vNN + push DIRECT pe main cu confirmare (push = auto-deploy Cloudflare). Foloseste cand Ines spune "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
 ---
 
 # /ship — release ritual Mi Día
 
-Automatizeaza lantul de livrare din `CLAUDE.md` (sectiunea "File / versioning workflow"
-+ "Deployment"). Ruleaza din radacina repo (`Mi-Dia-App/`). **Nu pushezi NICIODATA
+Automatizeaza lantul de livrare descris in `docs/APP-REFERENCE.md` (sectiunile
+"File / versioning workflow" + "Deployment"). Ruleaza din radacina repo (`Mi-Dia-App/`). **Nu pushezi NICIODATA
 fara confirmarea explicita a lui Ines** — push pe `main` declanseaza auto-deploy pe
 Cloudflare Pages.
 
@@ -14,7 +14,8 @@ Unde traieste versiunea in acest proiect (descoperit, NU e un `var VERSION`):
 - **`mi-dia-vNN.html`** — build-ul propriu-zis (construit in timpul dezvoltarii, inainte de /ship).
 - **`index.html`** — copie byte-identica a celui mai nou `mi-dia-vNN.html` (build-ul PROMOVAT).
 - **`sw.js`** — `const CACHE = "mi-dia-vNN"` (forteaza stergerea cache-ului PWA vechi la deploy).
-- **`CLAUDE.md`** (linia "Current latest build") + **`CHANGELOG.md`** — documentatia.
+- **`CHANGELOG.md`** + fisierele din **`docs/`** — documentatia. `CLAUDE.md` NU contine versiunea:
+  e neutru pe branch si nu se atinge la livrare.
 
 ## Pas 0 — Pre-flight (read-only, nu modifici nimic)
 1. `git status --short` — arata ce e necomis si pe ce branch esti (`git branch --show-current`).
@@ -58,32 +59,37 @@ schimbat (sari doar ce e demonstrabil deja la zi — si spune ca ai sarit):
 
 1. **`CHANGELOG.md`** — intrarea de arc `vOLD→vNEW` (in stilul de acolo, marcheaza „(curent)" pe noua,
    scoate-l de pe cea veche).
-2. **`CLAUDE.md`** (docul canonic — cauta TOATE locurile stale, nu doar unul):
-   - linia „Current latest build" + `sw` CACHE;
-   - **Data model** — orice cheie noua de `localStorage` (structura, migratii, ce e in backup);
-   - **App features (implemented)** — feature-urile noi, ce fac, in ce view;
-   - **lista de module de referinta** — orice fisier-sursa nou la root (ex. `ritual.js`/`onboard.js`);
-   - **sectiunea Test harness** — numarul de teste + specuri + spec-urile noi + orice helper/conventie noua;
-   - **blocul de status final** + caseta „⭐ NEXT UP" / „NEXT MAJOR WORK" — marcheaza arcul livrat, seteaza
-     urmatoarea lucrare, muta „next feature" din „in design" in „done";
-   - **un nou „## Changelog (vOLD→vNEW)"** concis (pointer la `CHANGELOG.md` + planul, o linie/felie);
-   - **Backlog / decizii** — bifeaza ce s-a rezolvat, noteaza decizii luate (inclusiv cele revizuite).
+2. **Satelitii din `docs/`** — fiecare tip de schimbare are EXACT un fisier. Nu mai cauti „toate
+   locurile stale": daca nu esti sigur unde intra ceva, raspunsul e unul singur, nu trei.
+   - cheie noua de `localStorage` (structura, migratii, ce e in backup) → **`docs/DATA_SCHEMA.md`**,
+     cu build-ul in coloana *Since*;
+   - token, regula de tema, tipografie, radius → **`docs/DESIGN_SYSTEM.md`**;
+   - comportament nou, modul-sursa nou la root, schimbare in fluxul de adaugare sau in i18n →
+     **`docs/APP-REFERENCE.md`**;
+   - detaliul fin per-versiune (ce a facut exact fiecare `vNN` si de ce) →
+     **`docs/history/BUILD-LOG.md`**.
+
+   **`CLAUDE.md` nu se atinge la livrare.** Nu contine versiunea, numarul de teste sau arcul curent —
+   e acelasi fisier pe main, staging si worktree-urile de QA, iar orice numar scris in el ar fi gresit
+   pe toate branch-urile mai putin unul. `node scripts/check-docs.mjs` esueaza daca reapare unul.
 3. **`README.md`** (vitrina publica) — badge-uri (numar de teste), **Highlights/features**, lista de module,
    descrierea RO, orice numar sau versiune care apare.
 4. **Memoria** (`~/.claude/.../memory/`) — actualizeaza FIECARE fisier ale carui fapte s-au schimbat
-   (numar de teste, build curent, status feature, arc) + pointer-ele din **`MEMORY.md`**. Daca un feature a
+   (numar de teste, build curent, status feature, arc) + pointer-ele din indexul MEMORY.md. Daca un feature a
    trecut din „in design" in „livrat", rescrie fisierul (nu doar descrierea).
 5. **Skill-urile** (`.claude/skills/*`) — daca arcul a introdus/schimbat un flux, o poarta sau o conventie
    (ex. un helper e2e nou, o regula de validare, un pas de QA), actualizeaza skill-ul relevant
    (`design-check`, `theme-qa`, chiar acest `ship`) ca sa ramana adevarat. Inclusiv `validate.mjs` daca a
    aparut o verificare noua.
-6. **Consecventa** (verific-o explicit): acelasi string de versiune peste tot
-   (`sw.js` CACHE ↔ `index.html` ↔ `CLAUDE.md` ↔ badge-ul README); acelasi numar de teste peste tot
-   (`CLAUDE.md` ↔ `README.md` ↔ memoria e2e). Fara nepotriviri.
+6. **Consecventa** — nu o mai verifici cu ochiul, o ruleaza masina:
+   ```
+   node .claude/skills/ship/validate.mjs   # sync versiune: sw.js CACHE ↔ index.html ↔ mi-dia-vNN.html
+   node scripts/check-docs.mjs             # cai moarte, numar de teste, istoric, router neutru
+   ```
+   Numarul de teste nu se scrie din memorie nicaieri — sursa e `node e2e/count-tests.js`.
 
-Ruleaza din nou `node .claude/skills/ship/validate.mjs` — WARN-urile `[5]` trebuie sa dispara. (Memoria +
-README + skill-urile nu sunt prinse de validator — le verifici MANUAL, e responsabilitatea ta la fiecare
-ship.) Daca livrarea e doar promovarea unei versiuni deja documentate complet, spune explicit ce ai
+Ruleaza din nou ambele — `validate.mjs` fara WARN `[5]`, `check-docs` exit 0. (Memoria + skill-urile nu
+sunt prinse de niciun validator — le verifici MANUAL, e responsabilitatea ta la fiecare ship.) Daca livrarea e doar promovarea unei versiuni deja documentate complet, spune explicit ce ai
 verificat si ca era la zi.
 
 ## Pas 5 — Commit + tag + push (CERE CONFIRMARE INAINTE DE PUSH)

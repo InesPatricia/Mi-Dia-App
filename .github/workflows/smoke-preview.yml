@@ -11,8 +11,20 @@ name: smoke-preview
 # head commit (e2e/wait-for-preview.js), and smokes that URL.
 #
 # This is the "test before promoting" gate (vs smoke-prod.yml, the post-deploy net on main).
-# To make it block merges: after it has run once, add the check "smoke-preview / preview smoke"
-# to the branch-protection required checks on main.
+#
+# ENFORCEMENT: "preview smoke" is a REQUIRED status check on main, so a red run blocks the merge.
+# That was the missing half of this gate's story. The trigger was repaired (see the history note
+# above) but nothing was ever configured to enforce the result, so for a while this workflow ran,
+# went green, and stopped nothing: a net wearing a gate's clothes. Fixing the workflow and arming
+# it are two separate acts, and only the second one blocks anything.
+#
+# KNOWN RISK, accepted deliberately: this job depends on an external service. It waits for the
+# "Cloudflare Pages" check on the head commit before it has a URL to smoke, so a Cloudflare
+# outage, or a PR from a fork that never gets a preview build, makes this job fail and therefore
+# blocks the merge. That failure is loud and visible rather than silent, which is the trade we
+# want, and branch protection does not enforce for admins, so a repository admin can still merge
+# during an outage. If that ever becomes routine rather than exceptional, the honest response is
+# to demote this back to a net, not to quietly stop looking at it.
 #
 # It also runs Lighthouse against the preview (informational/shift-left) so a perf or a11y
 # regression shows up on the PR before merge, complementing the authoritative post-deploy gate.

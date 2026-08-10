@@ -153,14 +153,14 @@ columns — off-brand unless a specific editorial moment calls for it. Mi Día's
 
 ## References (use these — don't re-derive)
 
-- **`CLAUDE.md`** — the "⭐ Luxury old-rich Light+Dark revamp" section + the "Visual design system (LOCKED)"
-  section: full palette, type, flower, hero, and the origin mood board.
+- **`docs/DESIGN_SYSTEM.md`** — the binding reference: full palette, the locked rose family, type,
+  flower, hero, and what each colour is allowed to mean.
 - **`private/mockups/mi-dia-luxe-mockup.html`** — the approved luxe direction (live theme switcher) +
   `private/mockups/luxe-previews/` PNGs. Match it.
 - **`.claude/skills/theme-qa/color-roles.md`** — the color ROLE map (action=wine/gilt · metal=gold ·
   functional=area/mood/calm · surface/text). Recolor by role.
 - **Marketing videos** (separate project `Desktop/marketing-videos`, HyperFrames HTML→MP4) — if the surface is
-  a promo still/video, reuse its brand assets/fonts; see its `BUILD-NOTES.md`. Keep video motion calm (no
+  a promo still/video, reuse its brand assets/fonts; see the BUILD-NOTES file in that project. Keep video motion calm (no
   continuous motion), matching the app's gentleness.
 - **Live app** for tone: `mi-dia-app.pages.dev`.
 

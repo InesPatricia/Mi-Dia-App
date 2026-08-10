@@ -1,187 +1,146 @@
-# Mi Día — Changelog (sumar pe arcuri)
+# Changelog
 
-> Detaliul fin per-versiune (v108–v124) e in `CLAUDE.md`-ul canonic de pe masina ta /
-> Claude Code. Aici e sumarul pe arcuri + ultimele versiuni.
+What changed in the app, newest first, grouped by arc rather than by commit.
 
-## v169 → v172 — Respiro breathwork/educatie (research-fundamentat, agent-assisted) (curent)
-Upgrade Respiro pornit de la 2 research-uri verificate + 2 rulari deep-research multi-agent. Concluzia:
-efectele acute ale respiratiei lente sunt reale, „nervul vag/polivagal" e contestat (2025) → descriem CE SIMTI,
-onestitate prin retinere. Livrat prin `/revamp` (4 agenti propun, TL integreaza), o felie per `vNN`, e2e 85/85.
-- **v169 · Felia 1 — educatie + „Corp".** Eticheta de scop pe carduri (Varianta C, familii de culori) + nota
-  „De ce merita?" in player (Varianta B, ascunsa, pozitiva, cu sursa). Segment „Somatic / nerv vag" → **„Corp"**;
-  scos „nerv vag"/vagus din TOATA aplicatia (incl. `sc_breath`). `coh`→„rezonanta". Footnote onest.
-- **v170 · Felia 2 — playere reglabile.** Camp `tune`: rezonanta = Ritm (5/5,5/6) + Durata (5/10/15, default 5);
-  suspin = dual Acum/5min; hooming convertit din somatic in player breath ghidat. Poarta de siguranta energizare.
-- **v171 · Felia 4 — PMR.** Relaxare musculara progresiva — tehnica noua de corp, cele mai bune dovezi
-  (meta-analiza 31 RCT), tip scan (incordeaza-elibereaza 6 grupe), reutilizeaza `startScan`.
-- **v172 · Felia 3 — finder „Gaseste-ti ritmul".** Testeaza 3 ritmuri → `settings.resonancePace` (in backup) →
-  preselectat la rezonanta; card featured gilt in grila.
-- **Teste:** e2e 85/85. Actualizate la schimbari UI: label „Body", „Duration" scopat la `#composer`, primul
-  exercitiu sare cardul finder. NU s-a adaugat (pe dovezi/siguranta): Wim Hof/Buteyko/scor-HRV/Havening.
+**Versioning.** The app is one self-contained file. Every change produces a new `mi-dia-vNN.html`, and
+a release copies one of those to `index.html`. Version numbers are build numbers, not semver — there
+is no public API to break.
 
-## v157 → v168 — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card)
-Continuarea arcului de coerență, o felie per `vNN`, validată complet după fiecare (div + `node --check` +
-`/theme-qa` + e2e + screenshot ambele teme). Agent-assisted (3 lucrători pentru mapare carduri + 3 QA pentru
-audit de coerență). e2e 85/85. Nimic user-facing nou — refactor de coerență cap-coadă.
-- **Token unic de acțiune (v157):** ~87 hexuri wine hardcodate → 5 tokeni `--act*` în light. Pixel-identic.
-- **Un tier de control-radius (v158):** inputs + chips → `--r-sm` (ierarhia 12 < 16 < 20 < 26).
-- **`.btn--primary` unic (v159–v161):** o clasă (wine light / **gilt uniform dark**) înlocuiește variantele
-  filled (testbtn/export/import, composer „+", Respiro Start); micile add aliniate la gilt în dark.
-- **`.card` canonic + carduri pe tokeni (v162):** conținut `--r-md` / panou `--r-lg` / modal `--r-xl`; dedup
-  umbră bespoke → `--shadow-soft`; hero flush protejat.
-- **Fix leak-uri dark (v163–v165):** TODAY, `.toggle.on`, modalul de intenție (crem→velvet+gilt),
-  `.cell.today`, `.cyRhythmBtn`, bloom, inel mood-sel → toate pe velvet/gilt (erau rose/crem pe velvet).
-- **„Capcana `--brand`" (v164):** `--brand` era rose-4 în light → `.rs-save` + onboarding CTAs erau **rose în
-  light**; remap `--brand`→wine (1 regulă). Butoane bespoke olive/terracotta/rose → wine light + gilt dark.
-- **Scara de radius finalizată (v166):** `.hero` folosea `--radius-lg` **nedefinit** (→28px) → `--r-xl`;
-  eliminat tokenul legacy `--radius`; sheet-uri/modale → `--r-xl`. Sync `cycle.js`/`ritual.js`/`onboard.js`.
-- **Sweep P3/P4 conservator (v167):** 10 controale/carduri non-bespoke → scară; lăsate module opt-in +
-  journal-bespoke + discuri mood + floarea (documentate).
-- **Fix DEFINITIV drop-cap tăiat pe Home (v168, raportat repetat de Ines):** prima literă a frazei
-  (`.phrase-dc`) era tăiată dreapta-sus. Cauza reală = `background-clip:text` nu pictează glifa peste cutia
-  elementului (fragil, dependent de font/device → „reparat de 5 ori" și tot revenea). Fix robust = **culoare
-  gilt SOLIDĂ, fără `background-clip`** (nu există cutie de clip → nu se poate tăia). Aplicat la `.phrase-dc`
-  + `.onb-dc`. Verificat pe hero-ul real, ambele teme, cu zoom pe literă.
-- **Rămâne:** navigația tip iOS (mockup A/B, decizia lui Ines) + device-pass Android.
+**Depth.** This file summarises. The full per-build detail, including everything before v57, lives in
+[`docs/history/BUILD-LOG.md`](docs/history/BUILD-LOG.md). Which build is currently promoted is not
+written down anywhere: read the `CACHE` name in `sw.js`.
 
-## v156 — coerență cap-coadă: gestionare ritualuri + unificare design + fix drop-cap
-- **Gestionare ritualuri (rezolvă frustrarea semnalată de Ines — nu se putea șterge NICIUN ritual, nici
-  cele default):** buton „Editează" lângă titlul secțiunii → mod editare în care fiecare card arată un **✕
-  cu two-tap delete** (terracotta cald, consecvent cu Scurtături) + **tap pe card = editare** (redeschide
-  sheet-ul precompletat, salvează în place — id + serie + log păstrate). Merge pe orice ritual, default sau
-  creat. Chei i18n noi (`rit_edit`/`rit_edit_done`/`rit_del_confirm`/`rit_deleted`/`rit_edit_title`/
-  `rit_save_edit`/`rit_updated`/`aria_rit_edit`/`aria_rit_del`/`rit_edit_hint`) în RO/ES/EN.
-- **i18n (datoria reală era în codul vechi, nu la Ritualuri):** `onb_es_tr` gol nu mai lasă rând mort pe ES
-  (se ascunde pe spaniolă); 4 aria-label vechi reparate (`Añadir`/`rápido` + diacritice RO); 7 chei orfane
-  `onb_pet_*`/`onb_flower_*` (resturi din pasul „Floarea" vechi) șterse.
-- **Faza 1 — un singur limbaj vizual:** toate maro-urile hardcodate pe titluri (`#5B3A28`/`#7A4A33`/`#9A6A4A`/
-  `#6E4631`/`#5a3f2c`) → tokeni semantice (`--text`/`--text-soft`, 0 rămase); `.panel h2` → Fraunces (titluri
-  de secțiune serif); `.calnav` (Calendar) aliniat la `.datebar` (Home) — același „TODAY" wine + săgeți.
-- **Faza 2 + 2b — o singură sursă de adevăr (tokeni):** legacy (`--ink`/`--cream`/`--ink-soft`/`--sand`/
-  `--page`/`--surface-2`) devin **alias-uri** către semantic; canonicalizat pe valorile luxe (majoritatea le
-  folosea deja). Zero schimbare vizuală în light (alias-uri către valori identice), dark neatins.
-- **Faza 3 (start) — scară de design:** tokeni `--r-sm/md/lg/xl` + `--sp-1..6`; cardurile de conținut
-  încadrate pe o **ierarhie curată** (conținut 16 / panou 20 / modal 26), nu valori aleatorii.
-- **Fix drop-cap „P" tăiat (raportat de Ines, vizibil la desktop):** `background-clip:text` nu pictează
-  porțiunea de literă care iese peste cutia elementului → vârful capitalei italice mari rămânea nepictat.
-  Fix robust: `padding-top` dă cutiei spațiu de pictură deasupra literei, `margin-top` negativ egal anulează
-  deplasarea (litera rămâne pe loc). Verificat la desktop ȘI mobil. Aplicat și la `.onb-dc` (poemul onboarding).
-- **Testare:** suită e2e **85** (83 funcțional + 2 `@visual`; 2 teste noi în `ritual.spec.js` pentru
-  delete/edit). div 218/218, `node --check` 3/3, `/theme-qa` ambele teme. Surse `ritual.js`/`onboard.js`
-  sincronizate cu blocul inlinat.
-- **Onest:** headless Chromium ≠ Android real — device-pass-ul rămâne al lui Ines. Rămâne din plan: Faza 3
-  profund (inputs/butoane pe scară + `.card`/`.btn` unic) + navigația tip iOS (mockup în `private/mockups/`).
+---
 
-## v145–v155 — modul „Ritualuri" (Atomic Habits) + Onboarding ghidat
-- **Modul Ritualuri (`ritual.js`, inlinat, tokens-only → temă automată):** secțiune „Ritualurile mele" pe
-  Home cu card per ritual (icon line-art + accent per ritual, versiunea de 2 min, **serie derivată din log**
-  — nu stocată — + 7 puncte-săptămână, bifă), rezumat „N/M azi". Bifă = mică sărbătoare (umplere + halo gilt
-  + chime) + toast „+1 vot: <identitate>". **Never-miss-twice** (stare caldă terracotta când ai ratat ziua
-  anterioară) + **long-press pe bifă = versiunea de 2 min** (tot bifă validă pt serie).
-- **Sheet de creare** (bottom-sheet peste Home estompat): drumul A (chip-uri sugestii, 2 taps) / drumul B
-  (scris) + **habit stacking** („După un ritual"), oră nativă vizibilă (desktop+mobil), arie funcțională.
-- **Identitate** (motorul voturilor): câmp `settings.identity` în Setări + **card pe Home** (design
-  card-bijuterie cu muchie gilt + sigiliu + „N voturi azi", tapabil → editare).
-- **Seed 2 ritualuri default** la prima rulare (blânde, cu habit stacking). **Backup:** `rituals` în export +
-  `Ritual.refresh()` la import. **Progres:** bloc „Ritualurile mele" cu serie curentă + record + mini-calendar
-  28 zile — **celule tapabile pt backfill** (completezi o zi uitată).
-- **Bifare pe AZI (v154):** ritualurile se bifează mereu pe azi (nu pe ziua vizualizată din day-nav) — zero
-  bifare silențioasă a zilei greșite; backfill-ul e explicit în mini-calendarul din Progres.
-- **Onboarding ghidat (`onboard.js`, modul separat):** carusel luxe de 6 carduri (bun venit + limbă →
-  „Cine vrei să devii?" identitate → planul zilei cu input real → **Floarea = o poezie** cu sămânță-glow →
-  ritualurile + „Creează primul ritual" → ține-le în siguranță). Rulează la prima deschidere
-  (`settings.onboarded`), re-rulabil din Setări; „Sari peste" + „Înapoi".
-- **Polish (feedback Ines):** crenguța de măslin scoasă de pe Home; bife **quiet-luxury** (hairline fină +
-  umplere șoptită + bifă gilt, nu bloc strident); scrollbar luxe gilt; **fix drop-cap „P" tăiat** (v155:
-  `background-clip:text` + `line-height:.8` tăia vârful literei → `line-height:1` + inline-block).
-- **Ton poetic:** pasul „Floarea" din onboarding = o poezie (RO/ES/EN, rimă „-ine": mă ține → mă susține →
-  spre mine) sub floarea reală line-art cu sămânța aurie în centru.
-- **Testare:** suită e2e **81 teste** (66 + `ritual.spec.js` 9 + `onboarding.spec.js` 6; `seedStorage`
-  idempotent, helperi `readRituals`/`readSettings`/`ritual()`). div 218/218, `node --check` 3/3, `/theme-qa`
-  curat. Mult asistat de agenți (identitate/seed în Faza 3; Progres/audit i18n/review adversarial/a11y în
-  Faza 4). Surse curate `ritual.js` + `onboard.js` la root (ca `cycle.js`).
-- **Onest:** headless Chromium ≠ Android real — pickere native, long-press touch, blur velvet, Ephesis gilt,
-  chime rămân device-pass-ul lui Ines.
+## v169 → v172 — Respiro: breathwork grounded in research
 
-## v133–v144 — revamp „old rich" Light + Dark (temă dublă) + emoji → line-art
-- **Temă dublă reală, comutabilă:** un switcher ☾/☀ în hero (lângă bara de limbi) + un toggle în Setări,
-  persistat în `settings.theme` și inclus în backup, condus de `<html data-theme>`. Default la prima
-  deschidere = **Light**.
-- **Fundație pe tokeni semantici (v133–v134):** Ephesis (font brand) + tokeni auriu/gilt + tokeni semantici
-  (`--bg/--surface/--text/--line/--brand/--accent`) în `:root` + un bloc `html[data-theme="dark"]` care îi
-  rescrie; plumbing-ul switcher-ului (fără flash la boot). `--rose-1..4` rămân LOCKED, totul aditiv.
-- **Dark-velvet (v135–v142):** hero cu „Día" în script auriu Ephesis + văl velvet per-temă + ramă hairline
-  gilt; floarea re-skinuită velvet + stroke gilt (geometria + coordonatele l1–l5 NEATINSE, cuvintele rămân
-  în petale); FAB gilt; toate cardurile/componentele + toate cele 7 view-uri tematizate dark (remap de tokeni
-  + `paleTint`/`applyJWash` theme-aware). Construit incremental, o felie per `vNN`, mult asistat de agenți.
-- **Polish + emoji (v140–v142):** casetă date-band Home făcută invizibilă pe dark, titluri secundare
-  champagne-gold, banner-ul de instalare (persist.js) tematizat; **toate emoji-urile pictografice înlocuite cu
-  SVG line-art** (inclusiv reflecția 4F, iconițele de arii, empty states, export, streak, scan, mutare,
-  shuffle) — păstrate doar marcajele tipografice ✓ ✕ ✎ ☾ ☀. Regresie prinsă + reparată onest: un `esc` cu
-  scope local a rupt randarea sloturilor (13 teste e2e) — fix cu un `esc` global; `node --check` trece
-  sintaxa, dar e2e a prins runtime-ul.
-- **Light-luxe (v143):** tema light repictată să corespundă mockup-ului — fundal champagne, hairline-uri
-  gold, ink luxe, iar acțiunile rose → **wine `#6E1334`** (centrul florii, butoane, toggles, TODAY, bare de
-  progres, Export/Import etc.); petalele rămân blush, culorile funcționale + delete-ul mauve păstrate.
-  Ambele teme sunt acum luxe complete.
-- **Testare:** suită e2e **68 teste** (adăugat `theme.spec.js` — switcher: default light, toggle hero+persist,
-  toggle Setări two-way, user revenit pe dark). Baseline-urile `@visual` regenerate. Skill-uri noi:
-  `/theme-qa` (grid dark×light pe toate view-urile + checklist lizibilitate + poartă e2e), `color-roles.md`
-  (harta rolurilor de culoare), `module-css.md` (inventar CSS injectat de module) + utilitarele
-  `e2e/shoot.js` / `e2e/theme-grid.js`.
-- **Ultimele accente (v144):** drop-cap gilt pe fraza spaniolă (prima literă reală într-un span, „«" rămâne
-  plat), candle-glow în spatele centrului florii pe light, și discul-lună al ciclului făcut theme-aware în JS
-  (`moonSVG` → velvet pe dark, oriunde apare) — închide toate accentele-semnătură din plan.
+An upgrade to the breathing section, built on two verified research passes rather than on what sounds
+calming. The honest conclusion shaped the copy: the acute effects of slow breathing are real, but the
+"vagus nerve" framing is contested as of 2025, so the app describes **what you feel** instead of
+claiming a mechanism.
 
-## v126–v132 — teste/a11y, arcul olive in Jurnal, fix scriere + repo public
-- **Teste & CI/CD:** instrumentare pentru Playwright + fix a11y (aria-label care urmareste limba) (v126),
-  handle-uri de test pe composer (v127), a11y pe slot — tick „done" + pastila de ora ca butoane cu
-  tastatura/SR (v128).
-- **Arcul olive in Jurnal:** accent olive in coltul cardului (v129) → ramura inalta care drapeaza tot
-  cardul (v130) → ramura la ~65% + textarea care creste singur, fara scrollbar peste ramura (v131) →
-  **ramura SCOASA complet (v132)** fiindca pagina parea prea aglomerata (var base64 nefolosit eliminat,
-  fisier ~640KB→~468KB).
-- **Fix scriere lunga (v132):** la intrari lungi, randul scris dispărea sub bara fixa de jos; acum pagina
-  scroll-eaza dupa cursor (masurare cu div-oglinda + scroll „instant" pe scroller-ul real) → vezi mereu ce scrii.
-- **Repo făcut PUBLIC** (showcase CV, iun. 2026): audit de securitate (fără secrete în cod sau istoric),
-  strategia de monetizare + mockup-urile mutate în `private/` (gitignored) + curățate din istoric,
-  README rescris ca vitrină de inginerie/QA + screenshot-uri, licență **CC BY-NC 4.0**, workflow-uri CI
-  hardenuite, branch-uri vechi șterse.
+- **Purpose labels** on every exercise card, and a "why it is worth it" note inside the player —
+  positive, sourced, and hidden until you open the exercise rather than shouted on the card.
+- **The "Somatic / vagus nerve" segment is now simply "Corp" (Body)**, and the vagus-nerve language is
+  gone from the entire app.
+- **Adjustable resonance** — pick a pace (5, 5.5 or 6 breaths per minute) and a duration (5, 10 or 15
+  minutes), with a minimum useful dose of five minutes.
+- **A rhythm finder**: try three paces, keep the one that fits. Saved to `settings.resonancePace`,
+  included in backup, and preselected next time.
+- **Progressive muscle relaxation** added as a new body technique — the one with the strongest
+  evidence behind it (meta-analysis of 31 randomised trials).
+- Deliberately **not** added, on safety and evidence grounds: Wim Hof, Buteyko, HRV scoring, Havening.
 
-## v125 — Journal redesign + date-nav unificat
-- Jurnal: stare ca **discuri tonale** (nu emoji-vreme) + cuvantul starii (`#moodWord`).
-- Jurnal: stare ca **discuri tonale** (nu emoji-vreme) + cuvantul starii (`#moodWord`).
-- Stare = **lumina pe pagina**: `applyJWash()` incalzeste/raceste pagina + cardul de scris
-  (`--jwash`/`--jwash2`, tranzitie .45s). Senin → auriu, Ploaie → albastru-gri.
-- **Card de scris cu chenar fin de aur**.
-- Antet foto **refolosit din `.hero`** global (jpeg mutat in `--hero-bg`) — fara dublura de antet.
-- **Date-nav unificat** cu Home (compact): repara sageata `›` taiata pe Android; unifica Jurnal+Calendar.
-- Tot cablajul pastrat: jMood, permPause (roata emotiilor), autosave, 4F, export, i18n.
-- PENDING (mockup aprobat `mi-dia-jsol2.html`): olive ca **rama** in cardul de scris + placeholder
-  original + „+ reflecție ghidată" / export subtil jos.
+## v157 → v168 — one visual language
 
-## v122–v124 — Calendar redesign (lentile)
-- Model „lentile": **Plan** (inele de progres) / **Stare-„Lumína"** (glow-uri radiale de stare, lumina
-  Sorolla) / **Ritm** (panglica de ciclu, doar cand ciclul e activat).
-- Popup azahar la detaliul zilei; cycle Option A; bugfix la navigarea spre Jurnal.
+No new features. An end-to-end pass to make the interface speak with one voice, one slice per build,
+each validated before the next.
 
-## v112–v119 — Add-flow + memento
-- Composer unificat (se extinde la scriere), ceas nativ OS, durata pe quick-chips.
-- Memento in-app pe foreground inainte de inceputul slotului; compactarea composer-ului.
+- **One action colour.** About 87 hard-coded wine hexes became five `--act*` tokens. Pixel-identical.
+- **One primary button.** `.btn--primary` replaced ten or more bespoke filled buttons — wine in light,
+  gilt in dark.
+- **One radius scale.** Controls, cards, panels and modals moved onto `--r-sm/md/lg/xl` instead of
+  arbitrary pixel values. This exposed `.hero` referencing a token that was never defined.
+- **Dark-mode leaks fixed** — the TODAY pill, toggles, the intention modal and several cards were
+  still painting cream-on-velvet.
+- **The `--brand` trap**: `--brand` still pointed at rose in the light theme, so save buttons and the
+  onboarding calls to action were rose while everything else was wine. One rule fixed all of them.
+- **The drop cap, properly.** The first letter of the daily phrase had been "fixed" repeatedly and
+  kept coming back clipped. The real cause was `background-clip: text`, which does not paint the part
+  of a glyph that overflows its box — fragile, and dependent on font and device. Replaced with a solid
+  gilt colour and no clipping, so there is no box to clip against.
 
-## v98–v110 — Cycle / Respiro / persistence
-- „Ritmul meu" (`cycle.js`, opt-in, default OFF, gender-neutral): faza lunii in Calendar, logare reala a
-  menstruatiei + istoric, „Luna ta" + disclaimer ferm (estimativ, nu medical, nu contraceptiv).
-- „Calm" → **„Respiro"** (v101). Modul de persistenta `persist.js` (backup-reminder / install banner).
+## v156 — managing rituals, and one design language
 
-## v90–v97 — Energizer / feel-better
-- Toggle Calmează-mă / Trezește-mă, respiratie energizanta, body scan (TTS), permission pause + roata
-  emotiilor (Lieberman 2007; 77 termeni curati), rutare F3, „Emoții recente", sun cue + dot pe Calendar.
-- Etica: emotia se capteaza doar pe stari joase; se arata bland, niciodata ca metrica de frecventa.
+- **Rituals can finally be edited and deleted** — including the two seeded by default, which
+  previously could not be removed at all. Tap to edit, two-tap to delete, id and history preserved.
+- **i18n debt repaid**: an empty Spanish translation no longer leaves a blank line, four stale
+  aria-labels fixed, seven orphaned keys removed.
+- Hard-coded browns on headings replaced with semantic tokens; the Calendar's date navigation aligned
+  with the one on Home.
 
-## v86–v89 — Unificare CSS
-- Cele doua straturi CSS unificate, pixel-verificat identic pe 27 de ecrane. Open: `--rose:#CB8188` (~13×).
+## v145 → v155 — Rituals, and a guided onboarding
 
-## v57–v68 — REVAMP premium
-- Fraunces + Nunito Sans; flower-nav cu etichete in petale; header (veil, „Día" auriu italic); Progres
-  consolidat; Profil „Călătoria ta" + nume. v67: actiuni = rose (olive scos din actiuni).
+An identity-based habits module, and a first-run experience for it.
+
+- **Rituals on Home**: one card per ritual with a two-minute version, a streak **derived from the log
+  rather than stored**, and a week of dots. Checking one is a small celebration, and the toast names
+  the identity it just voted for.
+- **Never miss twice** — a warm terracotta state after a missed day, not a broken streak.
+- **Habit stacking** — a ritual can be cued by another ritual instead of by a time.
+- **Identity** — "who do you want to become" becomes a card on Home showing today's votes.
+- **Backfill** — a tappable 28-day mini-calendar in Progress, because forgetting to tick is not the
+  same as not doing it. Checking always marks *today*; filling in the past is an explicit action.
+- **Guided onboarding**: a six-card carousel. The step introducing the flower is a poem, in all three
+  languages, rather than an explanation.
+
+## v133 → v144 — the "old rich" revamp: two real themes
+
+- **Light-luxe** (champagne, wine, gilt) and **Dark-velvet** (aubergine, gilt), switchable from the
+  hero or from Settings, remembered in `settings.theme` and included in backup. No flash of the wrong
+  theme on load.
+- Built on **semantic tokens** — a `:root` block for light and a `data-theme="dark"` block that remaps
+  the same names, so neither theme can leak into the other. The locked rose family was left untouched.
+- All seven views themed, one slice per build.
+- **Every pictographic emoji replaced with line-art SVG**, keeping only typographic marks.
+- An honest regression: a locally scoped helper broke slot rendering across thirteen tests.
+  `node --check` passed it, because the syntax was fine — the end-to-end suite is what caught it.
+
+## v126 → v132 — accessibility, the olive branch, and going public
+
+- Accessibility work on slots: the done tick and the time pill became real keyboard and
+  screen-reader controls.
+- The olive branch in the Journal arrived, grew, and was **removed again** because the page felt
+  crowded. Removing it also dropped the file by about 170 KB.
+- **Long entries stopped hiding under the bottom bar** — the page now follows the caret as you write.
+- **The repository was made public** as an engineering showcase: security audit, monetisation notes
+  and mockups moved out and purged from history, README rewritten for an engineering audience,
+  CC BY-NC 4.0 licence, CI workflows hardened.
+
+## v125 — Journal redesign
+
+- Mood became **tonal discs** rather than weather emoji, with the mood word alongside.
+- **Mood became light on the page**: choosing one warms or cools the whole card. Clear is golden, rain
+  is blue-grey.
+- The photo header is now the same `.hero` component used elsewhere, instead of a second one.
+- Date navigation unified with Home, which also fixed a clipped arrow on Android.
+
+## v122 → v124 — Calendar as lenses
+
+Three ways to read the same month: **Plan** (progress rings), **Mood** (radial glows), and **Rhythm**
+(the cycle ribbon, only when cycle tracking is on).
+
+## v112 → v119 — the add flow
+
+A single composer that expands as you type, the native OS clock, durations on quick chips, and an
+in-app reminder before a slot begins.
+
+## v98 → v110 — cycle, Respiro, persistence
+
+- **"My rhythm"** (`cycle.js`) — opt-in, off by default, gender-neutral: moon phase in the calendar,
+  real logging with history, and a firm disclaimer that it is an estimate, not medical advice and not
+  contraception.
+- "Calm" became **"Respiro"**.
+- A persistence module: a gentle reminder to back up, and an install prompt.
+
+## v90 → v97 — feeling better
+
+A calm-me / wake-me toggle, energising breathing, a spoken body scan, and a permission pause with an
+emotion wheel of 77 terms.
+
+The ethics were decided here and still hold: emotion is only ever captured on low moods, shown
+gently, and never turned into a frequency metric.
+
+## v86 → v89 — CSS unification
+
+Two overlapping stylesheet layers merged into one, verified pixel-identical across 27 screens.
+
+## v57 → v68 — the premium revamp
+
+Fraunces and Nunito Sans, labels inside the flower petals, the hero veil with the gilt italic "Día", a
+consolidated Progress view, and a Profile that reads as a journey. Actions settled on rose, with olive
+removed from anything actionable.
+
+---
+
+Everything before v57 is in [`docs/history/BUILD-LOG.md`](docs/history/BUILD-LOG.md).

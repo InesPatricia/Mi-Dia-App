@@ -1,0 +1,38 @@
+Day tab — add flow & slot rendering (HISTORICAL v23–v47 — SUPERSEDED by the v112+ composer; see "Add flow — CURRENT (v112+)" below)
+To do / Backlog (planned in chat, June 2026)
+Changelog (v23 → v47)
+Changelog (v48 → v53) — testing-feedback batch (P0)
+Changelog (v54 → v55) — design batch (P1)
+Changelog (v56 → v67) — premium "mockup1" REVAMP
+Changelog (v68 → v89) — home/intention/progress/profile + CSS unification
+Changelog (v90) — energizer arc, F1
+Changelog (v91 → v93) — energizer F2, body scan, permission pause
+Changelog (v94 → v96) — emotion routing, wheel expansion, surfacing
+Changelog (v97) — small finishes
+Backlog — energizer / feel-better arc
+Changelog (v169 → v172) — Respiro breathwork/educatie (research-fundamentat, agent-assisted)
+Changelog (v157 → v168) — Faza 3 profund: un singur limbaj de tokeni (acțiune · radius · buton · card)
+Changelog (v156) — coerență cap-coadă: gestionare ritualuri + unificare design + drop-cap fix
+Changelog (v98 → v107) — cycle feature, Respiro, persistence, opt-in, moon
+Changelog (v111 → v119) — bug fixes + add-flow redesign + start-time memento
+Changelog (v120 → v125) — Calendar redesign + Journal redesign
+Changelog (v126) — test instrumentation + a11y aria-label fix
+Changelog (v127) — composer test instrumentation
+Changelog (v128) — slot a11y (done tick + time pill)
+Changelog (v129) — Journal olive corner accent
+Changelog (v131) — Journal olive branch at ~65% + auto-grow textarea (scrollbar bug fix)
+Changelog (v130) — Journal olive sprig swapped for the tall draping branch
+Changelog (v142) — Luxe revamp Faza 6: QA green + promote (revamp COMPLETE)
+Changelog (v145 → v155) — modul „Ritualuri" (Atomic Habits) + Onboarding ghidat (SHIPPED, live)
+Changelog (v144) — close the 3 deferred luxe accents (drop-cap · candle-glow light · cycle moon dark)
+Changelog (v143) — LIGHT-LUXE pass: light theme now matches the mockup (champagne + wine + gilt)
+Changelog (v140 → v142) — dark-mode polish (Ines review) + full emoji → line-art sweep
+Changelog (v139) — Luxe revamp Faza 5 (part 2): Profile + Settings dark (revamp functionally complete)
+Changelog (v138) — Luxe revamp Faza 5 (part 1): the 5 secondary views themed dark (5 agents + JS)
+Changelog (v137) — Luxe revamp Faza 4: cards & components dark theming (token remap + 5 agents)
+Changelog (v136) — Luxe revamp Faza 3: flower nav + bottom bar/FAB (velvet/gilt, agent-assisted)
+Changelog (v135) — Luxe revamp Faza 2: hero & brand (Ephesis "Día" + per-theme velvet)
+Changelog (v134) — Luxe revamp Faza 1: theme switcher plumbing (dark works rough)
+Changelog (v133) — Luxe revamp Faza 0: theme foundation (zero visual change)
+Changelog (v132) — Journal: olive branch removed + caret-follow scroll (public-release polish)
+Backlog (v129 → v130)
