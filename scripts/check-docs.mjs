@@ -312,6 +312,38 @@ function checkRouterDoesNotFork() {
     : fail(6, `${ROUTER} differs from ${baseRef} — the router must not fork per branch`);
 }
 
+// ---------------------------------------------------------------- [7] diagrams render
+
+/**
+ * GitHub renders mermaid with HTML labels disabled, and silently strips the tags rather than
+ * failing: `A["Name<br/><i>detail</i>"]` arrives as "Namedetail", words fused together. The diagram
+ * still draws, so nothing looks broken until someone reads it.
+ *
+ * Keep labels plain. If a label needs two lines, it is usually two nodes, or the detail belongs in
+ * the prose beside the diagram.
+ */
+function checkDiagramsRender() {
+  const offences = [];
+  let blocks = 0;
+
+  for (const doc of present()) {
+    const lines = read(doc).split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      if (!/^\s*```mermaid\s*$/.test(lines[i])) continue;
+      blocks++;
+      const start = i + 1;
+      for (i++; i < lines.length && !/^\s*```\s*$/.test(lines[i]); i++) {
+        const tag = lines[i].match(/<\/?[a-zA-Z][^>]*>/);
+        if (tag) offences.push(`${doc}:${i + 1} (block at line ${start}): ${tag[0]}`);
+      }
+    }
+  }
+
+  offences.length
+    ? fail(7, `HTML inside mermaid labels — GitHub strips it and fuses the words:\n      ${offences.join('\n      ')}`)
+    : pass(7, `${blocks} mermaid block(s), no HTML in labels`);
+}
+
 // ---------------------------------------------------------------- run
 
 const RULES = [
@@ -321,6 +353,7 @@ const RULES = [
   ['no test-count drift', checkTestCounts],
   ['history is complete', checkHistoryComplete],
   ['router does not fork', checkRouterDoesNotFork],
+  ['diagrams render', checkDiagramsRender],
 ];
 
 for (const [, fn] of RULES) {

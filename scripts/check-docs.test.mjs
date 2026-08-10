@@ -186,6 +186,31 @@ test('rule 4 catches a test count the runner cannot produce', () => {
   );
 });
 
+// This one is written from a real screenshot: the README diagram rendered as
+// "docs/DATA_SCHEMA.mdwhat is stored" because GitHub stripped the <br/> and the <i>.
+test('rule 7 catches HTML inside a mermaid label', () => {
+  expectRuleFails(7, (root, write) =>
+    write(
+      'CLAUDE.md',
+      `${CLEAN_ROUTER}\n\`\`\`mermaid\nflowchart LR\n  A["One<br/><i>two</i>"] --> B["Three"]\n\`\`\`\n`,
+    ),
+  );
+});
+
+test('rule 7 accepts a diagram with plain labels', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'CLAUDE.md'),
+      `${CLEAN_ROUTER}\n\`\`\`mermaid\nflowchart LR\n  A["One"] --> B["Two"]\n  B -. verifies .-> A\n\`\`\`\n`,
+      'utf8',
+    );
+    assert.equal(run(root).byRule[7], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rule 5 catches an archived heading dropped from the build log', () => {
   expectRuleFails(5, (root, write) =>
     write('docs/history/BUILD-LOG.md', '# Build log\n\nsomeone deleted the old entries\n'),
