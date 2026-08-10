@@ -25,7 +25,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: e2e
+    working-directory: quality/e2e
 
 env:
   PROD_URL: https://mi-dia-app.pages.dev
@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Wait for Cloudflare to publish the new build
@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: smoke-prod-report
-          path: e2e/playwright-report
+          path: quality/e2e/playwright-report
           retention-days: 7
 
   lighthouse:
@@ -74,11 +74,11 @@ jobs:
       - run: npm install -g @lhci/cli@0.13.x
       # autorun = collect (3 runs, median) + assert (budgets) + upload (filesystem).
       # Uses the Chrome preinstalled on the ubuntu-latest runner.
-      - run: lhci autorun --config=lighthouserc.cjs
+      - run: lhci autorun --config=quality/perf/lighthouserc.cjs
       - name: Write Lighthouse scores to the run summary
         # Runs even if the budgets failed above, so the scores are visible exactly when it matters.
         if: ${{ !cancelled() }}
-        run: node scripts/lh-summary.mjs
+        run: node quality/tools/lh-summary.mjs
       - name: Upload Lighthouse reports
         # Upload even when an assertion fails — that's exactly when the report matters most.
         if: ${{ !cancelled() }}

@@ -24,7 +24,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: e2e # toate comenzile `run` pornesc din e2e/
+    working-directory: quality/e2e
 
 jobs:
   # Fast gate: the single-file build is structurally sound (div balance + JS parses).
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
       # Cache the downloaded browser (~150 MB) keyed by the exact Playwright version, so we only
       # re-download it when that version changes. Read the version AFTER npm ci so it's resolvable.
@@ -90,12 +90,12 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: blob-report-${{ matrix.shard }}
-          path: e2e/blob-report
+          path: quality/e2e/blob-report
           retention-days: 7
 
   merge-report:
     name: merge reports
-    if: ${{ !cancelled() }}  #urca raportul CHIAR SI cand testele pica, pentru ca exact atunci ai nevoie de el.
+    if: ${{ !cancelled() }}
     needs: [test]
     runs-on: ubuntu-latest
     steps:
@@ -104,12 +104,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
       - name: Download all blob reports
         uses: actions/download-artifact@v8
         with:
-          path: e2e/all-blob-reports
+          path: quality/e2e/all-blob-reports
           pattern: blob-report-*
           merge-multiple: true
       - name: Merge into one HTML report
@@ -118,5 +118,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: html-report
-          path: e2e/playwright-report
+          path: quality/e2e/playwright-report
           retention-days: 14

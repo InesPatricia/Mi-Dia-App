@@ -13,15 +13,7 @@ This skill handles **any large, multi-part job** — a visual redesign (the luxe
 
 This skill ends at a verified, QA-passed `mi-dia-vNN.html` on a branch with green e2e — it hands **promote + deploy** back to the user (copy latest `vNN` → `index.html`, bump `sw.js` CACHE, PR → CI → Cloudflare). The deploy stays a separate, deliberate decision.
 
-Read **`CLAUDE.md`** (orientation, the hard rules, and where everything else lives), then the files it routes you to for this job — **`docs/DESIGN_SYSTEM.md`** for anything visual, **`docs/APP-REFERENCE.md`** for the versioning/PWA/deploy rules, **`docs/DATA_SCHEMA.md`** if the work touches storage — and the **`design-check` skill** (the binding design system + validation chain), the **`e2e/`** harness notes in APP-HERITAGE.md, and project memory before starting. Every convention there is binding for **every** agent, whatever its slice.
-
-> **⭐ Foundation guard (D-14/D-16):** above all of the above sits the foundation — the Constitution +
-> **BOS Vol. I** (`private/marketing/mi-dia-bos-vol1.md`) + the reconciliation register
-> (`private/reconciliation-register.md`, live R-NN list). Include in the DESIGN DNA pack: the Golden
-> Question ("does this strengthen the relationship a person has with themselves?"), BOS §22's 19
-> never-exist patterns (no new streaks/counters/badges/urgency/celebrations/comparison), and the
-> rule that register items are remediated ONLY via explicit per-entry Ines decisions — a revamp
-> never "fixes" them opportunistically, and never edits foundation docs to match the app.
+Read **`CLAUDE.md`** (how to work here: orientation, the hard rules and where everything else lives), then the files it routes you to for this job — **`docs/DESIGN_SYSTEM.md`** for anything visual, **`docs/APP-REFERENCE.md`** for the versioning/PWA/deploy rules and current behaviour, **`docs/DATA_SCHEMA.md`** if the work touches storage — plus the **`design-check` skill** and project memory. Every convention there is binding for **every** agent, whatever its slice.
 
 > **`design-check` is the single design + validation authority for this skill.** It owns the locked palette, the token rules, the flower-label hard requirement, the grep helpers, and the mandatory verification chain. `revamp` does not re-derive any of that — it **invokes `design-check` BEFORE and AFTER every visual slice** (that skill's own usage contract) and the QA team judges against it. Where this file and `design-check` ever differ, `design-check` + `docs/DESIGN_SYSTEM.md` win.
 
@@ -84,7 +76,7 @@ Apply proposals **yourself, one at a time** — never let two land blind. Each a
    - theme-flipping colors that should be tokens: `grep -nE '#[0-9A-Fa-f]{6}' mi-dia-vNN.html` — any color used as a surface/text background in a component rule (not in `:root` / `[data-theme]`) is suspect;
    - flower coords NOT moved: `grep -nE '\.lbl\.l[1-5]\{' mi-dia-vNN.html` — must still read `170/78`, `255/142`, `222/244`, `118/244`, `85/142`;
    - the LOCKED `--rose-1..4` untouched, i18n complete (EN/ES/RO), PWA intact — AND *does it look like one product?* (consistent spacing, radii, type scale, tone). Reject anything that compiles but feels bolted-on.
-4. **Mandatory validation AFTER** (the `design-check` chain, listed in `CLAUDE.md`): **`node e2e/validate-build.js`** (div balance + `node --check` on every `<script>` block) → **screenshot the changed view in BOTH themes at 412px** and confirm no label spills out of any petal, hero text stays legible over the bougainvillea photo (dark veil strong enough), and contrast is OK on velvet surfaces (no muddy gold-on-wine; functional area/calm/mood tints need legible dark variants). Be honest: headless Chromium ≠ real Android (blur/backdrop-filter, fonts, native pickers) — the device pass stays Ines's step.
+4. **Mandatory validation AFTER** (the `design-check` chain, listed in `CLAUDE.md`): **`node quality/e2e/validate-build.js`** (div balance + `node --check` on every `<script>` block) → **screenshot the changed view in BOTH themes at 412px** and confirm no label spills out of any petal, hero text stays legible over the bougainvillea photo (dark veil strong enough), and contrast is OK on velvet surfaces (no muddy gold-on-wine; functional area/calm/mood tints need legible dark variants). Be honest: headless Chromium ≠ real Android (blur/backdrop-filter, fonts, native pickers) — the device pass stays Ines's step.
 5. Resolve conflicts between slices (overlapping selectors, specificity, the `:root` / `html[data-theme="dark"]` cascade) before the next.
 
 You are the only writer to the file. This keeps the single self-contained build safe and the unity real.
@@ -114,7 +106,7 @@ Collect QA verdicts. For each FAIL: send a tight fix brief (with the DNA) back t
 Do **not** deploy from here. When QA is green and `cd e2e && npm test` passes (regenerate the `@visual` baselines first if the look changed — `npm run test:visual`):
 
 1. Summarize: what was built (the vNN range), QA results per dimension, and anything still needing a real-Android visual confirm.
-2. Update the docs: **`CHANGELOG.md`** gets the arc entry, and whichever satellite the arc changed (`docs/DATA_SCHEMA.md` for new keys, `docs/DESIGN_SYSTEM.md` for new tokens or rules, `docs/APP-REFERENCE.md` for new behaviour, `docs/history/BUILD-LOG.md` for the per-build detail). **`CLAUDE.md` records no build number and needs no edit per release** — `node scripts/check-docs.mjs` fails if one creeps back in.
+2. Update the docs: **`CHANGELOG.md`** gets the arc entry, and whichever satellite the arc changed (`docs/DATA_SCHEMA.md` for new keys, `docs/DESIGN_SYSTEM.md` for new tokens or rules, `docs/APP-REFERENCE.md` for new behaviour). **`CLAUDE.md` records no build number and needs no edit per release** — `node quality/tools/check-docs.mjs` fails if one creeps back in.
 3. Hand off the **promote + deploy** to Ines (the project's flow, never run from revamp): copy the final `mi-dia-vNN.html` → `index.html`, **bump the `CACHE` constant in `sw.js`**, `git rm` the previous `mi-dia-vNN.html` (history keeps it), commit, open a PR (gh CLI not installed → PR via URL). CI gates it (validate + e2e shards + the preview-smoke check), merge → Cloudflare Pages auto-deploys `mi-dia-app.pages.dev`, post-deploy prod smoke confirms it. Rollback = 1-click Cloudflare / `git revert`. The real-Android device pass remains Ines's step.
 
 ## Guardrails

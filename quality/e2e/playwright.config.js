@@ -49,7 +49,7 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: `npx http-server ../public -p ${PORT} -c-1 --silent`,
+    command: `npx http-server ../../public -p ${PORT} -c-1 --silent`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

@@ -15,7 +15,7 @@ verify the gates run what you think they run, and that branches are current befo
    the events it claims? A workflow with **zero runs ever** is a dead gate — how the
    `smoke-preview` trigger silently died when Cloudflare stopped emitting `deployment_status`.
    Fix by re-pointing the trigger (it now runs on `pull_request` and waits on the Cloudflare
-   check-run via `e2e/wait-for-preview.js`).
+   check-run via `quality/e2e/wait-for-preview.js`).
 
 2. **Is the branch current with main?** Before merging a branch that has been open a while, or
    when a PR fails on a step tied to a file that exists on main, check the merge base. A branch
@@ -36,6 +36,6 @@ verify the gates run what you think they run, and that branches are current befo
 ## Guardrails
 
 - Read-only diagnosis first. Any fix ships through the normal PR + gates.
-- Keep `.zap/rules.tsv` ⇄ `SECURITY-NOTES.md` and the shard count ⇄ badge/README in sync when a
+- Keep `quality/security/rules.tsv` ⇄ `SECURITY-NOTES.md` and the shard count ⇄ badge/README in sync when a
   change touches them.
 - This is git-visible: write in English.

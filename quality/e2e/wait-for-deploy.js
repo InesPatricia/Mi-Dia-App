@@ -5,7 +5,7 @@
 // reads the expected CACHE constant from the repo's sw.js (the just-merged value) and polls the
 // live /sw.js until it matches — or fails after a timeout, so a stuck/failed deploy is loud.
 //
-// Node 18+ (global fetch). Run from e2e/ (so ../public/sw.js resolves to the repo-root service worker).
+// Node 18+ (global fetch). Run from quality/e2e/ (so ../../public/sw.js resolves to the repo-root service worker).
 const fs = require('fs');
 const path = require('path');
 
@@ -14,9 +14,9 @@ const TIMEOUT_MS = Number(process.env.DEPLOY_WAIT_MS || 300000); // 5 min
 const INTERVAL_MS = Number(process.env.DEPLOY_POLL_MS || 10000); // 10 s
 
 function expectedCache() {
-  const sw = fs.readFileSync(path.resolve(__dirname, '..', 'public', 'sw.js'), 'utf8');
+  const sw = fs.readFileSync(path.resolve(__dirname, '..', '..', 'public', 'sw.js'), 'utf8');
   const m = sw.match(/CACHE\s*=\s*"([^"]+)"/);
-  if (!m) throw new Error('Could not find a CACHE constant in ../public/sw.js');
+  if (!m) throw new Error('Could not find a CACHE constant in ../../public/sw.js');
   return m[1];
 }
 

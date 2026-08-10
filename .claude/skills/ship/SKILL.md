@@ -76,7 +76,7 @@ schimbat (sari doar ce e demonstrabil deja la zi — si spune ca ai sarit):
 
    **`CLAUDE.md` nu se atinge la livrare.** Nu contine versiunea, numarul de teste sau arcul curent —
    e acelasi fisier pe main, staging si worktree-urile de QA, iar orice numar scris in el ar fi gresit
-   pe toate branch-urile mai putin unul. `node scripts/check-docs.mjs` esueaza daca reapare unul.
+   pe toate branch-urile mai putin unul. `node quality/tools/check-docs.mjs` esueaza daca reapare unul.
 3. **`README.md`** (vitrina publica) — badge-uri (numar de teste), **Highlights/features**, lista de module,
    descrierea RO, orice numar sau versiune care apare.
 4. **Memoria** (`~/.claude/.../memory/`) — actualizeaza FIECARE fisier ale carui fapte s-au schimbat
@@ -89,9 +89,9 @@ schimbat (sari doar ce e demonstrabil deja la zi — si spune ca ai sarit):
 6. **Consecventa** — nu o mai verifici cu ochiul, o ruleaza masina:
    ```
    node .claude/skills/ship/validate.mjs   # sync versiune: sw.js CACHE ↔ index.html ↔ mi-dia-vNN.html
-   node scripts/check-docs.mjs             # cai moarte, numar de teste, istoric, router neutru
+   node quality/tools/check-docs.mjs             # cai moarte, numar de teste, istoric, router neutru
    ```
-   Numarul de teste nu se scrie din memorie nicaieri — sursa e `node e2e/count-tests.js`.
+   Numarul de teste nu se scrie din memorie nicaieri — sursa e `node quality/e2e/count-tests.js`.
 
 Ruleaza din nou `node .claude/skills/ship/validate.mjs` — WARN-urile `[5]` trebuie sa dispara. (Memoria +
 README + skill-urile nu sunt prinse de validator — le verifici MANUAL, e responsabilitatea ta la fiecare

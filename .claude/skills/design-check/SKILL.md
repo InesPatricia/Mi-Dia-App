@@ -1,35 +1,23 @@
 ---
 name: design-check
-description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change INSIDE the Mi Día PWA file (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches the app's CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make the app look…". For a NEW outward-facing / marketing surface built as its own file (landing page, public/lifetime version, App Store / social / promo, onboarding/paywall) use /marketing-design instead — this skill does NOT cover new brand surfaces.
+description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, theme, or styling change INSIDE the Mi Día PWA file (mi-dia-vNN.html). Enforces the agreed luxury "old rich" Light+Dark design system and the project's mandatory validation chain (div-balance + node --check + screenshot in BOTH themes) so theme/contrast/flower-label regressions never ship. Invoke whenever a request touches the app's CSS, colors, tokens, themes, the hero, the flower nav, cards, fonts, or "make the app look…". For a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription version, App Store / social / promo, onboarding/paywall) use /marketing-design instead — this skill does NOT cover new brand surfaces.
 ---
 
 # Revamp — Mi Día luxe design check
 
 > **Scope: IN-APP ONLY.** This skill governs changes INSIDE the app file `mi-dia-vNN.html` — it VERIFIES an
 > existing, locked design system and gates it (nothing regresses). It does NOT design new pages. If the task
-> is a NEW outward-facing / marketing surface built as its own file (landing page, public/lifetime
+> is a NEW outward-facing / marketing surface built as its own file (landing page, public/subscription
 > version, App Store / social / promo, onboarding/paywall), STOP and use **`/marketing-design`** — that skill
 > CREATES from the brand DNA; this one CHECKS the app against it.
 >
 > One-line split: **`/marketing-design` = architect of new brand surfaces · `/design-check` = QA inspector of
 > the app.** Shared palette, opposite jobs.
 
-**Read `docs/DESIGN_SYSTEM.md` first** — it holds the locked decisions: theme mechanics, token families,
-the rose family that must never be redefined, and the verification chain. Historical detail: the phased
-build plan (v133→v142). Mi Día is ONE self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every
-change → a **NEW `vNN` file** (never overwrite a version in place). **Respond in Romanian without diacritics.**
-
-> **⭐ Foundation guard (D-14/D-16, July 2026).** Above this design system sits the foundation:
-> the Constitution + **BOS Vol. I** (`private/marketing/mi-dia-bos-vol1.md` — how the product
-> must FEEL; the current version lives in each document's own header). When validating any app change:
-> 1. **Never edit foundation documents to match the app** — the app is measured against them.
-> 2. **Do not opportunistically "fix" items from `private/reconciliation-register.md` (R-NN — the
->    live list is in the register)** — each is remediated ONLY via an explicit per-entry Ines
->    decision (`/decizie` → D-NN).
-> 3. **A new change must not create a NEW divergence from the BOS** — no new streaks/counters/
->    badges/urgency/celebration/comparison patterns (BOS §22, 19 interdictions). If a requested
->    change would, flag it and propose a register entry instead of silently shipping it.
-> 4. Judge every screen by BOS §34: *does this help the user return to themselves?*
+**Read `docs/DESIGN_SYSTEM.md` first** — it holds the locked decisions: the theme mechanics, the token
+families, the rose family that must never be redefined, and the verification chain. Mi Día is ONE
+self-contained `mi-dia-vNN.html` (HTML+CSS+JS, no build step). Every change → a **NEW `vNN` file**
+(never overwrite a version in place). **Respond in Romanian without diacritics.**
 
 ## The design system (LOCKED with Ines)
 
@@ -83,9 +71,9 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 ## Mandatory verification AFTER any layout/CSS/color change (before claiming done)
 
-1. **Div balance** + **`node --check`** — one command: **`node e2e/validate-build.js`** (was the Python snippet in
-   "CRITICAL: Validation after EVERY edit").
-2. **`node --check`** on each `<script>` block (extract them first; delete temp files after).
+1. **Div balance** — opens == closes for `<div>` in the body.
+2. **`node --check`** on each `<script>` block.
+   Both are one command: **`node quality/e2e/validate-build.js`**.
 3. **Screenshot the changed view in BOTH themes** (light + dark) at 412px and confirm:
    - no label/word spills OUT of any flower petal;
    - hero text stays legible over the bougainvillea photo (the dark veil must be strong enough);
@@ -107,10 +95,10 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 ## Companion skills + references (use these — don't re-derive)
 
-- **`/theme-qa`** — the Light+Dark QA gate: `e2e/theme-grid.js` shoots EVERY view in BOTH themes into one
+- **`/theme-qa`** — the Light+Dark QA gate: `quality/e2e/theme-grid.js` shoots EVERY view in BOTH themes into one
   review grid + the legibility checklist + the e2e net. Run it before promoting a theme change (it's the
   automation of step 3, across all 8 views, that would have caught the reactive dark-mode bugs).
-  Atomic one-off: `node e2e/shoot.js <file> <out.png> <view> <theme>`.
+  Atomic one-off: `node quality/e2e/shoot.js <file> <out.png> <view> <theme>`.
 - **`.claude/skills/theme-qa/color-roles.md`** — the color ROLE map (action=wine/gilt · metal=gold · functional
   =area/mood/calm · surface/text). Recolor by role; never blanket-swap a locked token. Reference it instead
   of re-deciding "should this be wine or rose?".

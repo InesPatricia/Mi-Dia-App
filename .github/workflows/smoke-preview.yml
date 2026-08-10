@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: e2e
+        working-directory: quality/e2e
     env:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Compute the branch-alias preview URL
@@ -80,7 +80,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: smoke-preview-report
-          path: e2e/playwright-report
+          path: quality/e2e/playwright-report
           retention-days: 7
 
       # SHIFT-LEFT: run the SAME Lighthouse budgets against the PR's preview, so a perf/a11y
@@ -94,11 +94,11 @@ jobs:
         working-directory: .
         run: |
           npm install -g @lhci/cli@0.13.x
-          lhci autorun --config=lighthouserc.cjs --collect.url="$PROD_URL"
+          lhci autorun --config=quality/perf/lighthouserc.cjs --collect.url="$PROD_URL"
       - name: Write preview Lighthouse scores to the summary
         if: ${{ !cancelled() }}
         working-directory: .
-        run: node scripts/lh-summary.mjs
+        run: node quality/tools/lh-summary.mjs
       - name: Upload preview Lighthouse report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

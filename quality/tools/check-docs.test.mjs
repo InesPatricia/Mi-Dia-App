@@ -5,7 +5,7 @@
  * green forever without checking anything, so every rule here is asserted in both directions:
  * green on a clean fixture, red on a fixture broken in exactly one way.
  *
- * Run:  node --test scripts/check-docs.test.mjs
+ * Run:  node --test quality/tools/check-docs.test.mjs
  */
 
 import { test } from 'node:test';
@@ -25,7 +25,7 @@ const COUNT_STUB = `// Mirrors the real e2e/count-tests.js, including its --chec
 const fs = require('node:fs'), path = require('node:path');
 const counts = { functional: { tests: 83, files: 19 }, visual: { tests: 2 }, prod: { tests: 7, files: 1 } };
 if (process.argv.includes('--check')) {
-  const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8');
+  const readme = fs.readFileSync(path.join(__dirname, '..', '..', 'README.md'), 'utf8');
   // no regex on purpose: this lives inside a template literal, and one lost backslash turns the
   // pattern into a syntax error that only shows up as "could not run count-tests"
   const marker = 'shields.io/badge/e2e-';
@@ -66,7 +66,7 @@ function makeFixture() {
   write('docs/history/BUILD-LOG.md', '# Build log\n\n## Changelog (v23 → v47)\n\nold stuff\n');
   write('docs/history/.headings-baseline.txt', 'Changelog (v23 → v47)\n');
   write('index.html', '<!doctype html>');
-  write('e2e/count-tests.js', COUNT_STUB);
+  write('quality/e2e/count-tests.js', COUNT_STUB);
   return root;
 }
 
@@ -141,6 +141,20 @@ test('rule 6 reads the branch from GITHUB_HEAD_REF when the checkout is detached
   }
 });
 
+// A pull request exists to change main, so the no-fork rule cannot apply to one without blocking
+// every legitimate router edit — including the refactor that moved the served files into public/.
+// Divergence is a property of long-lived branches, and that is where it is enforced.
+test('rule 6 does not block a pull request, whatever the branch is called', () => {
+  const root = makeFixture();
+  try {
+    const { byRule, results } = run(root, { GITHUB_HEAD_REF: 'refactor/public-dir' });
+    assert.equal(byRule[6], 'SKIP');
+    assert.match(results.find((r) => r.rule === 6).detail, /pull request/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rule 6 falls back to GITHUB_REF_NAME on a push, and still guards a non-docs branch', () => {
   const root = makeFixture();
   try {
@@ -164,9 +178,30 @@ test('rule 1 accepts an artifact that only exists after a command runs', () => {
   try {
     writeFileSync(
       join(root, 'CLAUDE.md'),
-      `${CLEAN_ROUTER}\nThe run writes \`e2e/playwright-report/index.html\`.\n`,
+      `${CLEAN_ROUTER}\nThe run writes \`quality/e2e/playwright-report/index.html\`.\n`,
       'utf8',
     );
+    assert.equal(run(root).byRule[1], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// A markdown link is resolved literally by GitHub, relative to the file it sits in. Four links in
+// the README survived a reorganisation because the checker accepted "the file exists somewhere" —
+// and all four were 404s on the rendered page. A mention in prose still gets that leniency; a link
+// does not.
+test('rule 1 rejects a link to a file that exists, but not where the link points', () => {
+  expectRuleFails(1, (root, write) => {
+    write('docs/moved.md', '# Moved\n');
+    write('CLAUDE.md', `${CLEAN_ROUTER}\nSee [the moved file](moved.md).\n`);
+  });
+});
+
+test('rule 1 still accepts a prose mention of a file that lives elsewhere', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(join(root, 'CLAUDE.md'), `${CLEAN_ROUTER}\nThe counter is \`count-tests.js\`.\n`, 'utf8');
     assert.equal(run(root).byRule[1], 'PASS');
   } finally {
     rmSync(root, { recursive: true, force: true });

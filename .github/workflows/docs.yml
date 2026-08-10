@@ -38,12 +38,12 @@ jobs:
       # runner is `playwright test --list`. No browsers are needed to list tests, so this installs
       # the package and nothing else.
       - name: install the test runner
-        working-directory: e2e
+        working-directory: quality/e2e
         run: npm ci
 
       # Negative cases first: prove the checker still fails when it should, before trusting it.
       - name: test the checker
-        run: node --test scripts/check-docs.test.mjs
+        run: node --test quality/tools/check-docs.test.mjs
 
       - name: check the docs
-        run: node scripts/check-docs.mjs
+        run: node quality/tools/check-docs.mjs
