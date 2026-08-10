@@ -52,6 +52,7 @@ const SCANNED = [
   'docs/QA-ARCHITECTURE.md',
   'docs/AGENTIC-QA.md',
   'docs/SECURITY-NOTES.md',
+  'docs/RUNBOOK.md',
   ...skillDocs(),
 ];
 

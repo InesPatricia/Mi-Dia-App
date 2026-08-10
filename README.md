@@ -288,6 +288,15 @@ checking anything, and a checker nobody checks is the same mistake with a differ
 
 ---
 
+## When it breaks
+
+The incidents below are what went wrong once. [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is what to do
+when something goes wrong now: how to find out which build is actually live, how to roll back, what
+each red check is telling you, and the traps that make a working deploy look broken — a service
+worker serving you yesterday's app, or a Cloudflare 200 that is really a fallback.
+
+---
+
 ## Four things that went wrong
 
 The most useful section here, and the reason I keep an incident list at all.
