@@ -17,13 +17,13 @@ gate that catches them. Run it on the current `mi-dia-vNN.html` AFTER the change
 
 ## 1. The theme grid (see the whole app in both themes at once)
 
-From `e2e/`:
+From `quality/e2e/`:
 
 ```
 node theme-grid.js ../mi-dia-vNN.html      # 16 shots: 8 views × {light,dark} + a review index.html
 ```
 
-- Writes `e2e/theme-grid-out/*.png` + `theme-grid-out/index.html` (light|dark side-by-side, one row per
+- Writes `quality/e2e/theme-grid-out/*.png` + `theme-grid-out/index.html` (light|dark side-by-side, one row per
   view). Open the index and **look at every cell**. Output is gitignored.
 - One view × one theme (quick iteration): `node shoot.js ../mi-dia-vNN.html /tmp/x.png journal dark`
   (views: `day journal respiro calendar progress projects profile settings`; themes `light|dark`).
@@ -58,7 +58,7 @@ tests failed. Lesson: **always exercise the app, not just parse it.**
 
 - Mandatory chain first (from [`design-check`](../design-check/skill.md)): div-balance + `node --check` on
   each `<script>`.
-- Then the e2e safety net (from `e2e/`): `npx playwright test --grep-invert @visual --reporter=line`.
+- Then the e2e safety net (from `quality/e2e/`): `npx playwright test --grep-invert @visual --reporter=line`.
   For a small visual slice, at least run the specs your change could touch (add-flow / slot-interactions /
   the view you edited) — a full run is ~4–7 min.
 - If the design-locked flower/bottom-bar changed, the `@visual` baselines WILL change — regenerate, don't

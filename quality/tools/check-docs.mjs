@@ -17,7 +17,7 @@
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
  *
- * Usage:  node scripts/check-docs.mjs [--root <dir>] [--json]
+ * Usage:  node quality/tools/check-docs.mjs [--root <dir>] [--json]
  * Exit:   0 all rules pass · 1 any rule fails
  */
 
@@ -51,6 +51,7 @@ const SCANNED = [
   'docs/APP-REFERENCE.md',
   'docs/QA-ARCHITECTURE.md',
   'docs/AGENTIC-QA.md',
+  'docs/SECURITY-NOTES.md',
   ...skillDocs(),
 ];
 
@@ -87,16 +88,16 @@ const PATH_EXT = /\.(md|mjs|js|cjs|json|html|yml|yaml|txt|png|svg|css)$/i;
  * a command writes it belongs here, and nothing else does. An allowlist is how a gate stops gating.
  */
 const GENERATED_PREFIXES = [
-  'e2e/test-results/',
-  'e2e/playwright-report/',
-  'e2e/blob-report/',
-  'e2e/all-blob-reports/',
-  'e2e/theme-grid-out/',
+  'quality/e2e/test-results/',
+  'quality/e2e/playwright-report/',
+  'quality/e2e/blob-report/',
+  'quality/e2e/all-blob-reports/',
+  'quality/e2e/theme-grid-out/',
   'theme-grid-out/',
 ];
 const GENERATED_FILES = new Set([
-  'e2e/TEST-REPORT.md',  // npm run report
-  'e2e/results.json',    // playwright json reporter
+  'quality/e2e/TEST-REPORT.md',  // npm run report
+  'quality/e2e/results.json',    // playwright json reporter
   'report_json.json',    // ZAP baseline output
 ]);
 const isGenerated = (p) =>
@@ -202,7 +203,7 @@ function checkRouterSize() {
 function checkTestCounts() {
   let counts;
   try {
-    const raw = execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js')], {
+    const raw = execFileSync(process.execPath, [join(ROOT, 'quality', 'e2e', 'count-tests.js')], {
       cwd: ROOT,
       encoding: 'utf8',
     });
@@ -213,7 +214,7 @@ function checkTestCounts() {
 
   // the badge: delegated
   try {
-    execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js'), '--check'], {
+    execFileSync(process.execPath, [join(ROOT, 'quality', 'e2e', 'count-tests.js'), '--check'], {
       cwd: ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],

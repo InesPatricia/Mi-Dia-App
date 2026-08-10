@@ -35,4 +35,4 @@ jobs:
           # Add this secret in Settings > Secrets and variables > Actions. Without it the script
           # logs "no key" and exits 0 — the workflow stays green, the agent simply does nothing.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node scripts/ai-triage.mjs
+        run: node quality/tools/ai-triage.mjs

@@ -2,12 +2,12 @@
 //
 // Covers the release traps that a machine can catch with certainty, so Pas 0
 // (current state) and Pas 3 (after promote/bump) never ship broken/desynced code:
-//   [1] Version SYNC   — public/sw.js CACHE ↔ public/index.html ↔ the mi-dia-vNN.html it came from
+//   [1] Version SYNC   — public/sw.js CACHE ↔ public/index.html ↔ src/mi-dia-vNN.html
 //   [2] Syntax         — node --check on every <script> block in public/index.html
 //   [3] DIV balance    — <div> opens == </div> closes (single-file app integrity)
 //   [4] Smart quotes   — curly “ ” ‘ ’ inside HTML tags (break attributes) — WARN
 //   [5] Docs drift      — CHANGELOG mentions vNN; CLAUDE.md stays branch-neutral — WARN
-//   [6] Stale builds    — superseded mi-dia-v*.html still lying in the tree — WARN
+//   [6] Stale builds    — superseded src/mi-dia-v*.html still lying in the tree — WARN
 //
 // FAIL (exit 1) = never ship. WARN (exit 0) = tell Ines, don't block.
 // Usage:  node .claude/skills/ship/validate.mjs   [repoRoot]
@@ -37,7 +37,7 @@ try {
     fail('[1] sw.js: could not find `const CACHE = "mi-dia-vNN"`.');
   } else {
     vNN = m[1];
-    const buildFile = `mi-dia-${vNN}.html`;
+    const buildFile = `src/mi-dia-${vNN}.html`;
     console.log(`Detected version: mi-dia-${vNN}  (from sw.js CACHE)`);
     if (!exists('public/index.html')) {
       fail('[1] public/index.html is missing (the promoted build).');
@@ -127,11 +127,11 @@ if (vNN) {
 // ── [6] Stale superseded builds still in the tree — WARN (working-tree rule) ──
 if (vNN) {
   const cur = parseInt(vNN.slice(1), 10);
-  const stale = fs.readdirSync(ROOT)
+  const stale = fs.readdirSync(path.join(ROOT, 'src'))
     .filter((f) => /^mi-dia-v\d+\.html$/.test(f))
     .filter((f) => parseInt(f.match(/v(\d+)/)[1], 10) < cur);
   if (stale.length) {
-    warn(`[6] Superseded build(s) still present (git rm at commit, keep only mi-dia-${vNN}.html + public/index.html):\n      ${stale.join(', ')}`);
+    warn(`[6] Superseded build(s) still present (git rm at commit, keep only src/mi-dia-${vNN}.html + public/index.html):\n      ${stale.join(', ')}`);
   }
 }
 

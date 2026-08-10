@@ -12,7 +12,7 @@ name: zap-baseline
 # Findings are triaged into: fixes (e.g. security headers via a Cloudflare Pages
 # `_headers` file) or accepted risks documented in SECURITY-NOTES.md.
 #
-# TRIPWIRE (since 2026-07-28): the accepted risks are listed in .zap/rules.tsv as IGNORE, and
+# TRIPWIRE (since 2026-07-28): the accepted risks are listed in quality/security/rules.tsv as IGNORE, and
 # fail_action is true — so the known-and-accepted findings stay quiet, but ANY new alert turns
 # this run red. A scan that can never fail is a logbook, not a guard; this makes it a guard.
 
@@ -31,7 +31,7 @@ jobs:
     name: zap baseline (passive)
     runs-on: ubuntu-latest
     steps:
-      # Needed so the scan can read .zap/rules.tsv from the repo (the old version had no
+      # Needed so the scan can read quality/security/rules.tsv from the repo (the old version had no
       # checkout because it read nothing from the repo — the ignore-list changes that).
       - uses: actions/checkout@v7
       - name: ZAP baseline scan
@@ -41,9 +41,9 @@ jobs:
         with:
           target: "https://mi-dia-app.pages.dev/"
           # The tripwire allow-list: accepted risks marked IGNORE so only NEW findings can fail.
-          rules_file_name: ".zap/rules.tsv"
+          rules_file_name: "quality/security/rules.tsv"
           # No GitHub issue creation — report as artifact only (matches least-privilege above).
           allow_issue_writing: false
           artifact_name: zap-baseline-report
-          # Fail the run on any alert that is NOT an accepted risk in .zap/rules.tsv.
+          # Fail the run on any alert that is NOT an accepted risk in quality/security/rules.tsv.
           fail_action: true

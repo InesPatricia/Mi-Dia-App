@@ -64,7 +64,7 @@ fully isolated from production.
 phone-first and a desktop viewport would test a layout nobody uses. Plus 7 smoke tests that run
 against the live site under a separate config.
 
-That count is not a number I typed. `e2e/count-tests.js` asks the runner
+That count is not a number I typed. `quality/e2e/count-tests.js` asks the runner
 (`playwright test --list`) and CI fails if the badge above disagrees, so it cannot go stale. It
 asks the runner rather than counting `test(` in the source because text-counting is wrong twice
 over: it misses tests generated at runtime (the accessibility spec declares one test inside a loop
@@ -84,7 +84,7 @@ What the suite actually asserts:
 - **A written contract between implementer and tester.** For larger features, the person writing
   the code and the person writing the tests work from the same spec and never read each other's
   work: acceptance criteria plus the stable handles the implementation guarantees. The template is
-  in [`e2e/SPEC-TEMPLATE.md`](e2e/SPEC-TEMPLATE.md). The point is removing author bias, so the
+  in [`quality/e2e/SPEC-TEMPLATE.md`](quality/e2e/SPEC-TEMPLATE.md). The point is removing author bias, so the
   tests describe the agreed behaviour rather than the shipped implementation.
 - **Screenshot regression, currently off and honestly labelled.** See the fourth incident below.
 
@@ -129,7 +129,7 @@ real regressions ring and noise does not.
 each pull request's preview, so a regression shows up before merge rather than after. Every
 threshold in [`lighthouserc.cjs`](lighthouserc.cjs) carries the measured baseline it was derived
 from in a comment next to it, for example a 6500 ms budget for first contentful paint against a
-5.2 s baseline. Alongside it, a deliberately polite k6 smoke ([`perf/smoke.js`](perf/smoke.js), 5
+5.2 s baseline. Alongside it, a deliberately polite k6 smoke ([`quality/perf/smoke.js`](quality/perf/smoke.js), 5
 virtual users for 30 seconds) baselines CDN delivery, with one overall budget and one per route.
 Per-route thresholds exist because a single slow file hides inside an aggregate p(95) when four
 fast files average it away. It asserts p(95) rather than the mean, because the mean hides the tail
@@ -143,7 +143,7 @@ is silently ignored, and the full triage with before-and-after deltas is in
 
 The fixes ship through a hardened [`_headers`](_headers) file: a CSP allow-list, anti-clickjacking,
 HSTS, Permissions-Policy, COOP and CORP. The accepted risks are encoded in
-[`.zap/rules.tsv`](.zap/rules.tsv) with `fail_action: true`, which turns the scan into a tripwire:
+[`quality/security/rules.tsv`](quality/security/rules.tsv) with `fail_action: true`, which turns the scan into a tripwire:
 known findings stay quiet, any **new** finding turns the scan red. Accepting a new risk requires
 both an entry in that file and a justification in the notes, never one without the other.
 
@@ -166,13 +166,13 @@ agent to reach the API key or the write permission. Getting that wrong is a docu
 leave CI. Second, it fails safe: with no API key it logs and exits zero, and any error is caught.
 A broken helper must never turn a pull request red. Only real gates do that.
 
-**Playwright's own agents** (planner, generator, healer) are scaffolded in `e2e/.claude/agents/`
+**Playwright's own agents** (planner, generator, healer) are scaffolded in `quality/e2e/.claude/agents/`
 and drive the `playwright-test` MCP server. They draft plans and first-pass specs and propose
 repairs. The hand-written deterministic suite stays the source of truth; the agents are for speed
 at the edges, with a human reading every diff.
 
 **Testing a system that is itself agentic**, which is a different problem, is handled in
-[`evals/`](evals/) and it runs rather than being described. A golden dataset of inputs with
+[`quality/evals/`](quality/evals/) and it runs rather than being described. A golden dataset of inputs with
 reference answers is scored two ways against a small extraction task: deterministic property
 assertions (valid JSON, category within the allowed set, a time present only when one is implied)
 and an LLM acting as judge for the semantics that properties cannot see. The suite passes on a
@@ -192,17 +192,41 @@ quality work that never shows up in a test count.
 
 | Tool | What it removes |
 |---|---|
-| `e2e/validate-build.js` | Checks div balance and parses every inline script. The single-file format has no compiler, so this is the compiler. |
-| `e2e/count-tests.js` | Makes the published test count a verified fact instead of a memory. |
-| `e2e/wait-for-deploy.js`, `wait-for-preview.js` | Polls until the CDN has actually published the build, so post-deploy smoke tests do not race the deployment. |
-| `e2e/make-report.js` | Turns a run into a short Markdown summary, for when the HTML report is more than you need. |
-| `e2e/shoot.js`, `e2e/theme-grid.js` | Screenshots every view in both themes as one review grid, which is how theme bugs get caught before they ship. |
-| `scripts/check-docs.mjs` | Gates the documentation: dead links, stale test counts, and build numbers written into a file that lives on three branches. |
+| `quality/e2e/validate-build.js` | Checks div balance and parses every inline script. The single-file format has no compiler, so this is the compiler. |
+| `quality/e2e/count-tests.js` | Makes the published test count a verified fact instead of a memory. |
+| `quality/e2e/wait-for-deploy.js`, `wait-for-preview.js` | Polls until the CDN has actually published the build, so post-deploy smoke tests do not race the deployment. |
+| `quality/e2e/make-report.js` | Turns a run into a short Markdown summary, for when the HTML report is more than you need. |
+| `quality/e2e/shoot.js`, `quality/e2e/theme-grid.js` | Screenshots every view in both themes as one review grid, which is how theme bugs get caught before they ship. |
+| `quality/tools/check-docs.mjs` | Gates the documentation: dead links, stale test counts, and build numbers written into a file that lives on three branches. |
 
 There are also three repeatable QA procedures written as executable checklists in
 `.claude/skills/`: a ZAP triage loop, a performance run with a rule for when a threshold may be
 tightened, and a pipeline audit that encodes the incidents below. They exist so the reasoning
 survives me forgetting it.
+
+---
+
+## Repository layout
+
+Six folders, and each answers exactly one question. That rule is the whole design: if you cannot say
+which question a file answers, it does not have a home yet.
+
+| Folder | The question it answers |
+|---|---|
+| `public/` | **What ships?** The promoted build, the service worker, and the two files Cloudflare reads. This is the build output directory, so nothing else reaches the CDN. |
+| `src/` | **What do I edit?** The versioned builds, and the module sources that are inlined into them. |
+| `quality/` | **How is it verified?** End-to-end tests, performance budgets, the security scan config, the agentic-AI evals, and the tooling that supports them. |
+| `docs/` | **What does it mean?** The data schema, the design system, current behaviour, the security notes, and the full build archive. |
+| `private/` | Working notes. Gitignored; never published, never committed. |
+| `scratch/` | Local work in progress — assets and experiments mid-flight. Gitignored. |
+
+The root keeps only what has to be there: this file, the changelog, the licence, the agent's router,
+and `wrangler.toml`, which tells Cloudflare that `public/` is the site.
+
+One consequence worth naming, because it looks like an inconsistency: `src/modules/*.js` are **not
+loaded by the app**. They are readable sources that get inlined into the single-file build, kept
+under `src/` so nobody mistakes them for something the browser fetches. They used to sit in the
+root, where they looked exactly like application code and were served to every visitor.
 
 ---
 
@@ -232,7 +256,7 @@ flowchart TB
     ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
     ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
     ROUTER --> REF["docs/APP-REFERENCE.md"]
-    GATE["scripts/check-docs.mjs"] -. verifies .-> ROUTER
+    GATE["quality/tools/check-docs.mjs"] -. verifies .-> ROUTER
     GATE -. verifies .-> SCHEMA
     GATE -. verifies .-> DESIGN
     GATE -. verifies .-> REF
@@ -256,7 +280,7 @@ branches cannot state a build number without being wrong on two of them.
 **The mandatory per-session context went from 170,934 bytes to 6,184** — a 96% reduction — with no
 history lost. The archive is complete and a rule proves it.
 
-`scripts/check-docs.mjs` runs in CI and fails the build on a dead path, a build number in the router,
+`quality/tools/check-docs.mjs` runs in CI and fails the build on a dead path, a build number in the router,
 a test count that disagrees with the runner, an archived section that went missing, or a router that
 has forked between branches. It has **its own tests, including negative cases**, for the reason given
 in the first incident below: this repository has already shipped a gate that ran green without

@@ -70,7 +70,7 @@
   artifact) is enough. This holds **only** because of the architecture; with a backend you would need
   staging + sanity on prod.
 - What we built:
-  - **`e2e/` (64 tests, pre-merge)** = the **sanity + regression** layer (add-flow, persistence,
+  - **`quality/e2e/` (64 tests, pre-merge)** = the **sanity + regression** layer (add-flow, persistence,
     journal, slots, i18n…).
   - **`smoke-preview.yml`** = **pre-merge gate** on the Cloudflare PR preview (prevents a broken build).
   - **`smoke-prod.yml`** = **post-deploy net** on the live URL (detects, does not prevent).

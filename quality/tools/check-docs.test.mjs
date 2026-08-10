@@ -5,7 +5,7 @@
  * green forever without checking anything, so every rule here is asserted in both directions:
  * green on a clean fixture, red on a fixture broken in exactly one way.
  *
- * Run:  node --test scripts/check-docs.test.mjs
+ * Run:  node --test quality/tools/check-docs.test.mjs
  */
 
 import { test } from 'node:test';
@@ -25,7 +25,7 @@ const COUNT_STUB = `// Mirrors the real e2e/count-tests.js, including its --chec
 const fs = require('node:fs'), path = require('node:path');
 const counts = { functional: { tests: 83, files: 19 }, visual: { tests: 2 }, prod: { tests: 7, files: 1 } };
 if (process.argv.includes('--check')) {
-  const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8');
+  const readme = fs.readFileSync(path.join(__dirname, '..', '..', 'README.md'), 'utf8');
   // no regex on purpose: this lives inside a template literal, and one lost backslash turns the
   // pattern into a syntax error that only shows up as "could not run count-tests"
   const marker = 'shields.io/badge/e2e-';
@@ -66,7 +66,7 @@ function makeFixture() {
   write('docs/history/BUILD-LOG.md', '# Build log\n\n## Changelog (v23 → v47)\n\nold stuff\n');
   write('docs/history/.headings-baseline.txt', 'Changelog (v23 → v47)\n');
   write('index.html', '<!doctype html>');
-  write('e2e/count-tests.js', COUNT_STUB);
+  write('quality/e2e/count-tests.js', COUNT_STUB);
   return root;
 }
 
@@ -178,7 +178,7 @@ test('rule 1 accepts an artifact that only exists after a command runs', () => {
   try {
     writeFileSync(
       join(root, 'CLAUDE.md'),
-      `${CLEAN_ROUTER}\nThe run writes \`e2e/playwright-report/index.html\`.\n`,
+      `${CLEAN_ROUTER}\nThe run writes \`quality/e2e/playwright-report/index.html\`.\n`,
       'utf8',
     );
     assert.equal(run(root).byRule[1], 'PASS');

@@ -28,4 +28,4 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           EVAL_THRESHOLD: ${{ inputs.threshold }}
-        run: node evals/run.mjs
+        run: node quality/evals/run.mjs
