@@ -126,8 +126,8 @@ function pathsIn(text) {
     const t = token.trim();
     if (/\s/.test(t) || !PATH_EXT.test(t)) continue;
     if (/^(https?:|#)/.test(t)) continue;
-    // wildcards, ranges and placeholders are patterns, not paths
-    if (/[*?()]|\.\.|vNN|vNEW|vOLD|NNN?\b/.test(t)) continue;
+    // wildcards, ranges and placeholders are patterns, not paths — including <branch>, <commit>
+    if (/[*?()<>]|\.\.|vNN|vNEW|vOLD|NNN?\b/.test(t)) continue;
     // a bare extension (`.html`, `.json`) is prose, not a reference
     if (/^\./.test(t) && !t.slice(1).includes('.')) continue;
     mentions.add(t);
@@ -161,6 +161,8 @@ function checkDeadPaths() {
     for (const p of links) {
       const clean = p.replace(/^\.?\//, '');
       if (isGenerated(clean) || clean.startsWith('private/')) continue;
+      // a documented command shows the shape of a URL: <branch>, <owner>, <commit> are placeholders
+      if (/[<>]/.test(p)) continue;
       if (!existsSync(resolve(base, p))) dead.push(`${doc} -> ${p}  (broken link)`);
     }
 

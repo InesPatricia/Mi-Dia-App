@@ -105,7 +105,11 @@ not bumped, `validate.mjs` fails on version sync — which is the whole point of
    The app's HTML means the boundary holds. The file's contents mean it does not.
 
 > A `200` proves nothing here. Cloudflare serves the app as a fallback for unknown paths, so every
-> path returns 200. Always compare the **body**.
+> path returns 200. Always compare the **body** — which is what this does for you:
+>
+> ```bash
+> node quality/tools/verify-live.mjs --site https://mi-dia-app.pages.dev --hidden "CLAUDE.md,docs/DATA_SCHEMA.md"
+> ```
 
 ---
 
@@ -121,6 +125,10 @@ The README is the project's front door and it renders client-side.
   file breaks every link to it even though the file still exists. `check-docs` rule 1 checks links
   strictly for this reason.
 - Verify by loading the page, not by reasoning about it. Local rendering does not reproduce GitHub.
+
+```bash
+node quality/tools/verify-live.mjs --page https://github.com/InesPatricia/Mi-Dia-App/blob/main/README.md
+```
 
 ---
 
