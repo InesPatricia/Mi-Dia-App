@@ -223,11 +223,11 @@ as something a machine checks, not something a person remembers.
 ```mermaid
 flowchart TB
     ROUTER["CLAUDE.md"]
+    ROUTER --> LOG["CHANGELOG.md"]
+    LOG --> ARCHIVE["docs/history/BUILD-LOG.md"]
     ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
     ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
     ROUTER --> REF["docs/APP-REFERENCE.md"]
-    ROUTER --> LOG["CHANGELOG.md"]
-    LOG --> ARCHIVE["docs/history/BUILD-LOG.md"]
     GATE["scripts/check-docs.mjs"] -. verifies .-> ROUTER
     GATE -. verifies .-> SCHEMA
     GATE -. verifies .-> DESIGN
