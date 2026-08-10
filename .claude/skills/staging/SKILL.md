@@ -116,7 +116,7 @@ adevaruri pe care orice agent nou trebuie sa le stie:
 3. **Fiecare `vNN` trebuie sa fie o stare coerenta, livrabila** (valideaza + e2e verde, fara jumatati de
    feature) — altfel nu e o linie de taiere valida. Ordoneaza feature-urile, nu le intercala.
 4. **Reconciliaza si testele:** daca promovezi un `vNN` intermediar, specurile e2e care testeaza feature-uri
-   de mai tarziu (ex. `garden.spec.js` pt S4) NU trebuie sa mearga pe acel build — le tii deoparte odata cu
+   de mai tarziu (spec-ul unei felii ulterioare) NU trebuie sa mearga pe acel build — le tii deoparte odata cu
    feature-ul lor.
 
 ## Promovare din staging in prod
