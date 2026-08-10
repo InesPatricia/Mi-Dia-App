@@ -221,7 +221,7 @@ The fix was to split the file by audience, and then to treat the result the way 
 as something a machine checks, not something a person remembers.
 
 ```mermaid
-flowchart LR
+flowchart TB
     ROUTER["CLAUDE.md"]
     ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
     ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
