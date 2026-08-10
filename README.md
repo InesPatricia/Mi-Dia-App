@@ -47,8 +47,12 @@ would rather list them than pretend they are not there:
   `onboard.js`) on a five-layer pattern (data, calc, i18n, view, wiring) with pure calc functions,
   as an incremental migration rather than a rewrite.
 
-Deployment is Cloudflare Pages, auto-publishing from `main` on every push, with `index.html` as
-the promoted build and one-click rollback in the dashboard. A permanent `staging` branch gets its
+Deployment is Cloudflare Pages, auto-publishing from `main` on every push, with one-click rollback
+in the dashboard. Only `public/` is published — the promoted build, the service worker and the two
+files Cloudflare reads for headers and redirects. Everything else in the repository is project
+rather than product and never reaches the CDN. The build output directory is declared in
+`wrangler.toml` rather than in the dashboard, so the layout and the setting that serves it change
+together in one reviewable commit. A permanent `staging` branch gets its
 own preview deployment on a separate subdomain, so its cache, service worker and localStorage are
 fully isolated from production.
 

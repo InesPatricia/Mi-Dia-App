@@ -35,7 +35,8 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   universal filename every static host serves at `/` automatically — so NO root rewrite is needed on
   any host. (A root rewrite to a named html file fought Cloudflare's automatic clean-URL handling and
   caused a 308 loop / 522 — that is why the promoted file is `index.html` and nothing else.)
-- Infra files in the repo root are intentional (NOT part of the single-file app):
+- Infra files in `public/` are intentional (NOT part of the single-file app), and must sit at the
+  root of the build output directory because that is where Cloudflare reads them:
   - **`_redirects`** — Cloudflare Pages redirects (Netlify syntax): hides old `/mi-dia-*` builds → `/`.
   - **`sw.js`** — the PWA service worker (offline). A service worker MUST be a separate same-origin
     file (browsers block inline/data-URI SW), so this is a deliberate exception to "single file".

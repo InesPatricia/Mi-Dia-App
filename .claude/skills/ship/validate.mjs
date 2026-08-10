@@ -2,8 +2,8 @@
 //
 // Covers the release traps that a machine can catch with certainty, so Pas 0
 // (current state) and Pas 3 (after promote/bump) never ship broken/desynced code:
-//   [1] Version SYNC   — sw.js CACHE ↔ index.html ↔ the mi-dia-vNN.html it was promoted from
-//   [2] Syntax         — node --check on every <script> block in index.html
+//   [1] Version SYNC   — public/sw.js CACHE ↔ public/index.html ↔ the mi-dia-vNN.html it came from
+//   [2] Syntax         — node --check on every <script> block in public/index.html
 //   [3] DIV balance    — <div> opens == </div> closes (single-file app integrity)
 //   [4] Smart quotes   — curly “ ” ‘ ’ inside HTML tags (break attributes) — WARN
 //   [5] Docs drift      — CHANGELOG mentions vNN; CLAUDE.md stays branch-neutral — WARN
@@ -40,16 +40,16 @@ try {
     const buildFile = `mi-dia-${vNN}.html`;
     console.log(`Detected version: mi-dia-${vNN}  (from sw.js CACHE)`);
     if (!exists('public/index.html')) {
-      fail('[1] index.html is missing (the promoted build).');
+      fail('[1] public/index.html is missing (the promoted build).');
     } else if (!exists(buildFile)) {
       fail(`[1] sw.js CACHE points to ${buildFile}, but that file does not exist in the tree.`);
     } else {
-      const a = fs.readFileSync(path.join(ROOT, 'index.html'));
+      const a = fs.readFileSync(path.join(ROOT, 'public', 'index.html'));
       const b = fs.readFileSync(path.join(ROOT, buildFile));
       if (!a.equals(b)) {
-        fail(`[1] index.html is NOT byte-identical to ${buildFile} — promote is out of sync with sw.js CACHE.`);
+        fail(`[1] public/index.html is NOT byte-identical to ${buildFile} — promote is out of sync with sw.js CACHE.`);
       } else {
-        console.log(`  [1] version sync OK: index.html == ${buildFile} == CACHE mi-dia-${vNN}`);
+        console.log(`  [1] version sync OK: public/index.html == ${buildFile} == CACHE mi-dia-${vNN}`);
       }
     }
   }
@@ -62,7 +62,7 @@ let html = '';
 try {
   html = read('public/index.html');
 } catch {
-  fail('[2/3] cannot read index.html for syntax/div checks.');
+  fail('[2/3] cannot read public/index.html for syntax/div checks.');
 }
 
 if (html) {
@@ -131,7 +131,7 @@ if (vNN) {
     .filter((f) => /^mi-dia-v\d+\.html$/.test(f))
     .filter((f) => parseInt(f.match(/v(\d+)/)[1], 10) < cur);
   if (stale.length) {
-    warn(`[6] Superseded build(s) still present (git rm at commit, keep only mi-dia-${vNN}.html + index.html):\n      ${stale.join(', ')}`);
+    warn(`[6] Superseded build(s) still present (git rm at commit, keep only mi-dia-${vNN}.html + public/index.html):\n      ${stale.join(', ')}`);
   }
 }
 
