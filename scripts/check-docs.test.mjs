@@ -50,10 +50,15 @@ function makeFixture() {
 }
 
 /** Run the checker and return { ok, byRule } where byRule[n] is 'PASS' | 'FAIL' | 'SKIP'. */
-function run(root) {
+function run(root, env = {}) {
   let out;
+  // start from a clean slate: a real CI run would otherwise leak its own GITHUB_* into the fixture
+  const base = { ...process.env, GITHUB_HEAD_REF: '', GITHUB_REF_NAME: '' };
   try {
-    out = execFileSync(process.execPath, [CHECKER, '--root', root, '--json'], { encoding: 'utf8' });
+    out = execFileSync(process.execPath, [CHECKER, '--root', root, '--json'], {
+      encoding: 'utf8',
+      env: { ...base, ...env },
+    });
   } catch (err) {
     out = err.stdout; // non-zero exit is the normal failing path
   }
@@ -90,12 +95,36 @@ test('clean fixture: rules 1-5 pass', () => {
   }
 });
 
-test('rule 6 fails loudly outside a git checkout rather than passing quietly', () => {
+test('rule 6 fails loudly when it cannot tell which branch it is on', () => {
   const root = makeFixture();
   try {
     const { byRule, results } = run(root);
     assert.equal(byRule[6], 'FAIL');
-    assert.match(results.find((r) => r.rule === 6).detail, /not a git checkout/);
+    assert.match(results.find((r) => r.rule === 6).detail, /cannot tell which branch/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// CI checks a pull request out as a detached HEAD, so `git rev-parse --abbrev-ref HEAD` answers
+// "HEAD" and every branch-name rule quietly stops applying. That is how this gate first failed the
+// very pull request it was written to allow. These two cases pin the environment down.
+test('rule 6 reads the branch from GITHUB_HEAD_REF when the checkout is detached', () => {
+  const root = makeFixture();
+  try {
+    const { byRule, results } = run(root, { GITHUB_HEAD_REF: 'docs/cleanup' });
+    assert.equal(byRule[6], 'SKIP', 'a docs/* pull request must be allowed to change the router');
+    assert.match(results.find((r) => r.rule === 6).detail, /docs\/cleanup/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rule 6 falls back to GITHUB_REF_NAME on a push, and still guards a non-docs branch', () => {
+  const root = makeFixture();
+  try {
+    const { byRule } = run(root, { GITHUB_REF_NAME: 'staging' });
+    assert.equal(byRule[6], 'FAIL', 'staging is not exempt from the no-fork rule');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -105,6 +134,22 @@ test('rule 1 catches a path that does not exist', () => {
   expectRuleFails(1, (root, write) =>
     write('CLAUDE.md', `${CLEAN_ROUTER}\nAlso read [the plan](docs/NOT-THERE.md).\n`),
   );
+});
+
+// A clean checkout has no test reports, so naming one is not a dead path. This case exists because
+// CI failed on exactly that: the docs mention the Playwright report, which only exists after a run.
+test('rule 1 accepts an artifact that only exists after a command runs', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'CLAUDE.md'),
+      `${CLEAN_ROUTER}\nThe run writes \`e2e/playwright-report/index.html\`.\n`,
+      'utf8',
+    );
+    assert.equal(run(root).byRule[1], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('rule 1 accepts a bare filename that exists somewhere in the repo', () => {

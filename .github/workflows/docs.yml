@@ -34,6 +34,13 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: 20 }
 
+      # Rule 4 compares the counts in the docs against what the runner actually reports, and the
+      # runner is `playwright test --list`. No browsers are needed to list tests, so this installs
+      # the package and nothing else.
+      - name: install the test runner
+        working-directory: e2e
+        run: npm ci
+
       # Negative cases first: prove the checker still fails when it should, before trusting it.
       - name: test the checker
         run: node --test scripts/check-docs.test.mjs
