@@ -79,14 +79,27 @@ const present = () => SCANNED.filter(has);
 const PATH_EXT = /\.(md|mjs|js|cjs|json|html|yml|yaml|txt|png|svg|css)$/i;
 
 /**
- * Artifacts a command produces on demand, so they are legitimately absent from a clean checkout.
- * Keep this list short and justified — an allowlist is how a gate stops gating.
+ * Output a command produces on demand. A clean checkout — CI, or a colleague's first clone — does
+ * not have any of it, so a doc may name it without the path being dead.
+ *
+ * These mirror the build-artifact block in .gitignore. Keep them in step: anything ignored because
+ * a command writes it belongs here, and nothing else does. An allowlist is how a gate stops gating.
  */
-const GENERATED = new Set([
-  'e2e/TEST-REPORT.md',        // npm run report
-  'report_json.json',          // ZAP baseline output
-  'theme-grid-out/index.html', // node e2e/theme-grid.js
+const GENERATED_PREFIXES = [
+  'e2e/test-results/',
+  'e2e/playwright-report/',
+  'e2e/blob-report/',
+  'e2e/all-blob-reports/',
+  'e2e/theme-grid-out/',
+  'theme-grid-out/',
+];
+const GENERATED_FILES = new Set([
+  'e2e/TEST-REPORT.md',  // npm run report
+  'e2e/results.json',    // playwright json reporter
+  'report_json.json',    // ZAP baseline output
 ]);
+const isGenerated = (p) =>
+  GENERATED_FILES.has(p) || GENERATED_PREFIXES.some((prefix) => p.startsWith(prefix));
 
 /** Paths a doc points at, from markdown links and from backticked tokens that look like files. */
 function pathsIn(text) {
@@ -131,7 +144,7 @@ function checkDeadPaths() {
     const base = dirname(join(ROOT, doc));
     for (const p of pathsIn(read(doc))) {
       const clean = p.replace(/^\.?\//, '');
-      if (GENERATED.has(clean)) continue;
+      if (isGenerated(clean)) continue;
       // private/ is the product worktree's gitignored corpus — real, but never present here
       if (clean.startsWith('private/')) continue;
       const resolves =
@@ -249,12 +262,28 @@ function git(...a) {
   return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
-function checkRouterDoesNotFork() {
-  let branch;
+/**
+ * Which branch this run represents.
+ *
+ * CI checks out a pull request as a detached HEAD at the merge commit, so asking git gives "HEAD"
+ * and every branch-name rule silently stops applying. GitHub names the real branch in the
+ * environment instead — GITHUB_HEAD_REF on a pull_request, GITHUB_REF_NAME on a push — so those win.
+ */
+function currentBranch() {
+  const fromEnv = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME;
+  if (fromEnv) return fromEnv.trim();
   try {
-    branch = git('rev-parse', '--abbrev-ref', 'HEAD');
+    const head = git('rev-parse', '--abbrev-ref', 'HEAD');
+    return head === 'HEAD' ? null : head; // detached, and nothing told us what it stands for
   } catch {
-    return fail(6, 'not a git checkout — cannot verify the router is identical across branches');
+    return null;
+  }
+}
+
+function checkRouterDoesNotFork() {
+  const branch = currentBranch();
+  if (!branch) {
+    return fail(6, 'cannot tell which branch this is (detached HEAD, no GITHUB_HEAD_REF/GITHUB_REF_NAME)');
   }
 
   // Documentation branches are where the router is legitimately being changed. Without this the
