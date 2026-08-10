@@ -1,14 +1,14 @@
 // Automates the "CRITICAL: validation after every edit" rule from CLAUDE.md:
 //   1) the single-file app's <div> tags balance, and
 //   2) every <script> block parses (node --check).
-// Runs against ../index.html by default (the promoted build); pass a path to check another.
+// Runs against ../public/index.html by default (the promoted build); pass a path to check another.
 // Exits non-zero on failure so CI can gate on it.   Usage: node validate-build.js [file]
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 
-const target = path.resolve(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+const target = path.resolve(process.argv[2] || path.join(__dirname, '..', 'public', 'index.html'));
 const html = fs.readFileSync(target, 'utf8');
 let ok = true;
 

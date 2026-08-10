@@ -31,7 +31,7 @@ const exists = (rel) => fs.existsSync(path.join(ROOT, rel));
 // ── [1] Version sync: sw.js CACHE → mi-dia-vNN.html → byte-identical index.html ──
 let vNN = null; // e.g. "v141"
 try {
-  const sw = read('sw.js');
+  const sw = read('public/sw.js');
   const m = sw.match(/CACHE\s*=\s*["']mi-dia-(v\d+)["']/);
   if (!m) {
     fail('[1] sw.js: could not find `const CACHE = "mi-dia-vNN"`.');
@@ -39,7 +39,7 @@ try {
     vNN = m[1];
     const buildFile = `mi-dia-${vNN}.html`;
     console.log(`Detected version: mi-dia-${vNN}  (from sw.js CACHE)`);
-    if (!exists('index.html')) {
+    if (!exists('public/index.html')) {
       fail('[1] index.html is missing (the promoted build).');
     } else if (!exists(buildFile)) {
       fail(`[1] sw.js CACHE points to ${buildFile}, but that file does not exist in the tree.`);
@@ -60,7 +60,7 @@ try {
 // Load index.html once for the structural checks.
 let html = '';
 try {
-  html = read('index.html');
+  html = read('public/index.html');
 } catch {
   fail('[2/3] cannot read index.html for syntax/div checks.');
 }

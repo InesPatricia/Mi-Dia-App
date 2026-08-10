@@ -7,7 +7,7 @@
  *
  * Usage:
  *   node theme-grid.js [htmlFile] [outDir]
- *     htmlFile : mi-dia-vNN.html to shoot (default: ../index.html)
+ *     htmlFile : mi-dia-vNN.html to shoot (default: ../public/index.html)
  *     outDir   : where to write PNGs + index.html (default: ./theme-grid-out)
  *
  * Output: <outDir>/<view>-<theme>.png for all views × {light,dark}, plus an index.html
@@ -21,7 +21,7 @@ const VIEWS = ['day', 'journal', 'respiro', 'calendar', 'progress', 'projects', 
 const THEMES = ['light', 'dark'];
 
 (async () => {
-  const file = path.resolve(process.argv[2] || path.join(__dirname, '..', 'index.html'));
+  const file = path.resolve(process.argv[2] || path.join(__dirname, '..', 'public', 'index.html'));
   const outDir = path.resolve(process.argv[3] || path.join(__dirname, 'theme-grid-out'));
   fs.mkdirSync(outDir, { recursive: true });
   if (!fs.existsSync(file)) { console.error('no such file: ' + file); process.exit(1); }

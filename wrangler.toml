@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration, kept in the repository rather than in the dashboard.
+#
+# Two reasons. It is versioned, so the layout and the setting that serves it move together in one
+# commit and a branch preview validates both. And it is visible: the answer to "what actually gets
+# published?" is a line in a file, not a screen someone has to log in to see.
+#
+# Everything inside public/ is served. Everything outside it — the docs, the test suites, the
+# tooling, the agent instructions — is project, not product, and stays off the CDN.
+
+name = "mi-dia-app"
+pages_build_output_dir = "./public"
