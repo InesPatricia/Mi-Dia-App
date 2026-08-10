@@ -1,0 +1,60 @@
+name: visual-baselines
+
+# Regenerates the @visual screenshot baselines in the SAME environment that will assert them.
+#
+# WHY THIS IS A WORKFLOW AND NOT A LOCAL COMMAND
+#   Screenshot baselines are only meaningful in a pinned environment. The previous baselines were
+#   generated on a Windows laptop and excluded from CI, so nothing ever asserted them: they went
+#   ~30 builds without being checked and were silently invalidated by a routine Playwright bump.
+#   A test that only runs on one machine is not a gate, it is a fossil.
+#
+#   Generating them here means the bytes that get committed came from the same OS, the same
+#   browser build and the same fonts that the e2e workflow will compare against.
+#
+# WHY IT IS MANUAL AND UPLOADS AN ARTIFACT INSTEAD OF COMMITTING
+#   Accepting a new visual baseline is a decision ("yes, the design changed on purpose"), so it
+#   should be a reviewable commit made by a human, not a bot push. Keeping it manual also keeps
+#   this workflow on contents:read: nothing here needs write access to the repository.
+#
+# HOW TO USE IT
+#   1. Actions -> visual-baselines -> Run workflow (on the branch you are working on).
+#   2. Download the "visual-baselines" artifact from the run.
+#   3. Unzip it into e2e/tests/visual.spec.js-snapshots/ and commit, with a one-line reason.
+#   Do this ONLY when the design changed intentionally, or when the pinned browser version moves.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: e2e
+
+jobs:
+  seed:
+    name: regenerate visual baselines
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # --update-snapshots rewrites the PNGs; --grep @visual keeps it to the two design-locked
+      # components (the flower navigation and the bottom bar) instead of the whole suite.
+      - name: Regenerate the @visual baselines
+        # PW_VISUAL lifts the config's grepInvert, which otherwise hides these tests everywhere.
+        env:
+          PW_VISUAL: 1
+        run: npx playwright test --grep "@visual" --update-snapshots
+      - name: Upload the regenerated baselines
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines
+          path: e2e/tests/visual.spec.js-snapshots/
+          retention-days: 7

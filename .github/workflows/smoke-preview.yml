@@ -1,58 +1,108 @@
 name: smoke-preview
 
 # PRE-MERGE gate: runs the 7-check smoke against the Cloudflare Pages PREVIEW deployment of a
-# PR, so a broken build can never reach production. Cloudflare Pages builds a unique preview URL
-# for every PR/branch push and fires a GitHub `deployment_status` event when it finishes — we
-# read that event's environment_url and smoke it. No polling, no third-party action.
+# PR, so a broken build can never reach production.
 #
-# This is the "test before promoting" gate (vs smoke-prod.yml, which is the post-deploy net on
-# main). To make it block merges: after it has run once, add the check "smoke-preview / preview
-# smoke" to the branch-protection required checks on main. Preview deployments must be enabled
-# for all branches in the Cloudflare Pages project (the default).
+# HISTORY / why the trigger changed: this originally listened for `deployment_status`, but the
+# Cloudflare Pages GitHub integration stopped creating GitHub deployments — it reports a check
+# run named "Cloudflare Pages" instead — so the workflow silently never fired (found by auditing
+# the Actions history: zero runs ever). Now it triggers on `pull_request`, derives the
+# branch-alias preview URL from the branch name, waits for the "Cloudflare Pages" check on the
+# head commit (e2e/wait-for-preview.js), and smokes that URL.
+#
+# This is the "test before promoting" gate (vs smoke-prod.yml, the post-deploy net on main).
+#
+# ENFORCEMENT: "preview smoke" is a REQUIRED status check on main, so a red run blocks the merge.
+# That was the missing half of this gate's story. The trigger was repaired (see the history note
+# above) but nothing was ever configured to enforce the result, so for a while this workflow ran,
+# went green, and stopped nothing: a net wearing a gate's clothes. Fixing the workflow and arming
+# it are two separate acts, and only the second one blocks anything.
+#
+# KNOWN RISK, accepted deliberately: this job depends on an external service. It waits for the
+# "Cloudflare Pages" check on the head commit before it has a URL to smoke, so a Cloudflare
+# outage, or a PR from a fork that never gets a preview build, makes this job fail and therefore
+# blocks the merge. That failure is loud and visible rather than silent, which is the trade we
+# want, and branch protection does not enforce for admins, so a repository admin can still merge
+# during an outage. If that ever becomes routine rather than exceptional, the honest response is
+# to demote this back to a net, not to quietly stop looking at it.
+#
+# It also runs Lighthouse against the preview (informational/shift-left) so a perf or a11y
+# regression shows up on the PR before merge, complementing the authoritative post-deploy gate.
 
 on:
-  deployment_status: {}
+  pull_request:
 
 permissions:
   contents: read
+  checks: read # wait-for-preview.js polls the "Cloudflare Pages" check-run status
 
 jobs:
   preview-smoke:
     name: preview smoke
-    # Only for SUCCESSFUL Cloudflare deployments that are NOT production (exclude the live URL).
-    # Filtering on the URL (not the environment label) is robust to Cloudflare's naming.
-    if: >
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment_status.environment_url != '' &&
-      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev' &&
-      github.event.deployment_status.environment_url != 'https://mi-dia-app.pages.dev/'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: e2e
     env:
-      # The spec + config read PROD_URL as baseURL — point it at the PR's preview deployment.
-      PROD_URL: ${{ github.event.deployment_status.environment_url }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # Check out the exact commit that was deployed, so the smoke spec matches the built app.
-      - uses: actions/checkout@v4
+      # Check out the exact commit Cloudflare deployed (the PR head), not the synthetic
+      # pull_request merge commit, so the smoke spec matches the built app.
+      - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.deployment.sha }}
-      - uses: actions/setup-node@v4
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version: 20
           cache: npm
           cache-dependency-path: e2e/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Compute the branch-alias preview URL
+        # Cloudflare Pages alias rule: branch name lowercased, non-alphanumerics -> "-",
+        # truncated to 28 chars, no leading/trailing "-". HEAD_REF comes in via env (not
+        # inline ${{ }} interpolation) so a hostile branch name cannot inject shell code.
+        run: |
+          alias=$(echo "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | cut -c1-28 | sed 's/^-*//; s/-*$//')
+          echo "PROD_URL=https://${alias}.mi-dia-app.pages.dev" >> "$GITHUB_ENV"
+          echo "Preview URL: https://${alias}.mi-dia-app.pages.dev"
+      - name: Wait for the Cloudflare Pages preview deployment
+        run: PREVIEW_URL="$PROD_URL" node wait-for-preview.js
       - name: Smoke the preview URL
+        # The spec + config read PROD_URL as baseURL — pointed at the PR's preview above.
         run: |
           echo "Smoking preview: $PROD_URL"
           npx playwright test --config=playwright.prod.config.js
       - name: Upload preview smoke report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-preview-report
           path: e2e/playwright-report
+          retention-days: 7
+
+      # SHIFT-LEFT: run the SAME Lighthouse budgets against the PR's preview, so a perf/a11y
+      # regression is visible BEFORE merge — not only after (smoke-prod.yml). INFORMATIONAL on
+      # purpose: a cold preview can score below a warm production edge, so continue-on-error
+      # keeps a perf blip from false-blocking a PR. The authoritative error-gate stays post-deploy.
+      # (lighthouserc.cjs + scripts/ live at the repo root, hence working-directory: .)
+      - name: Lighthouse on the preview (informational)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        working-directory: .
+        run: |
+          npm install -g @lhci/cli@0.13.x
+          lhci autorun --config=lighthouserc.cjs --collect.url="$PROD_URL"
+      - name: Write preview Lighthouse scores to the summary
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: node scripts/lh-summary.mjs
+      - name: Upload preview Lighthouse report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-preview-report
+          path: .lighthouseci-report
           retention-days: 7

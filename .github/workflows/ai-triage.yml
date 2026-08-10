@@ -1,0 +1,38 @@
+name: ai-triage
+
+# AI failure-triage agent: when the e2e suite fails on a PR, post a hypothesis of the cause.
+#
+# TRIGGER = workflow_run (not pull_request) ON PURPOSE. workflow_run jobs execute the workflow
+# file from the DEFAULT branch, so the secret + write permission below can never be reached by a
+# malicious PR editing this file. This is the standard safe pattern for "react to a PR with write
+# access": untrusted input (the PR) is handled by trusted code (from main).
+on:
+  workflow_run:
+    workflows: ["e2e"] # the name: of the workflow we react to
+    types: [completed]
+
+# Least privilege, but two writes the agent genuinely needs:
+permissions:
+  contents: read # checkout
+  actions: read # read the failed run's jobs + logs
+  pull-requests: write # post the triage comment
+
+jobs:
+  triage:
+    # Only when the e2e run actually FAILED and it was a pull-request run (skip main pushes,
+    # skip successful runs). No point triaging green.
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: 20 }
+      - name: Triage the failure with Claude
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Add this secret in Settings > Secrets and variables > Actions. Without it the script
+          # logs "no key" and exits 0 — the workflow stays green, the agent simply does nothing.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/ai-triage.mjs

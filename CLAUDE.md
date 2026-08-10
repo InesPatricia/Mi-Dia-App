@@ -1,81 +1,111 @@
-# Mi Día — CLAUDE.md (slim)
+# Mi Día — agent runtime
 
-> Restructurat 7 iulie 2026 (D-44). Acest fisier e deliberat SCURT — proiectul ruleaza pe doua
-> scene; citeste doar ce atinge sarcina ta. Spec-ul tehnic complet al aplicatiei vechi =
-> **`APP-HERITAGE.md`** (fostul CLAUDE.md, neredus).
+This file routes a session. It holds only what is true on every branch; anything that changes per
+build is derived by running a command, never written down here. Depth lives in `docs/`, read on
+demand. Enforced by `node scripts/check-docs.mjs`.
 
-## Limba (obligatoriu, fiecare sesiune)
+<orientation>
+Do this before anything else. Two directories on this machine are worktrees of the same repository,
+checked out at different branches, so the same filename can describe different states of the app.
 
-Raspunde mereu in **romana FARA diacritice** (scrie `a i s t` in loc de `ă î ș ț`) — terminalul
-Inesei nu le randeaza. Fisierele pot contine diacritice; chat-ul nu. Comentariile de cod pot fi
-in engleza.
+    git branch --show-current
+    git worktree list
 
-## Faza curenta (iulie 2026)
+| Branch    | What it is                     | What you are expected to do there              |
+|-----------|--------------------------------|------------------------------------------------|
+| `main`    | shipped production             | releases and hotfixes                          |
+| `staging` | the product arc in progress    | build features, one slice per build            |
+| `qa/*`    | QA and CI infrastructure       | tests, gates, tooling — **not** app features    |
+| `docs/*`  | documentation                  | the files described below                      |
 
-**Creare companie + laborator MVP.** Fundatia conceptuala e TERMINATA si INGHETATA; se lucreaza
-in **cicluri de produs** intr-un laborator live (D-41: rezultat per ciclu = HTML + animatii +
-texte + test + feedback + concluzii; documentele se actualizeaza DOAR daca un experiment schimba
-o lege). **Zero cod pe aplicatia-zestre in aceasta faza.**
+Never assume the state of another worktree. If a task refers to work you cannot see, check whether
+it already exists on another branch (`git log --oneline main..staging`) before building it.
+</orientation>
 
-## Ritualul de start (lucrul in laborator — default-ul)
+<critical_directives>
+Each rule names the command that enforces it. If a rule has no command, it is a preference, not a
+rule, and belongs in `docs/APP-REFERENCE.md`.
 
-1. Citeste `private/IMPLEMENTATION_PROTOCOL.md` — CUM construim (traducere, nu inventie; fara
-   ipoteza nu se construieste).
-2. Citeste `private/mi-dia-status.md` (starea proiectului) + `private/Experiments/` cel mai
-   recent `experiment-NNN.md` (starea ciclului curent).
-3. Sprintul zilei il da Ines. Construieste. Orice decizie confirmata → `/decizie`.
-4. Orice decizie de PRODUS trece prin **`/product-review`** (executa
-   `private/PRODUCT_REVIEW_PROTOCOL.md`, D-47) — cele 11 etape, fara sarituri; exact un
-   rezultat: APPROVED / APPROVED WITH EXPERIMENT / NEEDS REVISION / BLOCKED.
-5. Orice build de laborator traieste intr-un experiment → **`/experiment`** (deschide/
-   construieste+deploy/sesiuni de observatie/inchide `Experiments/experiment-NNN.md`; fara
-   ipoteza nu se construieste; un ciclu se inchide inainte sa se deschida urmatorul).
+**Language.** Reply in Romanian **without diacritics** — write `a i s t`, not `ă î ș ț`. The terminal
+renders them as garbage, which makes replies unreadable. Applies to every chat response, every
+session. Files and code comments may use whatever they already use; anything visible in git is
+English.
 
-## Cele doua scene (D-42)
+**Versioning: never edit a build in place.** The app is one self-contained file, `mi-dia-vNN.html`.
+Every change creates a new file with the next `NN`. The previous build is a rollback point, so
+overwriting one destroys it. A release copies the chosen build to `index.html` and updates the
+`CACHE` name in `sw.js` to match.
+→ `node .claude/skills/ship/validate.mjs`
 
-1. **Laboratorul MVP** (AICI se lucreaza): `mi-dia-lab.pages.dev` ← sursa
-   `private/Prototype/site/` (git LOCAL propriu — NU repo-ul public). Deploy direct:
-   `cd private/Prototype && npx wrangler pages deploy site --project-name=mi-dia-lab --branch=main --commit-dirty=true`
-   Doar `site/` se publica; notele raman private. Cycle 01 (Arrival) live la v4.
-2. **Aplicatia-zestre** (INGHETATA): prod `mi-dia-app.pages.dev` (= v172, branch `main`) ·
-   staging `staging.mi-dia-app.pages.dev` (= v184; **v185 acuarela = WIP local necommis** in
-   working tree, parcat). **Inainte de ORICE atingere a `mi-dia-vNN.html` / `index.html` /
-   `sw.js` / `e2e/` sau a skill-urilor `/ship` `/staging` `/design-check` `/theme-qa` `/revamp`:
-   CITESTE `APP-HERITAGE.md`** — regulile de versionare (fisier nou per schimbare), lantul de
-   validare (div-balance + `node --check` + screenshot ambele teme), sistemul de design LOCKED,
-   modelul de date, i18n, changelog-urile. Abaterile zestrei fata de fundatie sunt MARCATE in
-   `private/reconciliation-register.md` (R-01…R-15) si nu se "repara" fara decizia Inesei.
+**Validation after every edit, before saying it is done.** Div balance must be equal, and every
+`<script>` block must parse. Then run the suite.
+→ `node e2e/validate-build.js`
+→ `cd e2e && npx playwright test --grep-invert @visual`
 
-## Corpusul de documente (`private/`, gitignored — structura D-44)
+**Visual changes get a second gate.** Any change to colour, theme, tokens or layout is reviewed in
+both themes as one grid, because dark-mode legibility bugs do not show up in a single screenshot.
+→ `node e2e/theme-grid.js ../mi-dia-vNN.html`
+→ rules: `docs/DESIGN_SYSTEM.md`
 
-- **Transversale la radacina:** `Constitution.md` (META-documentul, v1.8 — guverneaza tot) ·
-  `IMPLEMENTATION_PROTOCOL.md` (v1.1 — cum construim) · `PRODUCT_REVIEW_PROTOCOL.md` (v1.5
-  Canonical, D-47 — cum judecam ce am construit) · `ANTI-GOALS.md` (ce refuzam sa devenim) ·
-  `reconciliation-register.md` · `research-os.md` (draft) · `mi-dia-status.md` (harta vie).
-- **`Knowledge/`** (ce stim — cascada): `00 Philosophy/` (Philosophy.md ~80% + Human Change
-  Theory.md v2.0 + Theory of Change.md) · `02 Grammar/` (README + `Sources/mvp-experience.md` —
-  Grammar NU e inca formalizata) · `03 Product/Product Blueprint.md` (schelet, se umple din
-  cicluri).
-- **`Decision Log/design-decisions.md`** (ce am decis): D-01…D-47, append-only — "git history al
-  gandirii". Orice decizie noua trece prin `/decizie`.
-- **`Experiments/`** (cum am aflat): `experiment-NNN.md` — ipoteza · semnale · sesiuni ·
-  concluzii.
-- **`Open Questions/`** (D-45): OQ-001…OQ-006 — intrebari fundamentale PASTRATE deschise (nu
-  TODO-uri); se inchid doar prin decizie explicita.
-- **`Archive/`** (`absorbed/` · `superseded/` · `historical/`): istorie, nu gunoi — fiecare
-  fisier cu stampila.
-- **`Prototype/`** — laboratorul (git propriu). **`marketing/`** — legea de brand + sursele
-  skill-urilor de continut (BOS v1.5, bible, brief, manifesto).
+**No unrequested refactoring.** Prefer targeted edits over rewriting a section. The `--rose-1..4`
+colour family is locked: change what consumes it, never the tokens themselves.
 
-## Non-negociabile (orice agent, orice sarcina)
+**Documentation is gated like code.** Adding a doc, moving a section or changing a test count runs
+through the same checker as everything else, including its own tests.
+→ `node scripts/check-docs.mjs`
+→ `node --test scripts/check-docs.test.mjs`
+</critical_directives>
 
-- **Constitutia e suprema**; nucleul relational INGHETAT (D-25): "ce relatie intareste?", nu "ce
-  comportament schimba?".
-- **Regula traducerii (D-26):** un nivel inferior NU introduce idei fundamentale noi.
-- **Flag, don't silently fix:** inconsistentele se RIDICA (legea existenta se pastreaza, se cere
-  amendament explicit) — Ines cere contrazicerea la nevoie.
-- **BOS §22:** fara rusine/graba/streaks/badges/comparatie/urgenta. Floarea nu e niciodata scor.
-  Zi de odihna = floare plina. Fara "0/N". NICIODATA push "we miss you".
-- **Privacy = preconditie.** Fara abonament, niciodata. Dependenta = esec de produs.
-- **Documentele urmeaza experimentele (D-41).** Vocea = martor, nu coach.
-- Lista completa: `private/ANTI-GOALS.md`.
+<architecture>
+One self-contained HTML file: markup, styles and JavaScript in a single document. No build step, no
+bundler, no npm at runtime, no backend, no framework. The UI is built with plain DOM calls.
+
+`sw.js` is a deliberate exception — browsers require a service worker to be its own file.
+
+All state is in `localStorage`; nothing is sent anywhere and there are no accounts. New features are
+written as self-contained modules on a five-layer pattern (data, calc, i18n, view, wiring) with pure
+calc functions, kept as readable source files at the repo root and inlined into the build.
+
+Deployed on Cloudflare Pages, publishing `index.html` from `main` on every push. The `staging` branch
+gets its own preview deployment on a separate subdomain, so its cache, service worker and
+localStorage stay isolated from production.
+</architecture>
+
+<derived_state>
+None of this is written down, because a file that lives on several branches cannot state which build
+is current without being wrong on at least one of them. Run the command instead.
+
+| Question                        | How to answer it                                          |
+|---------------------------------|-----------------------------------------------------------|
+| Which build is promoted?        | the `CACHE` name in `sw.js`; `index.html` is its copy      |
+| How many tests are there?       | `node e2e/count-tests.js`                                  |
+| What has changed recently?      | `git log --oneline -10` and `CHANGELOG.md`                 |
+| Is this feature already built?  | `git log --oneline main..staging`                          |
+</derived_state>
+
+<routing_triggers>
+Read the file before writing code. These are not background reading — they are the answer to the
+task, and skipping them is how the same decision gets made twice, differently.
+
+| If the task touches | Read |
+|---|---|
+| saving, loading, migrating or exporting data | `docs/DATA_SCHEMA.md` |
+| colour, theme, radius, buttons, cards, typography | `docs/DESIGN_SYSTEM.md` |
+| how a feature currently behaves, i18n, the add flow, the release workflow | `docs/APP-REFERENCE.md` |
+| what changed recently and why | `CHANGELOG.md` |
+| what a specific historical build did | `docs/history/BUILD-LOG.md` |
+| what is gated versus merely observed | `docs/QA-ARCHITECTURE.md` |
+| the AI parts of the quality loop | `docs/AGENTIC-QA.md` |
+| headers, CSP, the accepted risks | `SECURITY-NOTES.md` |
+
+Do not guess history. If a decision looks arbitrary, it is usually in the build log with a reason.
+</routing_triggers>
+
+<working_method>
+One change at a time, verified, then the next. Show a screenshot for anything visual. When a choice
+is subjective or would change the app's character, present the options instead of picking silently.
+
+Be honest about what was not checked. Headless Chromium is not a real Android device: native
+pickers, `backdrop-filter`, and font rendering all differ, so the device pass stays a manual step.
+Say so rather than implying full coverage.
+</working_method>

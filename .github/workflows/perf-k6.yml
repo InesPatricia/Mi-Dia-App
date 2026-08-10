@@ -1,0 +1,48 @@
+name: perf-k6
+
+# MANUAL-ONLY performance smoke (k6) against the live site.
+#
+# Deliberately NOT on push/schedule: the k6 script sends real traffic to the real
+# CDN, and there is no reason to generate synthetic load on every merge — the
+# Lighthouse job in smoke-prod.yml already tracks delivery/render performance per
+# release. This workflow exists to (re)take a latency baseline on demand, e.g.
+# before/after a delivery-affecting change (new module file, _headers change).
+#
+# Scope honesty: measures CDN/edge delivery of a static PWA only — see the header
+# of perf/smoke.js for exactly what this does and does not cover.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Target base URL (default: production)"
+        required: false
+        default: "https://mi-dia-app.pages.dev"
+
+# Least privilege: checkout + run k6, nothing else.
+permissions:
+  contents: read
+
+jobs:
+  k6-smoke:
+    name: k6 smoke (5 VUs / 30s)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install k6
+        # Pinned to a full commit SHA (see zap-baseline.yml for the rationale); tag kept in the comment.
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1
+      - name: Run k6 smoke
+        # --summary-export writes the end-of-test metrics as JSON for the artifact;
+        # thresholds in the script make k6 exit non-zero if the baseline is breached.
+        run: k6 run --summary-export=k6-summary.json -e BASE_URL="${{ inputs.base_url }}" perf/smoke.js
+      - name: Write k6 results to the run summary
+        if: ${{ !cancelled() }}
+        run: node scripts/k6-summary.mjs
+      - name: Upload k6 summary
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: k6-summary
+          path: k6-summary.json
+          retention-days: 14

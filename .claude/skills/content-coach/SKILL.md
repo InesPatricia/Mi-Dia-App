@@ -90,7 +90,7 @@ If she wants edits, take the change, re-grade, show again.
 ### Step 7 — Publish handoff
 On approval:
 - Set the ONE stage CTA (try the app / Kit waitlist / Ko-fi) if not already in the post.
-- Save the post to `post-ready-to-paste.txt` for her to paste into the platform.
+- Save the post to a plain-text file named post-ready-to-paste.txt for her to paste into the platform.
 - If it's a Reel/TikTok, hand the **script** to the HyperFrames marketing project
   (`Desktop/marketing-videos`) or `/product-launch-video` / `/motion-graphics` to render instead.
 - There is no Blotato/post-scheduler here. Mention optional `postiz` for scheduling later.

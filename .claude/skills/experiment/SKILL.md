@@ -100,6 +100,6 @@ Protocolul de observatie (Human Observation Before Metrics):
 ## Ce NU face skill-ul
 
 - Nu construieste fara ipoteza scrisa ("If no hypothesis exists, the prototype should not be built.").
-- Nu atinge aplicatia-zestre (`mi-dia-vNN.html` etc. — aia e scena inghetata, APP-HERITAGE.md).
+- Nu atinge aplicatia-zestre (`mi-dia-vNN.html` etc. — aia e scena inghetata; specul ei e in `docs/`).
 - Nu scrie direct in `Knowledge/` — canonul se schimba doar prin Ines + `/decizie`.
 - Nu colecteaza date "pentru ca se poate". Absenta datelor e decizie de design.

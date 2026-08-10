@@ -13,9 +13,9 @@ This skill handles **any large, multi-part job** — a visual redesign (the luxe
 
 This skill ends at a verified, QA-passed `mi-dia-vNN.html` on a branch with green e2e — it hands **promote + deploy** back to the user (copy latest `vNN` → `index.html`, bump `sw.js` CACHE, PR → CI → Cloudflare). The deploy stays a separate, deliberate decision.
 
-Read **`APP-HERITAGE.md`** (the authoritative spec — especially "⭐ NEXT UP" for the luxe revamp + the versioning/PWA/deploy rules), the **`design-check` skill** (the binding design system + validation chain), the **`e2e/`** harness notes in APP-HERITAGE.md, and project memory before starting. Every convention there is binding for **every** agent, whatever its slice.
+Read **`CLAUDE.md`** (orientation, the hard rules, and where everything else lives), then the files it routes you to for this job — **`docs/DESIGN_SYSTEM.md`** for anything visual, **`docs/APP-REFERENCE.md`** for the versioning/PWA/deploy rules, **`docs/DATA_SCHEMA.md`** if the work touches storage — and the **`design-check` skill** (the binding design system + validation chain), the **`e2e/`** harness notes in APP-HERITAGE.md, and project memory before starting. Every convention there is binding for **every** agent, whatever its slice.
 
-> **⭐ Foundation guard (D-14/D-16):** above APP-HERITAGE.md sits the foundation — the Constitution +
+> **⭐ Foundation guard (D-14/D-16):** above all of the above sits the foundation — the Constitution +
 > **BOS Vol. I** (`private/marketing/mi-dia-bos-vol1.md`) + the reconciliation register
 > (`private/reconciliation-register.md`, live R-NN list). Include in the DESIGN DNA pack: the Golden
 > Question ("does this strengthen the relationship a person has with themselves?"), BOS §22's 19
@@ -23,14 +23,14 @@ Read **`APP-HERITAGE.md`** (the authoritative spec — especially "⭐ NEXT UP" 
 > rule that register items are remediated ONLY via explicit per-entry Ines decisions — a revamp
 > never "fixes" them opportunistically, and never edits foundation docs to match the app.
 
-> **`design-check` is the single design + validation authority for this skill.** It owns the locked palette, the token rules, the flower-label hard requirement, the grep helpers, and the mandatory verification chain. `revamp` does not re-derive any of that — it **invokes `design-check` BEFORE and AFTER every visual slice** (that skill's own usage contract) and the QA team judges against it. Where this file and `design-check` ever differ, `design-check` + APP-HERITAGE.md "⭐ NEXT UP" win.
+> **`design-check` is the single design + validation authority for this skill.** It owns the locked palette, the token rules, the flower-label hard requirement, the grep helpers, and the mandatory verification chain. `revamp` does not re-derive any of that — it **invokes `design-check` BEFORE and AFTER every visual slice** (that skill's own usage contract) and the QA team judges against it. Where this file and `design-check` ever differ, `design-check` + `docs/DESIGN_SYSTEM.md` win.
 
 ## Phase 0 — Team Leader sets up + assembles the Design DNA (do this yourself)
 
 1. **Pin the goal** in one or two lines and the acceptance bar. Decide the task type: *visual overhaul* (→ run Phase 1, UNLESS a direction is already approved via mockup — the luxe revamp is, so skip), or *feature / refactor* (→ skip Phase 1, go to Phase 2). Mixed jobs run both.
-2. **Make it revertible:** create a feature branch (e.g. `feat/revamp-<slug>`) and confirm a clean snapshot (`git status` clean) so nothing here can damage `main`. Note the current latest build (e.g. `mi-dia-v132.html`) — the new slices increment from there.
+2. **Make it revertible:** create a feature branch (e.g. `feat/revamp-<slug>`) and confirm a clean snapshot (`git status` clean) so nothing here can damage `main`. Note the current latest build — read it from the `CACHE` name in `sw.js`, never from a doc — and increment the new slices from there.
 3. **Baseline:** `cd e2e && npm test` must already be green (record the count: 64 tests / 17 specs) and `npm run validate` (div-balance + `node --check`) must pass on the current build — proof the app is healthy before you touch it.
-4. **Assemble the DESIGN DNA pack** — the single shared context block pasted into **every** worker and QA prompt, so all output is unified. Distill it from APP-HERITAGE.md + the `design-check` skill + the tokens in the current `mi-dia-vNN.html`. It contains:
+4. **Assemble the DESIGN DNA pack** — the single shared context block pasted into **every** worker and QA prompt, so all output is unified. Distill it from `docs/DESIGN_SYSTEM.md` + the `design-check` skill + the tokens in the current `mi-dia-vNN.html`. It contains:
    - **Theme & feel:** Mediterranean "old rich" / quiet luxury; warm, gentle, phone-first; calm not overwhelming (omogenitate, fluență, naturalețe, simplitate, feminitate, blândețe).
    - **Two REAL themes** via `<html data-theme>` + `settings.theme` (`light`|`dark`, persisted + in backup export). Default at first launch = **LIGHT**. Switcher = discreet ☾/☀ in the hero (next to EN·ES·RO) + a Settings toggle.
    - **Semantic tokens (use, NEVER hardcode a theme-flipping color):** `--bg`, `--surface`, `--surface-2`, `--text`, `--text-soft`, `--line`, `--brand`, `--brand-ink`, `--accent`. Light values in `:root`; dark in an `html[data-theme="dark"]` override block.
@@ -39,7 +39,7 @@ Read **`APP-HERITAGE.md`** (the authoritative spec — especially "⭐ NEXT UP" 
    - **Match the approved mockup — do NOT re-derive the palette:** `private/mockups/mi-dia-luxe-mockup.html` (live 3-way theme switcher) + PNG previews in `private/mockups/luxe-previews/`.
    - **Typography:** **Fraunces** (display/brand) + **Nunito Sans** (body/UI) ONLY; wordmark "Mi" Fraunces + "Día" in gold script (Google font **Ephesis**, brand text only). Tagline UPPERCASE, letter-spaced.
    - **Hard rules:** **LOCKED `--rose-1..4` stay untouched — the revamp is ADDITIVE** (new tokens/surfaces, not a recolor). **FLOWER LABELS are sacred** — keep the EXACT `.labels .lbl .l1–.l5` markup + coords (`l1 170/78 · l2 255/142 · l3 222/244 · l4 118/244 · l5 85/142`) + the 5 line-icon SVGs + the 9px UPPERCASE word; **only re-skin colors, NEVER reposition** (every word stays inside its petal). i18n: every new string in EN/ES/RO (`data-i18n`/`-ph`/`-title`/`-aria`); user-typed data never translated. PWA stays intact (inline manifest + `/sw.js` registration). **One self-contained file** — no build step, no npm in the app, no backend.
-   - **App shape:** single-file `mi-dia-vNN.html`; views Day (home) · Journal · Respiro · Calendar · Progress · Projects · Profile/Settings; flower nav (5 petals) + fixed bottom bar (Acasă · `+` · Profil); localStorage data model per APP-HERITAGE.md.
+   - **App shape:** single-file `mi-dia-vNN.html`; views Day (home) · Journal · Respiro · Calendar · Progress · Projects · Profile/Settings; flower nav (5 petals) + fixed bottom bar (Acasă · `+` · Profil); localStorage data model per `docs/DATA_SCHEMA.md`.
    This pack is the thing that keeps a unified whole. It is **mandatory in every agent prompt**, even non-visual ones.
 
 ## Phase 1 — Design direction (visual overhauls only) → HUMAN CHECKPOINT
@@ -52,7 +52,7 @@ Skip if a direction is already approved via mockup (the luxe revamp is — `priv
 
 ## Phase 2 — Decompose into work packages (Team Leader)
 
-Break the goal into **independent slices that map to disjoint code concerns**, so proposals don't overlap. For the luxe revamp the slices are already the phased plan in APP-HERITAGE.md "⭐ NEXT UP" (**v133** Faza 0 foundation = Ephesis + gold + semantic tokens + `data-theme` block, zero visual change → **v134** switcher plumbing → **v135** hero & brand → **v136** flower + bottom bar → **v137** cards & components → **v138–v141** per-view passes (the bulk — dark exposes every hardcoded light color) → **v142** QA). For other jobs: feature = data model / render fn / new view / state+persistence / styling; refactor = one module per slice. Write a one-paragraph brief per slice: goal, the exact selectors/functions/ids it owns, what it must NOT touch, acceptance criteria. Define everything up front — workers cannot ask questions mid-run.
+Break the goal into **independent slices that map to disjoint code concerns**, so proposals don't overlap. For the luxe revamp the slices are already recorded in `docs/history/BUILD-LOG.md` (**v133** Faza 0 foundation = Ephesis + gold + semantic tokens + `data-theme` block, zero visual change → **v134** switcher plumbing → **v135** hero & brand → **v136** flower + bottom bar → **v137** cards & components → **v138–v141** per-view passes (the bulk — dark exposes every hardcoded light color) → **v142** QA). For other jobs: feature = data model / render fn / new view / state+persistence / styling; refactor = one module per slice. Write a one-paragraph brief per slice: goal, the exact selectors/functions/ids it owns, what it must NOT touch, acceptance criteria. Define everything up front — workers cannot ask questions mid-run.
 
 ## Phase 3 — Workers PROPOSE (parallel, fresh context, all carrying the DNA)
 
@@ -84,7 +84,7 @@ Apply proposals **yourself, one at a time** — never let two land blind. Each a
    - theme-flipping colors that should be tokens: `grep -nE '#[0-9A-Fa-f]{6}' mi-dia-vNN.html` — any color used as a surface/text background in a component rule (not in `:root` / `[data-theme]`) is suspect;
    - flower coords NOT moved: `grep -nE '\.lbl\.l[1-5]\{' mi-dia-vNN.html` — must still read `170/78`, `255/142`, `222/244`, `118/244`, `85/142`;
    - the LOCKED `--rose-1..4` untouched, i18n complete (EN/ES/RO), PWA intact — AND *does it look like one product?* (consistent spacing, radii, type scale, tone). Reject anything that compiles but feels bolted-on.
-4. **Mandatory validation AFTER** (the `design-check` chain = APP-HERITAGE.md "CRITICAL: Validation after EVERY edit"): Python **div-balance** (opens==closes) → **`node --check`** on each `<script>` block (or `npm run validate`) → **screenshot the changed view in BOTH themes at 412px** and confirm no label spills out of any petal, hero text stays legible over the bougainvillea photo (dark veil strong enough), and contrast is OK on velvet surfaces (no muddy gold-on-wine; functional area/calm/mood tints need legible dark variants). Be honest: headless Chromium ≠ real Android (blur/backdrop-filter, fonts, native pickers) — the device pass stays Ines's step.
+4. **Mandatory validation AFTER** (the `design-check` chain, listed in `CLAUDE.md`): **`node e2e/validate-build.js`** (div balance + `node --check` on every `<script>` block) → **screenshot the changed view in BOTH themes at 412px** and confirm no label spills out of any petal, hero text stays legible over the bougainvillea photo (dark veil strong enough), and contrast is OK on velvet surfaces (no muddy gold-on-wine; functional area/calm/mood tints need legible dark variants). Be honest: headless Chromium ≠ real Android (blur/backdrop-filter, fonts, native pickers) — the device pass stays Ines's step.
 5. Resolve conflicts between slices (overlapping selectors, specificity, the `:root` / `html[data-theme="dark"]` cascade) before the next.
 
 You are the only writer to the file. This keeps the single self-contained build safe and the unity real.
@@ -114,7 +114,7 @@ Collect QA verdicts. For each FAIL: send a tight fix brief (with the DNA) back t
 Do **not** deploy from here. When QA is green and `cd e2e && npm test` passes (regenerate the `@visual` baselines first if the look changed — `npm run test:visual`):
 
 1. Summarize: what was built (the vNN range), QA results per dimension, and anything still needing a real-Android visual confirm.
-2. Update the spec: **APP-HERITAGE.md** — move the done items out of "⭐ NEXT UP", add a changelog block, bump "Current latest build". Keep it the single living doc.
+2. Update the docs: **`CHANGELOG.md`** gets the arc entry, and whichever satellite the arc changed (`docs/DATA_SCHEMA.md` for new keys, `docs/DESIGN_SYSTEM.md` for new tokens or rules, `docs/APP-REFERENCE.md` for new behaviour, `docs/history/BUILD-LOG.md` for the per-build detail). **`CLAUDE.md` records no build number and needs no edit per release** — `node scripts/check-docs.mjs` fails if one creeps back in.
 3. Hand off the **promote + deploy** to Ines (the project's flow, never run from revamp): copy the final `mi-dia-vNN.html` → `index.html`, **bump the `CACHE` constant in `sw.js`**, `git rm` the previous `mi-dia-vNN.html` (history keeps it), commit, open a PR (gh CLI not installed → PR via URL). CI gates it (validate + e2e shards + the preview-smoke check), merge → Cloudflare Pages auto-deploys `mi-dia-app.pages.dev`, post-deploy prod smoke confirms it. Rollback = 1-click Cloudflare / `git revert`. The real-Android device pass remains Ines's step.
 
 ## Guardrails

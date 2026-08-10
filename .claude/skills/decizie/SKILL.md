@@ -43,15 +43,17 @@ tacit). Daca decizia priveste o abatere marcata in `private/reconciliation-regis
 actualizeaza si statusul intrarii — in AMBELE oglinzi (md + html raman 100% mapate).
 
 **3. Propaga in sursa de adevar** — actualizeaza DOAR ce e atins de decizie (nu tot, de fiecare data):
-- **`APP-HERITAGE.md`** (spec-ul tehnic al zestrei — fostul CLAUDE.md) si/sau **`CLAUDE.md`** slim
-  (faza / ritualul de start / structura corpusului) — care din ele e atins. In APP-HERITAGE.md:
-  sectiunea relevanta (caseta „What's still open" / „NEXT MAJOR WORK" / spec design / changelog).
+- **Satelitii din `docs/`** (spec-ul tehnic al zestrei) si/sau **`private/LAB.md`** (faza / ritualul
+  de start / structura corpusului) — care din ele e atins. In `docs/`: exact un fisier per tip de
+  schimbare — `DESIGN_SYSTEM.md` (regula de design sau token), `DATA_SCHEMA.md` (cheie de
+  localStorage), `APP-REFERENCE.md` (comportament), `docs/history/BUILD-LOG.md` (detaliu per-versiune).
   Daca decizia schimba o regula LOCKED de design, actualizeaza regula, nu adauga langa ea.
+  **`CLAUDE.md` nu se atinge** — e routerul, neutru pe branch, pazit de `node scripts/check-docs.mjs`.
 - **Memorie** (`~/.claude/projects/.../memory/`) — fisierul relevant (`living-flower-*`, `luxe-revamp-plan`,
-  `coherence-arc-v156`, etc.) + un rand in `MEMORY.md` daca e o memorie noua. Vezi regulile de memorie.
+  `coherence-arc-v156`, etc.) + un rand in indexul MEMORY.md daca e o memorie noua. Vezi regulile de memorie.
 - **Planul** `private/Archive/historical/living-flower-build-plan.md` — daca decizia schimba o felie / mecanica / reteta.
 - **Skill-urile afectate** — daca decizia schimba o regula de design pe care o impune un skill:
-  `design-check` (sistem de design), `theme-qa/color-roles.md` (rol de culoare), `marketing-design`
+  `design-check` (sistem de design), `.claude/skills/theme-qa/color-roles.md` (rol de culoare), `marketing-design`
   (DNA de brand pt suprafete noi). Actualizeaza regula in skill ca sa ramana gardian corect.
 
 **4. Verifica consecventa.** Aceeasi decizie sa nu se contrazica intre fisiere. Versiune + numar teste

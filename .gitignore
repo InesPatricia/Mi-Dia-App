@@ -40,3 +40,9 @@ e2e/theme-grid-out/
 e2e/.playwright/
 e2e/results.json
 e2e/TEST-REPORT.md
+
+# Local scratch and work-in-progress assets — never committed
+.wrangler/
+bougFlowers/
+flower-lab.html
+code_review.md

@@ -12,7 +12,8 @@
     "test:merge": "playwright merge-reports --reporter html ./all-blob-reports",
     "report": "node make-report.js",
     "validate": "node validate-build.js",
-    "test:visual": "playwright test visual.spec.js --update-snapshots=missing",
+    "count": "node count-tests.js",
+    "count:check": "node count-tests.js --check",
     "test:report": "playwright show-report",
     "wait:deploy": "node wait-for-deploy.js",
     "smoke:prod": "playwright test --config=playwright.prod.config.js",
@@ -22,8 +23,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
-    "@playwright/test": "^1.61.0",
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.0",
     "http-server": "^14.1.1"
   }
 }

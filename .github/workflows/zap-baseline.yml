@@ -1,0 +1,49 @@
+name: zap-baseline
+
+# PASSIVE security baseline (OWASP ZAP) against the live production site.
+#
+# "Baseline" = ZAP spiders the site and passively inspects the responses (headers,
+# cookies, content). It sends NO attack payloads — safe to run against production.
+# This is our own application (we own both the code and the Cloudflare project),
+# so the scan is authorized.
+#
+# Weekly + on demand, not per-merge: passive findings on a static site change when
+# the delivery configuration changes (headers, new files), not on every app tweak.
+# Findings are triaged into: fixes (e.g. security headers via a Cloudflare Pages
+# `_headers` file) or accepted risks documented in SECURITY-NOTES.md.
+#
+# TRIPWIRE (since 2026-07-28): the accepted risks are listed in .zap/rules.tsv as IGNORE, and
+# fail_action is true — so the known-and-accepted findings stay quiet, but ANY new alert turns
+# this run red. A scan that can never fail is a logbook, not a guard; this makes it a guard.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC — weekly drift check, quiet hours
+  workflow_dispatch: {}
+
+# Least privilege: the report goes to a workflow artifact, not to GitHub Issues,
+# so we keep the repo-wide read-only permissions pattern.
+permissions:
+  contents: read
+
+jobs:
+  zap-baseline:
+    name: zap baseline (passive)
+    runs-on: ubuntu-latest
+    steps:
+      # Needed so the scan can read .zap/rules.tsv from the repo (the old version had no
+      # checkout because it read nothing from the repo — the ignore-list changes that).
+      - uses: actions/checkout@v7
+      - name: ZAP baseline scan
+        # Pinned to a full commit SHA (not the movable v0.14.0 tag) so the code that runs with
+        # access to our workspace can't change under us. Dependabot proposes SHA bumps via PR.
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: "https://mi-dia-app.pages.dev/"
+          # The tripwire allow-list: accepted risks marked IGNORE so only NEW findings can fail.
+          rules_file_name: ".zap/rules.tsv"
+          # No GitHub issue creation — report as artifact only (matches least-privilege above).
+          allow_issue_writing: false
+          artifact_name: zap-baseline-report
+          # Fail the run on any alert that is NOT an accepted risk in .zap/rules.tsv.
+          fail_action: true

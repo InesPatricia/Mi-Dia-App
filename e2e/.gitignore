@@ -1,0 +1,4 @@
+# Playwright agent scaffolding that must stay LOCAL:
+# the seed spec is a scratch starting point for the generator agent; if committed it would
+# be collected by testDir:./tests and inflate the suite count with an empty passing test.
+tests/seed.spec.ts
