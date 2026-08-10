@@ -57,3 +57,14 @@ scratch/
 .claude/skills/post-grader/
 .claude/skills/viral-hooks/
 .claude/skills/repurpose/
+
+# Laboratory and brand skills — local for the same reason.
+#
+# decizie writes the decision log, experiment runs on private/Prototype and private/Experiments,
+# product-review executes a protocol that lives in private/, and marketing-design takes its authority
+# from the Constitution, the brand law and the approved mockups. Every one of them is inert without
+# the private corpus, so shipping them in a public repository ships something that cannot run.
+.claude/skills/decizie/
+.claude/skills/experiment/
+.claude/skills/product-review/
+.claude/skills/marketing-design/

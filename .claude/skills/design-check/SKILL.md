@@ -12,7 +12,9 @@ description: IN-APP ONLY. Use BEFORE and AFTER any visual, layout, CSS, color, t
 > CREATES from the brand DNA; this one CHECKS the app against it.
 >
 > One-line split: **`/marketing-design` = architect of new brand surfaces · `/design-check` = QA inspector of
-> the app.** Shared palette, opposite jobs.
+> the app.** Shared palette, opposite jobs. (`/marketing-design` is a local skill, not part of this
+> repository: its authority is the brand law and the approved mockups, which live in the private
+> corpus. If it is not on your machine, that is why.)
 
 **Read `docs/DESIGN_SYSTEM.md` first** — it holds the locked decisions: the theme mechanics, the token
 families, the rose family that must never be redefined, and the verification chain. Mi Día is ONE
