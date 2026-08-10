@@ -30,7 +30,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: e2e
+    working-directory: quality/e2e
 
 jobs:
   seed:
@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: e2e/package-lock.json
+          cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # --update-snapshots rewrites the PNGs; --grep @visual keeps it to the two design-locked
@@ -56,5 +56,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: visual-baselines
-          path: e2e/tests/visual.spec.js-snapshots/
+          path: quality/e2e/tests/visual.spec.js-snapshots/
           retention-days: 7

@@ -4,14 +4,14 @@
 no cookies, no authentication, no third-party scripts; all user data lives in the browser
 (`localStorage`) and never leaves the device. The only external dependency is Google Fonts.
 
-**Scan setup:** [`zap-baseline.yml`](.github/workflows/zap-baseline.yml) runs a **passive**
+**Scan setup:** [`zap-baseline.yml`](../.github/workflows/zap-baseline.yml) runs a **passive**
 OWASP ZAP baseline scan (response inspection only, no attack payloads) against production,
 weekly + on demand. Passive-only is an intentional match for a zero-backend static site —
 there is no server-side logic to actively probe. This is not, and does not claim to be,
 a penetration test.
 
 **Triage rule:** every finding becomes either a **fix** (shipped via the Cloudflare Pages
-[`_headers`](_headers) file) or an **accepted risk** recorded here with its justification.
+[`_headers`](../public/_headers) file) or an **accepted risk** recorded here with its justification.
 Nothing is silently ignored.
 
 ---
@@ -31,7 +31,7 @@ Nothing is silently ignored.
 | Permissions Policy Not Set (Low) | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` | The app uses none of these; deny them outright |
 | COOP Missing (Low) | `Cross-Origin-Opener-Policy: same-origin` | No cross-window interaction needed |
 
-**Implementation gotcha worth knowing:** the service worker ([`sw.js`](sw.js)) re-issues
+**Implementation gotcha worth knowing:** the service worker ([`sw.js`](../public/sw.js)) re-issues
 *every* GET through `fetch()` inside the worker, and worker fetches are governed by the
 `connect-src` of the CSP delivered **on the `sw.js` response**. `connect-src` therefore
 explicitly allows the two Google Fonts hosts — with a plain `connect-src 'self'`, fonts
@@ -78,11 +78,11 @@ makes the scanner look at the next one.
 
 ## Tripwire — 2026-07-28
 
-The accepted risks are now encoded in [`.zap/rules.tsv`](.zap/rules.tsv) as `IGNORE`, and the
+The accepted risks are now encoded in [`quality/security/rules.tsv`](../quality/security/rules.tsv) as `IGNORE`, and the
 workflow runs with `fail_action: true`. Effect: the known-and-accepted findings stay silent,
 but **any new alert turns the scheduled scan red** — the scan is now a guard, not just a
 logbook. A fresh scan (2026-07-28) confirmed the steady-state ignore-list is exactly:
 `10055` (CSP unsafe-inline), `90003` (SRI), `90004` (COEP), `10027`, `10015`, `10049`, `10109`.
 
-**Process rule:** to accept a *new* risk, add its plugin id to `.zap/rules.tsv` **and** a note
+**Process rule:** to accept a *new* risk, add its plugin id to `quality/security/rules.tsv` **and** a note
 here. Never silence an alert in the rules file without a matching justification in this file.

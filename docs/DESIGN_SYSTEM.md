@@ -129,7 +129,7 @@ computed by `paleTint(color, amount)`.
 
 1. **Div balance** and `node --check` on each script block — the validation chain in the root
    `CLAUDE.md`.
-2. **`node e2e/theme-grid.js ../mi-dia-vNN.html`** — every view in both themes as one review grid,
+2. **`node quality/e2e/theme-grid.js ../mi-dia-vNN.html`** — every view in both themes as one review grid,
    plus the legibility checklist. This is what catches invisible text on velvet.
 3. **`cd e2e && npx playwright test --grep-invert @visual`**.
 4. Screenshot the changed view in **both** themes at 412px.

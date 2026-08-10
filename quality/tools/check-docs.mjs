@@ -17,7 +17,7 @@
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
  *
- * Usage:  node scripts/check-docs.mjs [--root <dir>] [--json]
+ * Usage:  node quality/tools/check-docs.mjs [--root <dir>] [--json]
  * Exit:   0 all rules pass · 1 any rule fails
  */
 
@@ -51,6 +51,7 @@ const SCANNED = [
   'docs/APP-REFERENCE.md',
   'docs/QA-ARCHITECTURE.md',
   'docs/AGENTIC-QA.md',
+  'docs/SECURITY-NOTES.md',
   ...skillDocs(),
 ];
 
@@ -87,28 +88,38 @@ const PATH_EXT = /\.(md|mjs|js|cjs|json|html|yml|yaml|txt|png|svg|css)$/i;
  * a command writes it belongs here, and nothing else does. An allowlist is how a gate stops gating.
  */
 const GENERATED_PREFIXES = [
-  'e2e/test-results/',
-  'e2e/playwright-report/',
-  'e2e/blob-report/',
-  'e2e/all-blob-reports/',
-  'e2e/theme-grid-out/',
+  'quality/e2e/test-results/',
+  'quality/e2e/playwright-report/',
+  'quality/e2e/blob-report/',
+  'quality/e2e/all-blob-reports/',
+  'quality/e2e/theme-grid-out/',
   'theme-grid-out/',
 ];
 const GENERATED_FILES = new Set([
-  'e2e/TEST-REPORT.md',  // npm run report
-  'e2e/results.json',    // playwright json reporter
+  'quality/e2e/TEST-REPORT.md',  // npm run report
+  'quality/e2e/results.json',    // playwright json reporter
   'report_json.json',    // ZAP baseline output
 ]);
 const isGenerated = (p) =>
   GENERATED_FILES.has(p) || GENERATED_PREFIXES.some((prefix) => p.startsWith(prefix));
 
-/** Paths a doc points at, from markdown links and from backticked tokens that look like files. */
+/**
+ * Paths a doc points at, split by how strictly they have to resolve.
+ *
+ * `link` — a markdown link. A reader clicks it, and GitHub resolves it literally, relative to the
+ * file it sits in. `[x](lighthouserc.cjs)` from the README is a 404 the moment that file moves into
+ * a folder, even though the file still exists. These get no leniency.
+ *
+ * `mention` — a backticked filename in prose. Naming `count-tests.js` in a sentence is not a
+ * promise about where it lives, so a match anywhere in the repo is enough.
+ */
 function pathsIn(text) {
-  const out = new Set();
+  const links = new Set();
+  const mentions = new Set();
 
   for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
     if (/^(https?:|mailto:|#)/.test(target)) continue;
-    out.add(target.split('#')[0]);
+    links.add(target.split('#')[0]);
   }
   for (const [, token] of text.matchAll(/`([^`\n]+)`/g)) {
     const t = token.trim();
@@ -118,9 +129,9 @@ function pathsIn(text) {
     if (/[*?()]|\.\.|vNN|vNEW|vOLD|NNN?\b/.test(t)) continue;
     // a bare extension (`.html`, `.json`) is prose, not a reference
     if (/^\./.test(t) && !t.slice(1).includes('.')) continue;
-    out.add(t);
+    mentions.add(t);
   }
-  return [...out];
+  return { links: [...links], mentions: [...mentions] };
 }
 
 /** Every filename in the repo, so a doc may name a file without spelling out its directory. */
@@ -143,11 +154,20 @@ function checkDeadPaths() {
   const dead = [];
   for (const doc of present()) {
     const base = dirname(join(ROOT, doc));
-    for (const p of pathsIn(read(doc))) {
+    const { links, mentions } = pathsIn(read(doc));
+
+    // a link gets clicked, so it has to resolve exactly where it points
+    for (const p of links) {
       const clean = p.replace(/^\.?\//, '');
-      if (isGenerated(clean)) continue;
+      if (isGenerated(clean) || clean.startsWith('private/')) continue;
+      if (!existsSync(resolve(base, p))) dead.push(`${doc} -> ${p}  (broken link)`);
+    }
+
+    // a mention in prose only has to name something that exists
+    for (const p of mentions) {
+      const clean = p.replace(/^\.?\//, '');
       // private/ is the product worktree's gitignored corpus — real, but never present here
-      if (clean.startsWith('private/')) continue;
+      if (isGenerated(clean) || clean.startsWith('private/')) continue;
       const resolves =
         existsSync(resolve(base, p)) ||
         existsSync(resolve(ROOT, clean)) ||
@@ -202,7 +222,7 @@ function checkRouterSize() {
 function checkTestCounts() {
   let counts;
   try {
-    const raw = execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js')], {
+    const raw = execFileSync(process.execPath, [join(ROOT, 'quality', 'e2e', 'count-tests.js')], {
       cwd: ROOT,
       encoding: 'utf8',
     });
@@ -213,7 +233,7 @@ function checkTestCounts() {
 
   // the badge: delegated
   try {
-    execFileSync(process.execPath, [join(ROOT, 'e2e', 'count-tests.js'), '--check'], {
+    execFileSync(process.execPath, [join(ROOT, 'quality', 'e2e', 'count-tests.js'), '--check'], {
       cwd: ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],

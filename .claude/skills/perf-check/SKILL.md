@@ -1,6 +1,6 @@
 ---
 name: perf-check
-description: Run and interpret the Mi Día performance layer — Lighthouse CI budgets and the k6 CDN smoke — and decide whether to tighten (ratchet) the thresholds. Reads the measured baseline, compares a run against the budgets in lighthouserc.cjs and the thresholds in perf/smoke.js, explains any regression by category/route, and proposes a threshold ratchet only after several green runs. Use when Ines says "run k6 / a load test", "check performance / Lighthouse scores", "verifica performanta", "did perf regress", "should we tighten the budgets", or when the lighthouse job in smoke-prod flags a warning. NOT for security (use /security-triage).
+description: Run and interpret the Mi Día performance layer — Lighthouse CI budgets and the k6 CDN smoke — and decide whether to tighten (ratchet) the thresholds. Reads the measured baseline, compares a run against the budgets in lighthouserc.cjs and the thresholds in quality/perf/smoke.js, explains any regression by category/route, and proposes a threshold ratchet only after several green runs. Use when Ines says "run k6 / a load test", "check performance / Lighthouse scores", "verifica performanta", "did perf regress", "should we tighten the budgets", or when the lighthouse job in smoke-prod flags a warning. NOT for security (use /security-triage).
 ---
 
 # /perf-check — performance run + interpretation
@@ -17,14 +17,14 @@ experience (FCP/LCP/TBT/CLS) + PWA/a11y/best-practices.
 
 1. **Know the baseline.** Current measured baseline (production): perf ≈ 0.62, a11y ≈ 0.95,
    best-practices ≈ 0.96, PWA ≈ 0.88; k6 p(95) ≈ 410 ms, 0% failures. Error floors and per-route
-   thresholds live in `lighthouserc.cjs` and `perf/smoke.js`, each with a written rationale.
+   thresholds live in `lighthouserc.cjs` and `quality/perf/smoke.js`, each with a written rationale.
 
 2. **Lighthouse.** It runs automatically post-deploy (smoke-prod) and informationally on each PR
    preview (shift-left). To read a run: open the run summary (the `lh-summary.mjs` table) or the
    `lighthouse-report` artifact. Compare each category to its budget; a category below its error
    floor is a real regression, a metric past its warn value is drift to watch.
 
-3. **k6.** Manual only (`perf-k6` workflow → Run workflow, or `k6 run perf/smoke.js` locally with
+3. **k6.** Manual only (`perf-k6` workflow → Run workflow, or `k6 run quality/perf/smoke.js` locally with
    a portable binary). Read the `k6-summary.mjs` table: p(95) < 500 ms overall, < 600 ms per route.
    If one route fails while the aggregate passes, the per-route split has done its job — name the
    slow file (usually `/` , the ~1 MB shell).

@@ -26,7 +26,7 @@ const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const README = path.join(__dirname, '..', 'README.md');
+const README = path.join(__dirname, '..', '..', 'README.md');
 
 // Ask the runner, then read the count off its "Total: N tests in M files" summary line.
 function count(args, env = {}) {

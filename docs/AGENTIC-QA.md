@@ -18,7 +18,7 @@ system. Two distinct things — kept separate on purpose, because interviews con
 
 ## Part 1 — AI as a QA tool in this repo
 
-### 1a. The failure-triage agent (`ai-triage.yml` + `scripts/ai-triage.mjs`)
+### 1a. The failure-triage agent (`ai-triage.yml` + `quality/tools/ai-triage.mjs`)
 
 **What it does.** When the `e2e` suite fails on a pull request, the agent reads two artifacts —
 the **PR diff** ("what changed") and the **failing test logs** ("what broke") — asks Claude to
@@ -42,11 +42,11 @@ real gates do that.
 **To enable it:** add an `ANTHROPIC_API_KEY` secret in *Settings → Secrets and variables → Actions*.
 Until then the workflow runs and cleanly no-ops.
 
-### 1b. The native Playwright agents (`e2e/.claude/agents/`)
+### 1b. The native Playwright agents (`quality/e2e/.claude/agents/`)
 
 Playwright ships three agent definitions, scaffolded here with
 `npx playwright init-agents --loop claude`. They drive the `playwright-test` MCP server (see
-`e2e/.mcp.json`), which gives the agent real browser tools (navigate, snapshot, run a test, read
+`quality/e2e/.mcp.json`), which gives the agent real browser tools (navigate, snapshot, run a test, read
 console). Each is a Markdown file with a role, a toolset, and instructions:
 
 | Agent | Role | Use it when |
@@ -61,7 +61,7 @@ feature, generating first-pass specs to refine, or proposing a repair for a flak
 human then verifies. This is the "self-healing tests" idea, grounded — with the deterministic suite
 as the safety net, never replaced by the agent.
 
-`e2e/.mcp.json` invokes `npx` directly, so the same file works on Windows, macOS and Linux. It was
+`quality/e2e/.mcp.json` invokes `npx` directly, so the same file works on Windows, macOS and Linux. It was
 originally scaffolded with a `cmd /c` wrapper, which pinned it to Windows; that was documented as a
 known limitation for a while, which was the wrong call. A two-minute portability fix should be
 fixed, not written down.
@@ -70,9 +70,9 @@ fixed, not written down.
 
 ## Part 2 — How to test an *agentic AI system*
 
-> **This section is runnable, not just theory:** [`evals/`](../evals/) is a working eval harness
+> **This section is runnable, not just theory:** [`quality/evals/`](../quality/evals/) is a working eval harness
 > (golden dataset + property assertions + LLM-as-judge + pass-rate floor) over a representative
-> extraction task. Trigger the `evals` workflow or run `node evals/run.mjs`.
+> extraction task. Trigger the `evals` workflow or run `node quality/evals/run.mjs`.
 
 If the product under test is itself built on LLM agents, classic assertions break. The good news:
 the *principles* are the ones already used in this repo — baseline, thresholds with tolerance,

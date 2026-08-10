@@ -44,25 +44,26 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   - Bump the `CACHE` constant in `sw.js` on each new build so old caches clear on activate.
 
 **Test harness (dev-only — NOT a single-file violation):**
-- **Playwright e2e tests** are a fully self-contained project in **`e2e/`** (`package.json`,
-  `playwright.config.js`, `node_modules/`, `tests/`). Kept OUT of the repo root on purpose so app
-  code vs test code is visually obvious: anything under `e2e/` = test, everything at root = app/docs.
+- **Playwright e2e tests** are a fully self-contained project in **`quality/e2e/`** (`package.json`,
+  `playwright.config.js`, `node_modules/`, `tests/`). It lives under `quality/`, with the performance,
+  security and eval harnesses, so that one folder answers "how is this verified?" and no test tooling
+  competes for attention with the product.
   This is a separate dev-only concern; the "no npm/build tooling/backend" rule applies to the APP, not
-  to test tooling. `e2e/node_modules/` and Playwright outputs (`e2e/test-results/`,
-  `e2e/playwright-report/`) are gitignored — only `e2e/package.json`, `e2e/playwright.config.js`, and
-  `e2e/tests/` are committed. The app stays one self-contained HTML file at root (so Cloudflare Pages
+  to test tooling. `quality/e2e/node_modules/` and Playwright outputs (`quality/e2e/test-results/`,
+  `quality/e2e/playwright-report/`) are gitignored — only `quality/e2e/package.json`, `quality/e2e/playwright.config.js`, and
+  `quality/e2e/tests/` are committed. The app stays one self-contained HTML file at root (so Cloudflare Pages
   keeps serving `index.html` + `sw.js` from `/` — the app dir was deliberately NOT moved).
 - Config serves the repo **parent dir (`..`)** over http via `http-server` (so root `index.html` + the
   service worker behave like production) and runs in a **mobile Chromium** viewport (Pixel 5) because
   the app is phone-first.
-- Run (from `e2e/`): `cd e2e && npm test` · HTML report: `npm run test:report` · **concise Markdown
-  summary: `npm run report`** (runs the suite, writes `e2e/TEST-REPORT.md` — per-suite + per-test
+- Run (from `quality/e2e/`): `cd e2e && npm test` · HTML report: `npm run test:report` · **concise Markdown
+  summary: `npm run report`** (runs the suite, writes `quality/e2e/TEST-REPORT.md` — per-suite + per-test
   pass/fail, totals, duration; via `make-report.js`, JSON-reporter-to-file so server logs can't corrupt
   it) · record new flows: `cd e2e && npm run codegen`. Watch live: `npm run test:watch` (headed) /
   `npm run test:ui`. Shard across CI machines: `--shard=i/n` (see `.github/workflows/e2e.yml`).
 - **Evidence:** config sets `screenshot:'on'`, so every run captures a screenshot of each test's final
-  state (pass or fail) — browsable in the HTML report at `e2e/playwright-report/index.html` (open via
-  `npm run test:report`); raw PNGs land in `e2e/test-results/<test>/test-finished-*.png`. Identical
+  state (pass or fail) — browsable in the HTML report at `quality/e2e/playwright-report/index.html` (open via
+  `npm run test:report`); raw PNGs land in `quality/e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
 - Current coverage (**85 tests across 20 specs** — 83 functional + 2 `@visual`): **rituals** (`ritual.spec.js`,
@@ -114,14 +115,14 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   (`*-win32.png`, dev machine) so CI skips `@visual` via `--grep-invert`; run locally with `npm run test:visual`).
 - **Automation / quality gates:** `npm run validate` (= `validate-build.js`: div-balance + `node --check`
   on the build — the CLAUDE.md manual rule, now scriptable + a fast CI `validate` job that gates the test
-  shards). **Test-independence (anti-bias):** `e2e/SPEC-TEMPLATE.md` drives a 2-isolated-agent flow — an
+  shards). **Test-independence (anti-bias):** `quality/e2e/SPEC-TEMPLATE.md` drives a 2-isolated-agent flow — an
   *implementer* (app code) and a *tester* (black-box Playwright from the spec only) never see each other's
   code; they meet at the written contract (acceptance criteria + stable selector handles).
 - **Post-deploy smoke (prod, v131):** a SEPARATE workflow `.github/workflows/smoke-prod.yml` runs on
   push to `main` (i.e. AFTER a merge). It first waits for Cloudflare to publish the new build
-  (`e2e/wait-for-deploy.js` polls the LIVE `/sw.js` until its `CACHE` matches the just-merged
+  (`quality/e2e/wait-for-deploy.js` polls the LIVE `/sw.js` until its `CACHE` matches the just-merged
   `sw.js`, 5-min timeout), then runs a 7-test Playwright smoke against the LIVE site
-  `https://mi-dia-app.pages.dev` (`e2e/playwright.prod.config.js` → `e2e/tests-prod/smoke-prod.spec.js`:
+  `https://mi-dia-app.pages.dev` (`quality/e2e/playwright.prod.config.js` → `quality/e2e/tests-prod/smoke-prod.spec.js`:
   home boots on the Day view + brand + no real console errors AND no same-origin 404s; `/sw.js` served
   with a `mi-dia-` cache; the PWA manifest is linked; **all 7 views render** without console errors
   (Day/Journal/Respiro/Calendar/Progress/Projects/Profile); the 5 flower petals present; the Journal
@@ -168,7 +169,7 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   the same control).
 - Selector gotchas: the **flower nav lives inside `#view-day`** (only clickable on the Day view — return
   Home between petals); the legacy `.viewback` pill is hidden by CSS off Day (use the hero back, accessible
-  name "Back to home"). `Store` falls back to `localStorage` in a plain browser, so `e2e/tests/helpers.js`
+  name "Back to home"). `Store` falls back to `localStorage` in a plain browser, so `quality/e2e/tests/helpers.js`
   `seedStorage()` can preset state before load.
 - **Honest limit:** headless Chromium ≠ real Android — native time pickers (`<input type=time>`),
   blur/backdrop-filter, fonts and touch gestures stay MANUAL QA (backlog C/F). Playwright covers

@@ -2,7 +2,7 @@
 
 This file routes a session. It holds only what is true on every branch; anything that changes per
 build is derived by running a command, never written down here. Depth lives in `docs/`, read on
-demand. Enforced by `node scripts/check-docs.mjs`.
+demand. Enforced by `node quality/tools/check-docs.mjs`.
 
 <orientation>
 Do this before anything else. Two directories on this machine are worktrees of the same repository,
@@ -39,12 +39,12 @@ overwriting one destroys it. A release copies the chosen build to `index.html` a
 
 **Validation after every edit, before saying it is done.** Div balance must be equal, and every
 `<script>` block must parse. Then run the suite.
-→ `node e2e/validate-build.js`
+→ `node quality/e2e/validate-build.js`
 → `cd e2e && npx playwright test --grep-invert @visual`
 
 **Visual changes get a second gate.** Any change to colour, theme, tokens or layout is reviewed in
 both themes as one grid, because dark-mode legibility bugs do not show up in a single screenshot.
-→ `node e2e/theme-grid.js ../mi-dia-vNN.html`
+→ `node quality/e2e/theme-grid.js ../mi-dia-vNN.html`
 → rules: `docs/DESIGN_SYSTEM.md`
 
 **No unrequested refactoring.** Prefer targeted edits over rewriting a section. The `--rose-1..4`
@@ -52,8 +52,8 @@ colour family is locked: change what consumes it, never the tokens themselves.
 
 **Documentation is gated like code.** Adding a doc, moving a section or changing a test count runs
 through the same checker as everything else, including its own tests.
-→ `node scripts/check-docs.mjs`
-→ `node --test scripts/check-docs.test.mjs`
+→ `node quality/tools/check-docs.mjs`
+→ `node --test quality/tools/check-docs.test.mjs`
 </critical_directives>
 
 <architecture>
@@ -78,7 +78,7 @@ is current without being wrong on at least one of them. Run the command instead.
 | Question                        | How to answer it                                          |
 |---------------------------------|-----------------------------------------------------------|
 | Which build is promoted?        | the `CACHE` name in `sw.js`; `index.html` is its copy      |
-| How many tests are there?       | `node e2e/count-tests.js`                                  |
+| How many tests are there?       | `node quality/e2e/count-tests.js`                                  |
 | What has changed recently?      | `git log --oneline -10` and `CHANGELOG.md`                 |
 | Is this feature already built?  | `git log --oneline main..staging`                          |
 </derived_state>

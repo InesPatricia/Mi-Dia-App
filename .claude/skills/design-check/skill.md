@@ -73,7 +73,7 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 1. **Div balance** — opens == closes for `<div>` in the body.
 2. **`node --check`** on each `<script>` block.
-   Both are one command: **`node e2e/validate-build.js`**.
+   Both are one command: **`node quality/e2e/validate-build.js`**.
 3. **Screenshot the changed view in BOTH themes** (light + dark) at 412px and confirm:
    - no label/word spills OUT of any flower petal;
    - hero text stays legible over the bougainvillea photo (the dark veil must be strong enough);
@@ -95,10 +95,10 @@ hero** (next to the EN·ES·RO langbar) **+ a toggle in Settings**. **Default th
 
 ## Companion skills + references (use these — don't re-derive)
 
-- **`/theme-qa`** — the Light+Dark QA gate: `e2e/theme-grid.js` shoots EVERY view in BOTH themes into one
+- **`/theme-qa`** — the Light+Dark QA gate: `quality/e2e/theme-grid.js` shoots EVERY view in BOTH themes into one
   review grid + the legibility checklist + the e2e net. Run it before promoting a theme change (it's the
   automation of step 3, across all 8 views, that would have caught the reactive dark-mode bugs).
-  Atomic one-off: `node e2e/shoot.js <file> <out.png> <view> <theme>`.
+  Atomic one-off: `node quality/e2e/shoot.js <file> <out.png> <view> <theme>`.
 - **`.claude/skills/theme-qa/color-roles.md`** — the color ROLE map (action=wine/gilt · metal=gold · functional
   =area/mood/calm · surface/text). Recolor by role; never blanket-swap a locked token. Reference it instead
   of re-deciding "should this be wine or rose?".
