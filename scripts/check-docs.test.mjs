@@ -18,11 +18,28 @@ import { fileURLToPath } from 'node:url';
 
 const CHECKER = join(dirname(fileURLToPath(import.meta.url)), 'check-docs.mjs');
 
-const COUNT_STUB = `console.log(JSON.stringify({
-  functional: { tests: 83, files: 19 },
-  visual: { tests: 2 },
-  prod: { tests: 7, files: 1 }
-}));`;
+// Mirrors the real e2e/count-tests.js, including its --check mode: the README badge must equal the
+// functional count exactly. Rule 4 delegates the badge to this, so the stub has to behave like it.
+const COUNT_STUB = `// Mirrors the real e2e/count-tests.js, including its --check mode: the README badge must
+// equal the functional count exactly. Rule 4 delegates the badge to this, so the stub behaves like it.
+const fs = require('node:fs'), path = require('node:path');
+const counts = { functional: { tests: 83, files: 19 }, visual: { tests: 2 }, prod: { tests: 7, files: 1 } };
+if (process.argv.includes('--check')) {
+  const readme = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf8');
+  // no regex on purpose: this lives inside a template literal, and one lost backslash turns the
+  // pattern into a syntax error that only shows up as "could not run count-tests"
+  const marker = 'shields.io/badge/e2e-';
+  const at = readme.indexOf(marker);
+  if (at === -1) { console.error('count-tests: no e2e test-count badge found in README.md.'); process.exit(1); }
+  const claimed = parseInt(readme.slice(at + marker.length), 10);
+  if (claimed !== counts.functional.tests) {
+    console.error('count-tests: README badge says ' + claimed + ', the runner reports ' + counts.functional.tests + '.');
+    process.exit(1);
+  }
+  console.log('count-tests: README badge matches the suite. OK');
+} else {
+  console.log(JSON.stringify(counts));
+}`;
 
 const CLEAN_ROUTER = `# Router
 
@@ -39,7 +56,11 @@ function makeFixture() {
   };
 
   write('CLAUDE.md', CLEAN_ROUTER);
-  write('README.md', '# App\n\n83 end-to-end tests, plus 7 smoke tests.\n');
+  write(
+    'README.md',
+    '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n\n' +
+      '83 end-to-end tests, plus 7 smoke tests.\n',
+  );
   write('CHANGELOG.md', '# Changelog\n\n## v1 — first\n\ne2e 83 green.\n');
   write('docs/DATA_SCHEMA.md', '# Schema\n\nSee [the build log](history/BUILD-LOG.md).\n');
   write('docs/history/BUILD-LOG.md', '# Build log\n\n## Changelog (v23 → v47)\n\nold stuff\n');
@@ -82,11 +103,11 @@ function expectRuleFails(rule, mutate) {
   }
 }
 
-test('clean fixture: rules 1-5 pass', () => {
+test('clean fixture: every rule that can pass without git does', () => {
   const root = makeFixture();
   try {
     const { byRule, results } = run(root);
-    for (const rule of [1, 2, 3, 4, 5]) {
+    for (const rule of [1, 2, 3, 4, 5, 7]) {
       const detail = results.find((r) => r.rule === rule)?.detail ?? '';
       assert.equal(byRule[rule], 'PASS', `rule ${rule} should pass — got ${byRule[rule]}\n${detail}`);
     }
@@ -182,8 +203,51 @@ test('rule 3 catches a router that grew past the limit', () => {
 
 test('rule 4 catches a test count the runner cannot produce', () => {
   expectRuleFails(4, (root, write) =>
-    write('README.md', '# App\n\n99 end-to-end tests, plus 7 smoke tests.\n'),
+    write(
+      'README.md',
+      '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n\n' +
+        '99 end-to-end tests, plus 7 smoke tests.\n',
+    ),
   );
+});
+
+// The badge is owned by count-tests --check, which demands the functional count exactly. Rule 4
+// used to accept functional+visual as well, so a badge could pass one checker and fail the other —
+// which is how a pull request went red after this rule had gone green. One number, one authority.
+test('rule 4 defers the badge to count-tests --check', () => {
+  expectRuleFails(4, (root, write) =>
+    write(
+      'README.md',
+      // 85 = 83 functional + 2 visual: a number the runner can produce, but not the badge's number
+      '# App\n\n![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)\n\n' +
+        '83 end-to-end tests, plus 7 smoke tests.\n',
+    ),
+  );
+});
+
+// This one is written from a real screenshot: the README diagram rendered as
+// "docs/DATA_SCHEMA.mdwhat is stored" because GitHub stripped the <br/> and the <i>.
+test('rule 7 catches HTML inside a mermaid label', () => {
+  expectRuleFails(7, (root, write) =>
+    write(
+      'CLAUDE.md',
+      `${CLEAN_ROUTER}\n\`\`\`mermaid\nflowchart LR\n  A["One<br/><i>two</i>"] --> B["Three"]\n\`\`\`\n`,
+    ),
+  );
+});
+
+test('rule 7 accepts a diagram with plain labels', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'CLAUDE.md'),
+      `${CLEAN_ROUTER}\n\`\`\`mermaid\nflowchart LR\n  A["One"] --> B["Two"]\n  B -. verifies .-> A\n\`\`\`\n`,
+      'utf8',
+    );
+    assert.equal(run(root).byRule[7], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('rule 5 catches an archived heading dropped from the build log', () => {

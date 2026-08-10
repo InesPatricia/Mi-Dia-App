@@ -221,18 +221,21 @@ The fix was to split the file by audience, and then to treat the result the way 
 as something a machine checks, not something a person remembers.
 
 ```mermaid
-graph LR
-    A["CLAUDE.md<br/>111 lines<br/><i>how to work here</i>"] --> B["docs/DATA_SCHEMA.md<br/><i>what is stored</i>"]
-    A --> C["docs/DESIGN_SYSTEM.md<br/><i>themes and tokens</i>"]
-    A --> D["docs/APP-REFERENCE.md<br/><i>how it behaves now</i>"]
-    A --> E["CHANGELOG.md<br/><i>what changed</i>"]
-    E --> F["docs/history/BUILD-LOG.md<br/><i>the full archive</i>"]
-    G(["scripts/check-docs.mjs<br/>CI gate"]) -.->|verifies| A
-    G -.->|verifies| B
-    G -.->|verifies| C
-    G -.->|verifies| D
-    G -.->|verifies| E
+flowchart TB
+    ROUTER["CLAUDE.md"]
+    ROUTER --> LOG["CHANGELOG.md"]
+    LOG --> ARCHIVE["docs/history/BUILD-LOG.md"]
+    ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
+    ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
+    ROUTER --> REF["docs/APP-REFERENCE.md"]
+    GATE["scripts/check-docs.mjs"] -. verifies .-> ROUTER
+    GATE -. verifies .-> SCHEMA
+    GATE -. verifies .-> DESIGN
+    GATE -. verifies .-> REF
+    GATE -. verifies .-> LOG
 ```
+
+The router names the file; the table names what is in it.
 
 | File | Holds | Read by |
 |---|---|---|
