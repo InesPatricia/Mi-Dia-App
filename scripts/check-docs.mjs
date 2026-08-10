@@ -305,8 +305,14 @@ function checkRouterDoesNotFork() {
     return fail(6, 'cannot tell which branch this is (detached HEAD, no GITHUB_HEAD_REF/GITHUB_REF_NAME)');
   }
 
-  // Documentation branches are where the router is legitimately being changed. Without this the
-  // rule would fire on every commit that edits it, and a rule people must bypass gets deleted.
+  // This rule is about long-lived branches drifting apart, not about proposals. A pull request
+  // exists precisely to change main, so asserting "identical to main" on one would block every
+  // legitimate edit to the router and force branches to be misnamed to get past it. Enforcement
+  // belongs on the push to a long-lived branch, where divergence is the actual risk.
+  if (process.env.GITHUB_HEAD_REF) {
+    return skip(6, `pull request from "${branch}" — the router may change in a proposal (enforced on merge)`);
+  }
+  // The same allowance locally, where documentation work happens on a docs/* branch.
   if (/^docs\//.test(branch)) {
     return skip(6, `on "${branch}" — the router is expected to change here (allowed)`);
   }

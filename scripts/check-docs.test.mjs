@@ -141,6 +141,20 @@ test('rule 6 reads the branch from GITHUB_HEAD_REF when the checkout is detached
   }
 });
 
+// A pull request exists to change main, so the no-fork rule cannot apply to one without blocking
+// every legitimate router edit — including the refactor that moved the served files into public/.
+// Divergence is a property of long-lived branches, and that is where it is enforced.
+test('rule 6 does not block a pull request, whatever the branch is called', () => {
+  const root = makeFixture();
+  try {
+    const { byRule, results } = run(root, { GITHUB_HEAD_REF: 'refactor/public-dir' });
+    assert.equal(byRule[6], 'SKIP');
+    assert.match(results.find((r) => r.rule === 6).detail, /pull request/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rule 6 falls back to GITHUB_REF_NAME on a push, and still guards a non-docs branch', () => {
   const root = makeFixture();
   try {

@@ -64,7 +64,7 @@ bundler, no npm at runtime, no backend, no framework. The UI is built with plain
 
 All state is in `localStorage`; nothing is sent anywhere and there are no accounts. New features are
 written as self-contained modules on a five-layer pattern (data, calc, i18n, view, wiring) with pure
-calc functions, kept as readable source files at the repo root and inlined into the build.
+calc functions, kept as readable source files outside `public/` and inlined into the build.
 
 Deployed on Cloudflare Pages, publishing `index.html` from `main` on every push. The `staging` branch
 gets its own preview deployment on a separate subdomain, so its cache, service worker and

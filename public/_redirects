@@ -5,7 +5,8 @@
 # automatically — so NO root rewrite is needed (and a root rewrite fought
 # Cloudflare's automatic .html clean-URL handling, causing a 308 loop / 522).
 
-# Hide non-promoted builds: old versioned files (/mi-dia-vNN.html) and mockups
-# redirect to the homepage. The hyphen means this does NOT match index.html.
-# Best-effort on Cloudflare (a splat is a "dynamic" redirect).
+# Versioned builds are no longer published at all — they live outside public/, which is the build
+# output directory. This rule stays for links people may already have saved: an old
+# /mi-dia-vNN.html now lands on the homepage instead of a 404. The hyphen means it does NOT match
+# index.html. Best-effort on Cloudflare (a splat is a "dynamic" redirect).
 /mi-dia-*      /              301
