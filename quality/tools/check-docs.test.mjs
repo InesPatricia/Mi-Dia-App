@@ -208,6 +208,22 @@ test('rule 1 still accepts a prose mention of a file that lives elsewhere', () =
   }
 });
 
+// Documented commands show the shape of a path rather than one path: /blob/<branch>/README.md is
+// how you tell someone to look at their own branch. The checker flagged one of those as dead.
+test('rule 1 accepts a placeholder in angle brackets', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'CLAUDE.md'),
+      `${CLEAN_ROUTER}\nOpen [the page](https://example.com/blob/<branch>/README.md) and \`docs/<name>.md\`.\n`,
+      'utf8',
+    );
+    assert.equal(run(root).byRule[1], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rule 1 accepts a bare filename that exists somewhere in the repo', () => {
   const root = makeFixture();
   try {
