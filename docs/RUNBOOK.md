@@ -127,15 +127,26 @@ curl -sI https://mi-dia-app.pages.dev/CLAUDE.md | grep -iE 'cf-cache-status|age'
 ```
 
 The app's HTML from the cache-buster, plus `CF-Cache-Status: HIT` and a large `Age` on the plain
-request, means the origin is fine and you are looking at a remnant. Purge it: Cloudflare dashboard →
-the `mi-dia-app` project → **Caching → Purge cache**, single URL. It takes about thirty seconds, and
-`verify-live` going green afterwards is how you know it worked.
+request, means the origin is fine and you are looking at a remnant.
+
+**Purging it may not be available, and the first draft of this runbook said otherwise.** "Caching →
+Purge cache" in the Cloudflare dashboard operates on a **zone**, meaning a domain in your own
+account. `mi-dia-app.pages.dev` sits under Cloudflare's `pages.dev`, not yours, so there is nothing
+there to purge from. Look — it costs thirty seconds — but expect the answer to be no unless the
+project has been given a custom domain. Redeploying does not clear it either; this remnant survived
+several deploys.
+
+What is left is to let it expire. The response says how long: `s-maxage` minus `Age`, capped at
+seven days. `verify-live` prints the hours remaining on every run, so it stays visible rather than
+forgotten.
 
 If instead the cache-buster returns the file itself, the origin really is publishing it, and the
-build output directory is the thing to check.
+build output directory is the thing to check. That one is a defect, it is fixable, and
+`verify-live` fails the run over it.
 
-The lesson worth keeping: **removing a file from the origin does not unpublish it.** Anything
-withdrawn from a CDN needs a purge, and until then the internet still has it.
+The lesson worth keeping: **removing a file from the origin does not unpublish it.** Withdrawing
+something from a CDN needs a purge you may not have, so until it expires the internet still has it.
+Decide what goes into a published directory before publishing it, not after.
 
 ---
 
