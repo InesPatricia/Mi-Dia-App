@@ -14,6 +14,9 @@ already accepted.
 
 ## Steps
 
+**Reply in Romanian without diacritics.** Everything written into the repository — findings, notes,
+commits — stays in English.
+
 1. **Trigger a fresh scan.** Dispatch the `zap-baseline` workflow (Actions tab → Run workflow, or
    `POST .../actions/workflows/zap-baseline.yml/dispatches` with the stored git credential). Wait
    for it to complete; download the `zap-baseline-report` artifact (`report_json.json`).
