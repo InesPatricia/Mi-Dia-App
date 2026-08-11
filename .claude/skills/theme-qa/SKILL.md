@@ -56,8 +56,8 @@ A session shipped `esc is not defined` (a function scoped locally, called from a
 build passed `node --check` (syntax) but crashed at runtime, so **day slots stopped rendering** and 13 e2e
 tests failed. Lesson: **always exercise the app, not just parse it.**
 
-- Mandatory chain first (from [`design-check`](../design-check/skill.md)): div-balance + `node --check` on
-  each `<script>`.
+- Mandatory chain first (see [`docs/DESIGN_SYSTEM.md`](../../../docs/DESIGN_SYSTEM.md)): div-balance +
+  `node --check` on each `<script>`, which `node quality/e2e/validate-build.js` does in one pass.
 - Then the e2e safety net (from `quality/e2e/`): `npx playwright test --grep-invert @visual --reporter=line`.
   For a small visual slice, at least run the specs your change could touch (add-flow / slot-interactions /
   the view you edited) — a full run is ~4–7 min.

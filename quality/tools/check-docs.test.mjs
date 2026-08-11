@@ -377,3 +377,15 @@ test('rule 8 passes on a correctly named skill in a clean index', () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// A link whose spelling differs only by case resolves on Windows and macOS and 404s on GitHub,
+// which is case-sensitive. This asserts the failure, not its wording: on a case-sensitive runner
+// existsSync already rejects the path and the message is "broken link" instead. Both are red, which
+// is the only part that matters.
+test('rule 1 catches a link whose case does not match the file on disk', () => {
+  expectRuleFails(1, (root) => {
+    mkdirSync(join(root, 'docs'), { recursive: true });
+    writeFileSync(join(root, 'docs/RUNBOOK.md'), '# runbook\n', 'utf8');
+    writeFileSync(join(root, 'CLAUDE.md'), `${CLEAN_ROUTER}\nSee [the runbook](docs/runbook.md).\n`, 'utf8');
+  });
+});

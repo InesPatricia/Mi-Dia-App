@@ -151,6 +151,23 @@ function repoFilenames(dir = ROOT, acc = new Set()) {
   return acc;
 }
 
+/** The real on-disk spelling of a path, as its parent directory lists it. */
+function realNameOf(abs) {
+  const parent = dirname(abs);
+  const wanted = basename(abs).toLowerCase();
+  return readdirSync(parent).find((n) => n.toLowerCase() === wanted) ?? basename(abs);
+}
+
+/** Whether every segment below ROOT is spelled the way the filesystem spells it. */
+function caseExact(abs) {
+  let cur = abs;
+  while (cur.length > ROOT.length && cur !== dirname(cur)) {
+    if (realNameOf(cur) !== basename(cur)) return false;
+    cur = dirname(cur);
+  }
+  return true;
+}
+
 function checkDeadPaths() {
   fileIndex ??= repoFilenames();
   const dead = [];
@@ -164,7 +181,16 @@ function checkDeadPaths() {
       if (isGenerated(clean) || clean.startsWith('private/')) continue;
       // a documented command shows the shape of a URL: <branch>, <owner>, <commit> are placeholders
       if (/[<>]/.test(p)) continue;
-      if (!existsSync(resolve(base, p))) dead.push(`${doc} -> ${p}  (broken link)`);
+      const target = resolve(base, p);
+      if (!existsSync(target)) {
+        dead.push(`${doc} -> ${p}  (broken link)`);
+      } else if (!caseExact(target)) {
+        // existsSync answers the filesystem, and this one folds case. GitHub does not, so a link
+        // whose spelling is off by a capital resolves here and 404s where it is read. That is not a
+        // hypothetical: a skill linked ../design-check/skill.md for weeks after the file became
+        // SKILL.md, and this rule called it clean every single time.
+        dead.push(`${doc} -> ${p}  (wrong case: on disk it is ${basename(realNameOf(target))})`);
+      }
     }
 
     // a mention in prose only has to name something that exists

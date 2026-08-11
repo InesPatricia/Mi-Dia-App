@@ -68,3 +68,13 @@ scratch/
 .claude/skills/experiment/
 .claude/skills/product-review/
 .claude/skills/marketing-design/
+
+# Design skills — local, by the same test, which they failed while shipped as public.
+#
+# design-check and revamp both take their authority from `private/mockups/`: the approved luxe
+# mockup and its previews, with an explicit instruction not to re-derive the palette. That folder is
+# gitignored, so a cloner got two skills that read as complete and could not run — which is exactly
+# the criterion the other eight were chosen by. The design rules a cloner CAN use are public and
+# always were: docs/DESIGN_SYSTEM.md.
+.claude/skills/design-check/
+.claude/skills/revamp/
