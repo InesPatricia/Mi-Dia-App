@@ -21,7 +21,7 @@ try a quality practice at a scale where I own every part of it, before I would e
 practice to a team that has to live with my mistakes.
 
 The app is the subject. The interesting part is the system around it: what gates a change, what
-merely watches it, what happens when something breaks, and how long it takes me to find out.
+just watches it, what happens when something breaks, and how long it takes me to find out.
 
 I am a QA and AI engineer, so most of what follows is about how this thing is tested and shipped
 more than about what it does. If you came for the app, it is at the bottom, and it is quite
@@ -64,10 +64,10 @@ service worker and localStorage, fully isolated from production.
 ## How it is tested
 
 **83 end-to-end tests across 19 specs**, Playwright on mobile Chromium, because the app is
-phone-first. A desktop viewport would faithfully test a layout nobody uses. Plus 7 smoke tests
+phone-first. A desktop viewport tests a layout nobody uses. Plus 7 smoke tests
 that run against the live site under a separate config.
 
-That count is not a number I typed. `quality/e2e/count-tests.js` asks the runner
+I do not type that number. `quality/e2e/count-tests.js` asks the runner
 (`playwright test --list`), and CI fails if the badge above disagrees. Published numbers go stale.
 This one cannot. It asks the runner because counting `test(` in the source goes
 wrong in both directions at once: it misses tests generated at runtime
@@ -75,27 +75,29 @@ wrong in both directions at once: it misses tests generated at runtime
 
 What the suite actually asserts:
 
-- **Behaviour and stored state, not just rendering.** Tests assert the DOM *and* the data the app
-  persisted to localStorage. A slot can look perfect on screen and still fail, because it was saved
-  with the wrong duration. Looking right is not the same as being right.
-- **Semantic locators first.** `getByRole` and `getByLabel` drive most of the suite, which means the
-  tests reach controls the way a screen reader does. Structural selectors appear only where a
-  control has no stable accessible name, and where that happens there is a comment explaining
-  itself.
-- **Accessibility, scanned.** axe-core runs across all views on a curated rule set covering names,
-  roles, labels and valid ARIA. Colour contrast is deliberately out of scope here and handled in a
-  separate design review, because a rule that fires on every brand colour trains you to ignore it,
-  and then you ignore the one that mattered.
-- **What the suite cannot reach** gets its own list.
-  [`docs/DEVICE-PASS.md`](docs/DEVICE-PASS.md) lists the manual checks organised by the reason they
+Tests check the DOM **and** the data the app persisted to localStorage. A slot can look perfect on
+screen and still fail, because it was saved with the wrong duration. `getByRole` and `getByLabel`
+drive most of the suite, so the tests reach controls the way a screen reader does; structural
+selectors appear only where a control has no stable accessible name, and there is a comment
+wherever that happens.
+
+axe-core runs across all views on a curated rule set covering names, roles, labels and valid ARIA.
+Colour contrast sits outside it on purpose, handled in a separate design review, because a rule
+that fires on every brand colour trains you to ignore it, and then you ignore the one that
+mattered.
+
+Two more things are worth naming:
+
+- For larger features, the person writing the code and the person writing the tests work from the
+  same spec and never read each other's work: acceptance criteria, plus the stable handles the
+  implementation guarantees. The template is in
+  [`quality/e2e/SPEC-TEMPLATE.md`](quality/e2e/SPEC-TEMPLATE.md). It removes author bias, so the
+  tests describe the agreed behaviour instead of the shipped implementation.
+- What the suite cannot reach gets its own list.
+  [`docs/DEVICE-PASS.md`](docs/DEVICE-PASS.md) has the manual checks organised by the reason they
   exist: native pickers, blur, font loading, long-press, audio, and the installed PWA.
-- **A written contract between implementer and tester.** For larger features, the person writing the
-  code and the person writing the tests work from the same spec and never read each other's work:
-  acceptance criteria, plus the stable handles the implementation guarantees. The template is in
-  [`quality/e2e/SPEC-TEMPLATE.md`](quality/e2e/SPEC-TEMPLATE.md). The point is removing author bias,
-  so the tests describe the agreed behaviour instead of the shipped implementation.
-- **Screenshot regression, currently off and honestly labelled.** See the fourth incident below. It
-  is not a happy story.
+
+Screenshot regression is currently switched off. The fourth incident below explains why.
 
 ---
 
@@ -103,8 +105,7 @@ What the suite actually asserts:
 
 The distinction I care most about: **a gate blocks, a net observes.** Gates run before merge with
 zero tolerance. Nets run after the fact and are tuned with headroom, because a check that cries wolf
-gets ignored, and an ignored check is worse than no check, since it also costs you the illusion of
-safety. The full picture, diagram included, is in
+gets ignored, and an ignored check is worse than no check. It also costs you the illusion of safety. The full picture, diagram included, is in
 [`docs/QA-ARCHITECTURE.md`](docs/QA-ARCHITECTURE.md).
 
 **Gates.** A fast build-validation job (div balance and every inline script parses, no browser, no
@@ -118,8 +119,7 @@ checks on `main` are exactly `validate build`, `test (shard 1/2)`, `test (shard 
 gate-shaped it looks in a diagram. The preview smoke sat in exactly that state for a while: the
 workflow had already been repaired once, after an audit found it had never fired at all, but nobody
 had added it to the required list. So it ran, went green, and enforced nothing. Repairing a check
-and arming it are two separate acts, and I now know that in my bones. This is the failure mode I
-check for by habit, because it is invisible from the inside: everything looks green precisely
+and arming it are two separate acts, and I now know that in my bones. This is the one I check for by habit now, because it is invisible from the inside: everything looks green precisely
 because nothing is being tested.
 
 Sharding and workers are different things, and the config says so out loud: workers parallelise
@@ -143,11 +143,11 @@ measured baseline it came from in a comment beside it, for example a 6500 ms bud
 contentful paint against a 5.2 s baseline. Alongside it, a deliberately polite k6 smoke
 ([`quality/perf/smoke.js`](quality/perf/smoke.js), 5 virtual users for 30 seconds) baselines CDN
 delivery, with one overall budget and one per route. Per-route thresholds exist because a single
-slow file hides comfortably inside an aggregate p(95) when four fast files average it away. It
+slow file hides inside an aggregate p(95) when four fast files average it away. It
 asserts p(95). The mean hides the tail, and the tail is the part users actually feel.
 
 **Security.** A passive OWASP ZAP baseline scan runs weekly against production. Passive means
-response inspection with no attack payloads, which is the honest match for a static site with no
+response inspection with no attack payloads, the honest match for a static site with no
 backend to probe. Every finding becomes either a shipped fix or a written accepted risk. Nothing is
 silently ignored, and the full triage with before-and-after deltas is in
 [`docs/SECURITY-NOTES.md`](docs/SECURITY-NOTES.md).
@@ -201,8 +201,8 @@ cases, and cost and latency treated as budgets.
 
 ## Internal tooling
 
-Small scripts that exist because I got tired of doing something by hand. This is the part of quality
-work that never shows up in a test count and quietly saves the most time.
+Small scripts I wrote because I got tired of doing something by hand. This is the part of quality
+work that never shows up in a test count and saves the most time.
 
 | Tool | What it removes |
 |---|---|
@@ -236,21 +236,20 @@ which question a file answers, it does not have a home yet.
 | `private/` | Working notes. Gitignored, never published, never committed. |
 | `scratch/` | Local work in progress: assets and experiments mid-flight. Also gitignored. |
 
-The root keeps only what has to be there: this file, the changelog, the licence, the agent's router,
-and `wrangler.toml`, which tells Cloudflare that `public/` is the site.
+The root keeps only what has to be there: this file, the changelog, the licence, the agent's
+router, and `wrangler.toml`, which tells Cloudflare that `public/` is the site.
 
 One consequence worth naming, because it looks like an inconsistency: `src/modules/*.js` are **not
 loaded by the app**. They are readable sources that get inlined into the single-file build, kept
 under `src/` so nobody mistakes them for something the browser fetches. They used to sit in the
-root, where they looked exactly like application code and were cheerfully served to every visitor.
+root, where they looked exactly like application code and were served to every visitor.
 
 ---
 
 ## Documentation architecture
 
 The project's context file had grown to 1,852 lines, and an agent read all of it before every
-session. That was the visible problem. The real one was that the file had quietly become an
-interface: five other files read its internal structure, and nothing checked that what they read
+session. That was the visible problem. The real one was that the file had become an interface: five other files read its internal structure, and nothing checked that what they read
 still existed.
 
 Three defects were sitting in the repository at the same time, and nothing caught any of them:
@@ -258,7 +257,7 @@ Three defects were sitting in the repository at the same time, and nothing caugh
 - Three skills routed work to a section heading that had been deleted.
 - Two files stated different test counts without either being wrong, and nothing reconciled them.
 - `Mi-Dia-App` and `Mi-Dia-QA` are worktrees of this repository at different branches, so the same
-  filename described two different states of the app. The QA worktree was confidently instructing
+  filename described two different states of the app. The QA worktree was instructing
   agents to build a feature that had shipped on `staging` fourteen commits earlier.
 
 The fix was to split the file by audience, then treat the result the way the app is treated: as
@@ -307,7 +306,7 @@ filename.
 
 ## When it breaks
 
-The incidents below are what went wrong once. [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is what to do
+The incidents below are things I broke once. [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is what to do
 when
 something is wrong now: how to find out which build is genuinely live, how to roll back, what each
 red check is telling you, and the traps that make a perfectly good deploy look broken. A service
@@ -316,35 +315,41 @@ wearing a convincing hat.
 
 ---
 
-## Four things that went wrong
+## Four things I got wrong
 
-The most useful section here, and the reason I keep an incident list at all.
+I keep an incident list because I forget things, and because the failures taught me more than the
+features did.
 
-**1. A gate that never ran.** The pre-merge preview smoke was configured, visible and green, and it
-was not firing. It looked like coverage while providing none, which is worse than an empty slot in
-the pipeline. You stop looking. The lesson generalised into a habit: audit the pipeline itself,
-periodically and deliberately, and confirm that each check runs what you believe it runs.
+**1. A gate that never ran.** I set up the pre-merge preview smoke, saw it go green, and moved on.
+It was not firing. For weeks I had a check that looked like coverage and provided none. That is
+worse than an empty slot in the pipeline. An empty slot at least makes you nervous. Now I audit the
+pipeline itself on a schedule and confirm that each check runs what I think it runs. I have found
+this same failure twice since, which tells you how easy it is to miss.
 
 **2. A dependency bump that exposed a dead runtime.** Dependabot proposed a routine Playwright
-upgrade and it failed. CI was still on Node 18. The bump was the messenger. Node 18 had reached end
-of life some time earlier without telling anyone. CI moved to Node
-20. Routine dependency updates are worth having partly because they drag this kind of truth into the
-open.
+upgrade and it failed. I had left CI on Node 18, which had gone end of life without my noticing.
+The bump was the messenger. CI moved to Node 20 that afternoon. This is most of the argument for
+keeping routine dependency updates switched on: they drag stale truths into the open on someone
+else's schedule.
 
 **3. A CSP that would have broken fonts in production.** The service worker re-issues every GET
 through `fetch()` inside the worker, and worker fetches are governed by the `connect-src` of the
-policy delivered **on the `sw.js` response**, not on the page. A plain `connect-src 'self'` would
-have silently killed font loading. Caught on a branch preview, before production, which is the
-entire argument for isolated previews in one sentence.
+policy delivered **on the `sw.js` response**, not on the page. My first draft used a plain
+`connect-src 'self'`, which would have silently killed font loading for everyone. The branch
+preview caught it before production did. That is the entire case for isolated previews, in one
+sentence.
 
-**4. Screenshot baselines that had quietly become fossils.** The two visual-regression tests were
-excluded from CI because their baselines are OS-specific, so they only ever ran on my laptop. They
-were last regenerated at build v143. The current build is v172, roughly thirty versions and a full
-design-token refactor later. Nothing had checked them in between, and a routine Playwright upgrade
-invalidated them without a single signal firing. A test that runs on one machine is a hobby with good intentions. They are being moved to baselines generated on the CI runner, where the environment is
-pinned and the check actually blocks, and regenerating a baseline is now a deliberate, reviewable
-action with a name on it. The reassuring detail: after thirty builds the
-drift was one pixel. The test was worth having. It just was not guarded by anything.
+**4. Screenshot baselines I let turn into fossils.** The two visual-regression tests are excluded
+from CI because their baselines are OS-specific, so they only ever ran on my laptop. I last
+regenerated them at build v143. The current build is v172: thirty versions and a full design-token
+refactor later, with nothing checking them in between, until a Playwright upgrade invalidated the
+lot without a single signal firing. A test that runs on one machine is a hobby with good intentions.
+
+I am moving them to baselines generated on the CI runner, where the environment is pinned and the
+check actually blocks, and regenerating one is now a reviewable action with a name on it. Whether
+runner-generated baselines hold steady across Playwright upgrades I genuinely do not know yet, and
+I would rather say that than pretend the fix is finished. The reassuring part: after thirty builds
+the drift was a single pixel. The test was worth having. It just was not guarded by anything.
 
 ---
 
@@ -355,8 +360,7 @@ Knowing the limits of your own coverage is part of the job. Here they are.
 The e2e suite covers logic, DOM, navigation, persistence, i18n and accessibility in headless
 Chromium. Native Android specifics (OS time pickers, backdrop blur, system fonts, touch gestures)
 are validated by a manual device pass. The k6 layer measures CDN and edge delivery of a static PWA:
-this app has no backend, so once five files have arrived everything is client-side, which is the e2e
-suite's job. The ZAP scan is passive only and is not a penetration test. Visual regression is
+this app has no backend, so once five files have arrived everything is client-side. That is the e2e suite's job. The ZAP scan is passive only and is not a penetration test. Visual regression is
 currently off, for the reason given above.
 
 ---
