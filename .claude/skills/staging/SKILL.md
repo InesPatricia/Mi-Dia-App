@@ -133,6 +133,14 @@ consequences follow, and any agent new to this repository needs both:
 
 ## Promoting from staging to production
 
+**Never merge `staging` into `main`, and never open a pull request from it.** `staging` is behind on
+structure by design — it receives layout, gates, tooling and documentation from `main`, it does not
+send them — so that merge reverts whatever `main` has gained since the last reconciliation, in bulk
+and without a single check reporting it. Production is reached by **promoting a build**, not by
+merging a branch.
+
+Run `/reconcile` first, so staging holds main's current structure, then:
+
 - **The whole arc**: `/ship`, which promotes the newest `vNN`, bumps `CACHE`, syncs the docs and
   pushes `main`.
 - **Partial**: `/ship` aimed at the cut-line `vNN` rather than the newest — see Step 1 of `/ship`.

@@ -36,6 +36,30 @@ The awkward case is a **rename/rename**: `main` moved a build while `staging` ad
 one. The answer is the newer build at the newer path — `staging`'s content, `main`'s location — and
 the superseded version disappears, which is what should have happened anyway.
 
+## If you are on `staging` and want your work on `main`
+
+Read this before doing anything, because the obvious move is the wrong one.
+
+**Do not merge `staging` into `main`.** Not with a merge, not with a pull request from `staging`.
+`staging` is behind on structure by design — it receives, it does not send — so that merge quietly
+reverts whatever `main` has gained since the last reconciliation. This is not hypothetical. On
+11 August 2026 a `staging → main` merge would have undone a rewritten README, three skills
+translated into English, the `SKILL.md` naming standard (reinstating a file tracked twice under two
+cases), the pre-commit hook, and rule 8 of the gate. All of it, in one green merge, with nothing
+reporting a problem.
+
+What to do instead, depending on what the work is:
+
+| The work is | How it reaches `main` |
+|---|---|
+| a product build — a feature living in the single-file app | **`/ship`**, which promotes a `src/mi-dia-vNN.html` to `public/index.html`. A build is promoted, never merged. |
+| something orthogonal — a doc, a test, a workflow, a tool | a branch **off `main`**, then a pull request. Cherry-pick it across if it was written on staging. |
+| structure that staging invented — a gate, a layout, a skill | the same: redo it on a branch off `main`. It was made in the wrong place, and that is worth saying out loud rather than smuggling it through. |
+
+In every case, **reconcile first**: bring `main` into `staging` with the steps below, confirm the
+three gates are clean, and only then ship or branch. Work built on a stale structure tends to
+conflict with the real one at exactly the wrong moment.
+
 ## Steps
 
 1. **Orient.** Never start without knowing where you are.

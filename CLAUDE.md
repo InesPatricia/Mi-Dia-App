@@ -20,6 +20,14 @@ checked out at different branches, so the same filename can describe different s
 
 Never assume the state of another worktree. If a task refers to work you cannot see, check whether
 it already exists on another branch (`git log --oneline main..staging`) before building it.
+
+**Work flows one way: a branch → `main` → `staging`. Never merge `staging` into `main`.** `main`
+carries the structure — layout, gates, tooling, documentation, skills — and `staging` carries the
+product arc, which is usually behind on all of it. Merging that direction reverts structure `main`
+has gained, silently and in bulk. The product reaches production through `/ship`, which promotes a
+build; it does not get there by merging a branch. Before shipping from staging work, run
+`/reconcile` so staging holds main's structure first. Rule 6 of the gate going red on `staging` is
+that reconciliation asking to happen.
 </orientation>
 
 <critical_directives>
