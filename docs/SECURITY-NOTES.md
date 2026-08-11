@@ -45,6 +45,12 @@ would silently break. Caught on the branch preview before production.
    external script origin is allowed at all, `object-src 'none'`, `base-uri 'self'`, and
    there is no backend/session to exfiltrate — all data is local to the device. Revisit if
    the app ever gains a build step.
+
+   The residual path worth naming, because "no backend" is not the same as "no risk": the app
+   imports a `.json` backup, and `'unsafe-inline'` is what would let anything injected through that
+   file execute. It needs the user to import a file an attacker gave them, and the blast radius is
+   their own device and their own data, so it is small — but it is not zero, and it is the reason
+   the import path is worth treating as untrusted input rather than as a convenience feature.
 2. **Sub Resource Integrity missing (Medium)** — applies to the Google Fonts stylesheet.
    Google serves UA-dependent CSS by design, so an SRI hash would break font loading.
    Mitigated by the CSP source allow-list. Long-term option: self-host the fonts.

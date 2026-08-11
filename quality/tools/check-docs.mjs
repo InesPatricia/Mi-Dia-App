@@ -151,6 +151,23 @@ function repoFilenames(dir = ROOT, acc = new Set()) {
   return acc;
 }
 
+/** The real on-disk spelling of a path, as its parent directory lists it. */
+function realNameOf(abs) {
+  const parent = dirname(abs);
+  const wanted = basename(abs).toLowerCase();
+  return readdirSync(parent).find((n) => n.toLowerCase() === wanted) ?? basename(abs);
+}
+
+/** Whether every segment below ROOT is spelled the way the filesystem spells it. */
+function caseExact(abs) {
+  let cur = abs;
+  while (cur.length > ROOT.length && cur !== dirname(cur)) {
+    if (realNameOf(cur) !== basename(cur)) return false;
+    cur = dirname(cur);
+  }
+  return true;
+}
+
 function checkDeadPaths() {
   fileIndex ??= repoFilenames();
   const dead = [];
@@ -164,7 +181,16 @@ function checkDeadPaths() {
       if (isGenerated(clean) || clean.startsWith('private/')) continue;
       // a documented command shows the shape of a URL: <branch>, <owner>, <commit> are placeholders
       if (/[<>]/.test(p)) continue;
-      if (!existsSync(resolve(base, p))) dead.push(`${doc} -> ${p}  (broken link)`);
+      const target = resolve(base, p);
+      if (!existsSync(target)) {
+        dead.push(`${doc} -> ${p}  (broken link)`);
+      } else if (!caseExact(target)) {
+        // existsSync answers the filesystem, and this one folds case. GitHub does not, so a link
+        // whose spelling is off by a capital resolves here and 404s where it is read. That is not a
+        // hypothetical: a skill linked ../design-check/skill.md for weeks after the file became
+        // SKILL.md, and this rule called it clean every single time.
+        dead.push(`${doc} -> ${p}  (wrong case: on disk it is ${basename(realNameOf(target))})`);
+      }
     }
 
     // a mention in prose only has to name something that exists
@@ -393,6 +419,61 @@ function checkDiagramsRender() {
     : pass(7, `${blocks} mermaid block(s), no HTML in labels`);
 }
 
+/**
+ * A skill is found by its filename, so the filename is an interface, and the standard is SKILL.md.
+ *
+ * Two halves, because the interesting failure is invisible to the first one.
+ *
+ * On disk: a directory whose entry point is `skill.md` works on Windows and macOS, where the
+ * filesystem folds case, and can simply fail to load on a Linux runner or a case-sensitive volume,
+ * with no error to read. Three of ten skills here were in that state.
+ *
+ * In the index: `design-check` was tracked TWICE, as `SKILL.md` and `skill.md`, both pointing at the
+ * same blob — a rename that git accepted without dropping the old entry, because core.ignorecase is
+ * true. Only one file existed on disk, so every filesystem check in the world would have called it
+ * clean. Checking out that state where case matters materialises two files and leaves which one wins
+ * undefined. So this half asks git what it is tracking, and it applies to the whole repository:
+ * two paths that differ only by case is a defect wherever it happens.
+ */
+function checkSkillNaming() {
+  const offences = [];
+  const skills = join(ROOT, '.claude', 'skills');
+
+  if (existsSync(skills)) {
+    for (const entry of readdirSync(skills, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const found = readdirSync(join(skills, entry.name)).filter((f) => /^skill\.md$/i.test(f));
+      const where = `.claude/skills/${entry.name}/`;
+      if (found.length === 0) offences.push(`${where} has no SKILL.md`);
+      else if (found.length > 1) offences.push(`${where} has ${found.join(' and ')} — one entry point, not two`);
+      else if (found[0] !== 'SKILL.md') offences.push(`${where}${found[0]} must be SKILL.md (exact case)`);
+    }
+  }
+
+  let tracked;
+  try {
+    tracked = git('ls-files').split(/\r?\n/).filter(Boolean);
+  } catch {
+    // A checkout without git is a fair place to run the disk half and stop.
+    return offences.length
+      ? fail(8, `skill entry points:\n      ${offences.join('\n      ')}`)
+      : skip(8, 'entry points are named SKILL.md; case-duplicate check needs git');
+  }
+
+  const byLower = new Map();
+  for (const p of tracked) {
+    const k = p.toLowerCase();
+    byLower.set(k, [...(byLower.get(k) ?? []), p]);
+  }
+  for (const [, paths] of byLower) {
+    if (paths.length > 1) offences.push(`tracked twice, differing only by case: ${paths.join(' and ')}`);
+  }
+
+  offences.length
+    ? fail(8, `${offences.join('\n      ')}`)
+    : pass(8, `${tracked.length} tracked path(s), no case duplicates; every skill entry point is SKILL.md`);
+}
+
 // ---------------------------------------------------------------- run
 
 const RULES = [
@@ -403,6 +484,7 @@ const RULES = [
   ['history is complete', checkHistoryComplete],
   ['router does not fork', checkRouterDoesNotFork],
   ['diagrams render', checkDiagramsRender],
+  ['filenames are exact', checkSkillNaming],
 ];
 
 for (const [, fn] of RULES) {

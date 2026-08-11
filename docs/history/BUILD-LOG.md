@@ -11,6 +11,12 @@ build changed and why.
 The versioning scheme: each change produced a new `mi-dia-vNN.html`, and a release promoted one of
 those files to `index.html`. Version numbers are therefore build numbers, not semver.
 
+Two things are deliberately absent. Commercial terms — prices, tiers, what a paid version would
+include — are marked *redacted* where they appeared and live in notes outside this repository; the
+product is unreleased and those are not the public's business yet. Design mockups and roadmaps are
+gitignored for the same reason, which is why a path beginning `private/` resolves for nobody but the
+author. Every engineering decision stayed.
+
 ---
 
 ## Day tab — add flow & slot rendering (HISTORICAL v23–v47 — SUPERSEDED by the v112+ composer; see "Add flow — CURRENT (v112+)" below)
@@ -1200,7 +1206,7 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
   PERSONAL pattern surfacing, non-prescriptive (cycle-phase→work-type prescriptions are NOT well
   supported by research — 2025 PLOS One meta-analysis). Remaining: real-Android validation of the new
   logging/moon/toggle flow.
-- `[ ]` D14. Long-term: public/subscription version.
+- `[ ]` D14. Long-term: distribution model (*details in the private notes*).
 
 ---
 
@@ -1234,7 +1240,7 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 > Android Chrome (backlog C — petal hit-test, fixed bottom bar + safe-area, larger hero photo, "N/N done"
 > readability, name greeting + recent lists, the Calm toggle + energizer player, **body-scan tone/voice**,
 > the permission-pause + wheel flow, Calendar emotion dot); **B6 duration "min" clip (open — needs Ines to pinpoint the screen)**; D13 menstrual cycle
-> tracker, D14 public/subscription version.
+> tracker, D14 distribution model.
 >
 > **DONE since:** the Luxe Light+Dark revamp (v133→v144) AND the **Ritualuri (Atomic Habits) + Onboarding**
 > arc (v145→v155) are both **SHIPPED + live**, plus the **Coerență cap-coadă arc (v156)**, the **Faza 3
@@ -1253,20 +1259,19 @@ Status legend: `[ ]` open · `[?]` your decision / depends on phone testing · `
 > ritualuri; sloturile = petală bonus; **zi de odihnă = floare plină**), pe floarea REALĂ (petalPath 5×72°);
 > **centrul florii = 22%** (mic, doar cuvântul-intenție în inimă, eticheta+edit într-o pilulă sub floare); +
 > **Gradina** (fiecare zi o floare salvată, derulezi sezonul) + **reflecție lunară de identitate**; apoi
-> **monetizare** (lifetime 39-49€ + pay-what-fair, unlock offline, free=bucla zilnică+floarea de azi,
-> premium=teme+gradina+insight; creștere = Play wrapper + garden-card). **Foaia de parcurs completă (feliile
+> **monetizare** (*commercial terms redacted — kept in the private notes*). **Foaia de parcurs completă (feliile
 > S1→S6, mecanica florii, retetă, model de date, QA):** `private/living-flower-build-plan.md`. **Mockup-uri
 > (deschide în browser):** `private/mockups/mi-dia-living-flower-garden-mockup.html` (Home prezență + Gradina),
 > `mi-dia-living-flower-real-mockup.html` (stări 0/30/50/75/100), `mi-dia-flower-center-compare.html` (22%),
 > `mi-dia-nav-tabbar-mockup.html`. Memorie: `living-flower-direction.md`. Primul pas = **S1 navigație tab-bar**.
-> Panelul (motion+botanic+brand-guardian+a11y + avatare + piață/monetizare) a stabilit regulile: inflorire
+> Panelul (motion+botanic+brand-guardian+a11y + avatare + go-to-market) a stabilit regulile: inflorire
 > simetrică din bază, culoare doar din gradientul propriu, gilt=lumină, 0%=boboc demn (nu ofilit), floarea nu
 > regresează, reduced-motion static, fără procente pe floare.
 >
 > Plus Ines's **real-Android device pass** (native pickers, long-press, blur velvet, Ephesis gilt, chime, axe pe
 > velvet). Opțional: sweep P3/P4 rezidual (câteva raze mici din module opt-in — cosmetic). Pre-existing backlog:
-> UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156**), B6 "min" clip, D14 public/subscription (acum are
-> plan de monetizare — vezi build-plan-ul). Possible future: extend `freq` beyond "daily", idei de retenție
+> UX-coherence E1–E5/E7 (**E6 date-nav REZOLVAT în v156**), B6 "min" clip, D14 distribution model (planned in
+> the private notes). Possible future: extend `freq` beyond "daily", idei de retenție
 > (ritual de seară, notificări locale via `sw.js`, arhivă Jurnal, legare Ritual↔Respiro).
 
 
