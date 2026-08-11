@@ -179,4 +179,9 @@ if (pageUrl) await checkPage(pageUrl);
 if (siteUrl) await checkSite(siteUrl, hidden);
 
 console.log(`\n${problems ? `FAILED — ${problems} problem(s)` : 'OK — verified where it actually runs'}`);
-process.exit(problems ? 1 : 0);
+
+// Set the code and let node drain, rather than calling process.exit(). Exiting while the browser
+// transport and the link probes are still closing aborts libuv mid-teardown, and on Windows that
+// surfaced as an assertion failure and exit 127 — a run that had just reported OK looking like a
+// failure, intermittently. The exit code is the only thing CI reads, so it has to be the one earned.
+process.exitCode = problems ? 1 : 0;

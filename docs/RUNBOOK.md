@@ -111,6 +111,32 @@ not bumped, `validate.mjs` fails on version sync — which is the whole point of
 > node quality/tools/verify-live.mjs --site https://mi-dia-app.pages.dev --hidden "CLAUDE.md,docs/DATA_SCHEMA.md"
 > ```
 
+### A file you removed is still being served
+
+Found on 11 August 2026, by the first real run of the `verify-live` net: `/CLAUDE.md` was live on
+production, 6,184 bytes of it, weeks after the reorganisation moved everything except `public/` off
+the CDN. The origin was correct the whole time. **Cloudflare's edge was serving a copy cached before
+the move**, under `s-maxage=604800`, so it had up to seven days left to run.
+
+Tell the two apart before doing anything, because the fixes have nothing in common. Ask the origin
+directly, with a query string the edge has never seen:
+
+```bash
+curl -s "https://mi-dia-app.pages.dev/CLAUDE.md?cachebust=$RANDOM" | head -c 40
+curl -sI https://mi-dia-app.pages.dev/CLAUDE.md | grep -iE 'cf-cache-status|age'
+```
+
+The app's HTML from the cache-buster, plus `CF-Cache-Status: HIT` and a large `Age` on the plain
+request, means the origin is fine and you are looking at a remnant. Purge it: Cloudflare dashboard →
+the `mi-dia-app` project → **Caching → Purge cache**, single URL. It takes about thirty seconds, and
+`verify-live` going green afterwards is how you know it worked.
+
+If instead the cache-buster returns the file itself, the origin really is publishing it, and the
+build output directory is the thing to check.
+
+The lesson worth keeping: **removing a file from the origin does not unpublish it.** Anything
+withdrawn from a CDN needs a purge, and until then the internet still has it.
+
 ---
 
 ## Something looks wrong on GitHub, not in the app

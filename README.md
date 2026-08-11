@@ -107,7 +107,10 @@ arming it are two separate acts, and I now know that in my bones.
 
 **Nets.** After deploy, a smoke suite re-checks production once a small poller confirms the new
 build is genuinely live, by watching the service worker for the expected cache name. A passive
-security scan runs weekly.
+security scan runs weekly. And `verify-live` opens the published README in a real browser and asks
+the live site which paths it actually serves, because the two failure modes it looks for are
+invisible locally: GitHub renders markdown client-side, and a static host answers 200 for paths it
+does not publish. It found something on its first run, which is in the runbook.
 
 The rule underneath all of it: **measure first, then set the threshold below the measurement.**
 
