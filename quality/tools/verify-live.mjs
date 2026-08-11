@@ -82,12 +82,25 @@ async function checkPage(url) {
   await tab.waitForTimeout(10000); // client-side rendering, including diagrams
 
   const state = await tab.evaluate(() => {
-    const text = document.body.innerText || '';
+    // Scope both checks to where the failure actually appears. Looking at the whole page makes any
+    // document that *describes* these failures — the runbook does — fail its own check.
+    const renderTargets = [...document.querySelectorAll(
+      '[data-type="mermaid"], .js-render-target, .render-container',
+    )];
+    const renderedText = renderTargets.map((c) => c.innerText || '').join(' ');
+
     return {
-      renderError: text.includes('Unable to render rich display'),
+      renderError: renderTargets.some((c) => (c.innerText || '').includes('Unable to render rich display')),
       // a label whose spacing was eaten shows up as two words fused across a full stop
-      fusedLabel: /\.(md|mjs|js|html)[a-z]{3,}/.test(text),
-      diagrams: document.querySelectorAll('svg[aria-roledescription]').length,
+      fusedLabel: /\.(md|mjs|js|html)[a-z]{3,}/.test(renderedText),
+      // count what should render and what did: a bare count of SVGs cannot tell zero-diagrams
+      // from a diagram that failed, and "0 rendered" reads as fine
+      diagramBlocks: document.querySelectorAll(
+        'pre[lang="mermaid"], .highlight-source-mermaid, [data-lang="mermaid"]',
+      ).length,
+      diagramsRendered: [...document.querySelectorAll(
+        '[data-type="mermaid"], .js-render-target, .render-container',
+      )].filter((c) => c.querySelector('svg')).length,
       links: [...new Set(
         [...document.querySelectorAll('article a[href], .markdown-body a[href]')]
           .map((a) => a.href)
@@ -96,17 +109,32 @@ async function checkPage(url) {
     };
   });
 
-  await browser.close();
+  // GitHub's mermaid rendering is intermittent: the same page can fail once and render on reload.
+  // A check that cries wolf gets ignored, so a render error is confirmed before it is reported.
+  if (state.renderError) {
+    await tab.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+    await tab.waitForTimeout(12000);
+    const again = await tab.evaluate(() =>
+      [...document.querySelectorAll('[data-type="mermaid"], .js-render-target, .render-container')]
+        .some((c) => (c.innerText || '').includes('Unable to render rich display')),
+    );
+    again
+      ? bad('the page shows "Unable to render rich display" — twice, so it is real')
+      : ok('a render error appeared once and not on reload — GitHub\'s renderer is intermittent');
+  } else {
+    ok('no render error');
+  }
 
-  state.renderError
-    ? bad('the page shows "Unable to render rich display"')
-    : ok('no render error');
+  await browser.close();
 
   state.fusedLabel
     ? bad('a label looks fused (e.g. "DATA_SCHEMA.mdwhat is stored") — HTML in a mermaid label')
     : ok('no fused labels');
 
-  ok(`${state.diagrams} diagram(s) rendered`);
+  if (state.diagramBlocks === 0) ok('no diagrams on this page');
+  else if (state.diagramsRendered < state.diagramBlocks) {
+    bad(`${state.diagramsRendered} of ${state.diagramBlocks} diagram(s) rendered — the rest failed silently`);
+  } else ok(`${state.diagramsRendered} of ${state.diagramBlocks} diagram(s) rendered`);
 
   let dead = 0;
   for (const href of state.links) {
