@@ -90,6 +90,19 @@ Take main's version and redo the change as a pull request.
 an old path can survive as a folder full of `node_modules`. Check for empty shells afterwards, and
 move the installed dependencies rather than reinstalling them.
 
+**A tracked file can vanish from disk.** A merge that involves renamed directories can leave a file
+in the index and not in the working tree — it has happened three times here, twice to a skill. The
+gate reports a broken link to a file git swears exists. Check for it, and restore:
+
+```bash
+git ls-files | while read -r f; do [ -e "$f" ] || echo "missing: $f"; done
+git checkout -- .
+```
+
+**An improvement made during a reconciliation is stranded on `staging`.** This flows one way. Anything
+you learn while merging — a new trap, a better step — belongs on `main`, as its own pull request, or
+it will never reach the other branch.
+
 **Skills can differ silently.** After the merge, confirm both branches carry the same set:
 ```bash
 diff <(git ls-tree -r --name-only main .claude/skills/ | cut -d/ -f3 | sort -u) \

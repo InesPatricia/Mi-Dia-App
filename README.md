@@ -251,19 +251,19 @@ anything:
 The fix was to split the file by audience, and then to treat the result the way the app is treated —
 as something a machine checks, not something a person remembers.
 
-```mermaid
-flowchart TB
-    ROUTER["CLAUDE.md"]
-    ROUTER --> LOG["CHANGELOG.md"]
-    LOG --> ARCHIVE["docs/history/BUILD-LOG.md"]
-    ROUTER --> SCHEMA["docs/DATA_SCHEMA.md"]
-    ROUTER --> DESIGN["docs/DESIGN_SYSTEM.md"]
-    ROUTER --> REF["docs/APP-REFERENCE.md"]
-    GATE["quality/tools/check-docs.mjs"] -. verifies .-> ROUTER
-    GATE -. verifies .-> SCHEMA
-    GATE -. verifies .-> DESIGN
-    GATE -. verifies .-> REF
-    GATE -. verifies .-> LOG
+```text
+                          quality/tools/check-docs.mjs
+                                       │
+                        ┌──────────────┴──────────────┐
+                        │        verifies each        │
+                        ▼                             ▼
+                   CLAUDE.md  ─────────────────►  CHANGELOG.md
+              how to work here                   what changed
+                        │                             │
+        ┌───────────────┼───────────────┐             ▼
+        ▼               ▼               ▼    docs/history/BUILD-LOG.md
+docs/DATA_SCHEMA  docs/DESIGN_SYSTEM  docs/APP-REFERENCE      the archive
+   what is stored   themes and tokens   how it behaves now
 ```
 
 The router names the file; the table names what is in it.
