@@ -24,7 +24,7 @@ The app is the subject. The interesting part is the system around it: what gates
 merely watches it, what happens when something breaks, and how long it takes me to find out.
 
 I am a QA and AI engineer, so most of what follows is about how this thing is tested and shipped
-rather than about what it does. If you came for the app, it is at the bottom, and it is quite
+more than about what it does. If you came for the app, it is at the bottom, and it is quite
 pretty.
 
 ---
@@ -52,9 +52,9 @@ list them than pretend they are not there:
 
 Deployment is Cloudflare Pages, auto-publishing from `main` on every push, with one-click rollback
 in the dashboard. Only `public/` is published: the promoted build, the service worker and the two
-files Cloudflare reads for headers and redirects. Everything else in this repository is project
-rather than product and never reaches the CDN. The build output directory is declared in
-`wrangler.toml` rather than in the dashboard, so the layout and the setting that serves it move
+files Cloudflare reads for headers and redirects. Everything else here is project, not product, and
+stays off the CDN. The build output directory is declared in
+`wrangler.toml`, not in the dashboard, so the layout and the setting that serves it move
 together in one reviewable commit. Nobody can review a checkbox they cannot see. A permanent
 `staging` branch gets its own preview deployment on a separate subdomain, with its own cache,
 service worker and localStorage, fully isolated from production.
@@ -64,21 +64,20 @@ service worker and localStorage, fully isolated from production.
 ## How it is tested
 
 **83 end-to-end tests across 19 specs**, Playwright on mobile Chromium, because the app is
-phone-first and a desktop viewport would faithfully test a layout nobody uses. Plus 7 smoke tests
+phone-first. A desktop viewport would faithfully test a layout nobody uses. Plus 7 smoke tests
 that run against the live site under a separate config.
 
 That count is not a number I typed. `quality/e2e/count-tests.js` asks the runner
-(`playwright test --list`), and CI fails if the badge above disagrees, so it cannot quietly go
-stale the way published numbers do. It asks the runner rather than counting `test(` in the source,
-because text-counting is wrong in both directions at once: it misses tests generated at runtime
-(the accessibility spec declares one test inside a loop over six views) and it counts things that
-are not tests at all (`/favicon/i.test(path)` is a regex call having a bad day).
+(`playwright test --list`), and CI fails if the badge above disagrees. Published numbers go stale.
+This one cannot. It asks the runner because counting `test(` in the source goes
+wrong in both directions at once: it misses tests generated at runtime
+(the accessibility spec declares one test inside a loop over six views) and it counts things that were never tests (`/favicon/i.test(path)` is a regex call having a bad day).
 
 What the suite actually asserts:
 
 - **Behaviour and stored state, not just rendering.** Tests assert the DOM *and* the data the app
-  persisted to localStorage, so a slot that looks perfect on screen but was saved with the wrong
-  duration still fails. Looking right is not the same as being right.
+  persisted to localStorage. A slot can look perfect on screen and still fail, because it was saved
+  with the wrong duration. Looking right is not the same as being right.
 - **Semantic locators first.** `getByRole` and `getByLabel` drive most of the suite, which means the
   tests reach controls the way a screen reader does. Structural selectors appear only where a
   control has no stable accessible name, and where that happens there is a comment explaining
@@ -87,14 +86,14 @@ What the suite actually asserts:
   roles, labels and valid ARIA. Colour contrast is deliberately out of scope here and handled in a
   separate design review, because a rule that fires on every brand colour trains you to ignore it,
   and then you ignore the one that mattered.
-- **What the suite cannot reach** is written down rather than hand-waved.
+- **What the suite cannot reach** gets its own list.
   [`docs/DEVICE-PASS.md`](docs/DEVICE-PASS.md) lists the manual checks organised by the reason they
   exist: native pickers, blur, font loading, long-press, audio, and the installed PWA.
 - **A written contract between implementer and tester.** For larger features, the person writing the
   code and the person writing the tests work from the same spec and never read each other's work:
   acceptance criteria, plus the stable handles the implementation guarantees. The template is in
   [`quality/e2e/SPEC-TEMPLATE.md`](quality/e2e/SPEC-TEMPLATE.md). The point is removing author bias,
-  so the tests describe the agreed behaviour rather than the shipped implementation.
+  so the tests describe the agreed behaviour instead of the shipped implementation.
 - **Screenshot regression, currently off and honestly labelled.** See the fourth incident below. It
   is not a happy story.
 
@@ -113,7 +112,7 @@ dependencies, seconds), then the suite split across two parallel shards, each wi
 emitting a blob report that a final job merges into one HTML report. In parallel, Cloudflare builds
 a preview deployment for the pull request and a smoke suite runs against that real URL.
 
-"Blocks the merge" is a claim about configuration, so here is the configuration. The required status
+"Blocks the merge" is a claim about configuration. Here is the configuration. The required status
 checks on `main` are exactly `validate build`, `test (shard 1/2)`, `test (shard 2/2)` and
 `preview smoke`. Anything not on that list runs, reports, and stops precisely nothing, however
 gate-shaped it looks in a diagram. The preview smoke sat in exactly that state for a while: the
@@ -138,15 +137,14 @@ real regressions ring and noise does not.
 ## Performance and security baselines
 
 **Performance.** Lighthouse CI asserts budgets against the live URL after every deploy and against
-each pull request's preview, so a regression shows up before merge rather than in a bug report.
+each pull request's preview, so a regression shows up before merge. The alternative is a bug report.
 Every threshold in [`quality/perf/lighthouserc.cjs`](quality/perf/lighthouserc.cjs) carries the
 measured baseline it came from in a comment beside it, for example a 6500 ms budget for first
 contentful paint against a 5.2 s baseline. Alongside it, a deliberately polite k6 smoke
 ([`quality/perf/smoke.js`](quality/perf/smoke.js), 5 virtual users for 30 seconds) baselines CDN
 delivery, with one overall budget and one per route. Per-route thresholds exist because a single
 slow file hides comfortably inside an aggregate p(95) when four fast files average it away. It
-asserts p(95) rather than the mean, because the mean hides the tail, and the tail is the part users
-actually feel.
+asserts p(95). The mean hides the tail, and the tail is the part users actually feel.
 
 **Security.** A passive OWASP ZAP baseline scan runs weekly against production. Passive means
 response inspection with no attack payloads, which is the honest match for a static site with no
@@ -158,8 +156,8 @@ The fixes ship through a hardened [`public/_headers`](public/_headers) file: a C
 anti-clickjacking, HSTS, Permissions-Policy, COOP and CORP. The accepted risks are encoded in
 [`quality/security/rules.tsv`](quality/security/rules.tsv) with `fail_action: true`, which turns the
 scan into a tripwire: known findings stay quiet, any **new** finding turns it red. Accepting a new
-risk requires both an entry in that file and a justification in the notes. Never one without the
-other, because half of that pair is just forgetting with extra steps.
+risk requires both an entry in that file and a justification in the notes. Both, every time. Half of
+that pair is just forgetting with extra steps.
 
 ---
 
@@ -168,14 +166,16 @@ other, because half of that pair is just forgetting with extra steps.
 Two different things, kept apart because interviews and blog posts love to blur them. The full
 write-up is in [`docs/AGENTIC-QA.md`](docs/AGENTIC-QA.md).
 
-**AI as a tool in this pipeline.** When the e2e suite fails on a pull request, a failure-triage agent
-reads the diff and the failing logs, correlates them, and posts one comment with a likely cause, the
-most suspect file and repro steps. It updates that comment on re-runs instead of stacking new ones,
+**AI as a tool in this pipeline.** When the e2e suite fails on a pull request, a failure-triage
+agent
+reads the diff and the failing logs, correlates them, and posts one comment: a likely cause, the
+most suspect file, repro steps. It updates that comment on re-runs instead of stacking new ones,
 because nobody has ever been helped by a robot repeating itself.
 
 Two decisions inside it are worth more than the feature. First, it is triggered by `workflow_run`
 and not `pull_request`, so it executes the workflow file from the default branch: **untrusted input
-(the pull request) is handled by trusted code (from `main`)**, and a hostile PR cannot edit the agent
+(the pull request) is handled by trusted code (from `main`)**, and a hostile PR cannot edit the
+agent
 into handing over the API key. Getting that wrong is a well-documented way for secrets to leave CI.
 Second, it fails safe: with no API key it logs and exits zero, and every error is caught. A broken
 helper must never turn a pull request red. Only real gates get to do that.
@@ -186,16 +186,16 @@ first-pass specs and propose repairs. The hand-written deterministic suite stays
 truth; the agents are for speed at the edges, with a human reading every diff.
 
 **Testing a system that is itself agentic** is a different problem, and it lives in
-[`quality/evals/`](quality/evals/), where it runs rather than being described. A golden dataset of
+[`quality/evals/`](quality/evals/), where it runs. A golden dataset of
 inputs with reference answers is scored two ways against a small extraction task: deterministic
 property assertions (valid JSON, category within the allowed set, a time present only when one is
 implied) and an LLM acting as judge for the semantics that properties cannot see. The suite passes
 on a **pass-rate floor**, not per case, for the same reason the k6 layer asserts p(95): with a
 non-deterministic system, one unlucky case is noise and a dropped rate is a regression. Missing an
-API key makes it no-op cleanly rather than turning a build red.
+API key makes it no-op cleanly. A missing key is not a regression.
 
-The honest gaps, listed in that directory's own README rather than glossed over: guardrail and
-prompt-injection cases, and cost and latency treated as budgets.
+Two gaps are still open, and that directory's README says so: guardrail and prompt-injection
+cases, and cost and latency treated as budgets.
 
 ---
 
@@ -207,7 +207,7 @@ work that never shows up in a test count and quietly saves the most time.
 | Tool | What it removes |
 |---|---|
 | `quality/e2e/validate-build.js` | Checks div balance and parses every inline script. The single-file format has no compiler, so this is the compiler. |
-| `quality/e2e/count-tests.js` | Makes the published test count a verified fact instead of a memory. |
+| `quality/e2e/count-tests.js` | Makes the published test count a verified fact, not a memory. |
 | `quality/e2e/wait-for-deploy.js`, `wait-for-preview.js` | Polls until the CDN has actually published the build, so post-deploy smoke tests stop racing the deployment and losing. |
 | `quality/e2e/make-report.js` | Turns a run into a short Markdown summary, for when the HTML report is more ceremony than you need. |
 | `quality/e2e/shoot.js`, `quality/e2e/theme-grid.js` | Screenshots every view in both themes as one review grid, which is how theme bugs get caught before they ship. |
@@ -262,7 +262,7 @@ Three defects were sitting in the repository at the same time, and nothing caugh
   agents to build a feature that had shipped on `staging` fourteen commits earlier.
 
 The fix was to split the file by audience, then treat the result the way the app is treated: as
-something a machine checks, not something a person remembers.
+something a machine checks. People forget; scripts do not.
 
 ```text
                           quality/tools/check-docs.mjs
@@ -307,7 +307,8 @@ filename.
 
 ## When it breaks
 
-The incidents below are what went wrong once. [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is what to do when
+The incidents below are what went wrong once. [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is what to do
+when
 something is wrong now: how to find out which build is genuinely live, how to roll back, what each
 red check is telling you, and the traps that make a perfectly good deploy look broken. A service
 worker serving you yesterday's app, for instance, or a Cloudflare 200 that is really a fallback page
@@ -320,13 +321,13 @@ wearing a convincing hat.
 The most useful section here, and the reason I keep an incident list at all.
 
 **1. A gate that never ran.** The pre-merge preview smoke was configured, visible and green, and it
-was not firing. It looked like coverage while providing none, which is worse than having no gate,
-because you stop looking. The lesson generalised into a habit: audit the pipeline itself,
+was not firing. It looked like coverage while providing none, which is worse than an empty slot in
+the pipeline. You stop looking. The lesson generalised into a habit: audit the pipeline itself,
 periodically and deliberately, and confirm that each check runs what you believe it runs.
 
 **2. A dependency bump that exposed a dead runtime.** Dependabot proposed a routine Playwright
-upgrade and it failed, because CI was still on Node 18, which had reached end of life some time
-earlier without telling anyone. The bump was not the problem, it was the messenger. CI moved to Node
+upgrade and it failed. CI was still on Node 18. The bump was the messenger. Node 18 had reached end
+of life some time earlier without telling anyone. CI moved to Node
 20. Routine dependency updates are worth having partly because they drag this kind of truth into the
 open.
 
@@ -340,17 +341,16 @@ entire argument for isolated previews in one sentence.
 excluded from CI because their baselines are OS-specific, so they only ever ran on my laptop. They
 were last regenerated at build v143. The current build is v172, roughly thirty versions and a full
 design-token refactor later. Nothing had checked them in between, and a routine Playwright upgrade
-invalidated them without a single signal firing. A test that runs on one machine is not a gate, it
-is a hobby. They are being moved to baselines generated on the CI runner, where the environment is
+invalidated them without a single signal firing. A test that runs on one machine is a hobby with good intentions. They are being moved to baselines generated on the CI runner, where the environment is
 pinned and the check actually blocks, and regenerating a baseline is now a deliberate, reviewable
-action rather than something anyone can do quietly. The reassuring detail: after thirty builds the
+action with a name on it. The reassuring detail: after thirty builds the
 drift was one pixel. The test was worth having. It just was not guarded by anything.
 
 ---
 
 ## What this automation does not cover
 
-Knowing the limits of your own coverage is part of the job, so here they are rather than buried.
+Knowing the limits of your own coverage is part of the job. Here they are.
 
 The e2e suite covers logic, DOM, navigation, persistence, i18n and accessibility in headless
 Chromium. Native Android specifics (OS time pickers, backdrop blur, system fonts, touch gestures)
