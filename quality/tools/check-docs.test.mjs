@@ -306,3 +306,74 @@ test('rule 5 catches an archived heading dropped from the build log', () => {
     write('docs/history/BUILD-LOG.md', '# Build log\n\nsomeone deleted the old entries\n'),
   );
 });
+
+// ---------------------------------------------------------------- rule 8
+//
+// The bug this rule was written for was invisible on the machine that had it: design-check was
+// tracked as both SKILL.md and skill.md, pointing at the same blob, while only one file existed on
+// disk. core.ignorecase hid it locally and a case-sensitive checkout would have materialised two.
+// So the interesting case below is built in the git index directly, not on the filesystem — which
+// is also the only way to reproduce it at all on Windows or macOS.
+
+/** Turn a fixture into a git repository, so the half of rule 8 that asks git has something to ask. */
+function gitInit(root) {
+  const run_ = (...a) => execFileSync('git', a, { cwd: root, stdio: 'ignore' });
+  run_('init', '-q');
+  run_('config', 'user.email', 'test@example.com');
+  run_('config', 'user.name', 'test');
+  return run_;
+}
+
+test('rule 8 catches a skill entry point named skill.md', () => {
+  expectRuleFails(8, (root) => {
+    mkdirSync(join(root, '.claude/skills/revamp'), { recursive: true });
+    writeFileSync(join(root, '.claude/skills/revamp/skill.md'), '# revamp\n', 'utf8');
+  });
+});
+
+test('rule 8 catches a skill directory with no entry point at all', () => {
+  expectRuleFails(8, (root) => {
+    mkdirSync(join(root, '.claude/skills/orphan'), { recursive: true });
+    writeFileSync(join(root, '.claude/skills/orphan/notes.md'), '# notes\n', 'utf8');
+  });
+});
+
+test('rule 8 catches two tracked paths differing only by case', () => {
+  const root = makeFixture();
+  try {
+    const git = gitInit(root);
+    mkdirSync(join(root, '.claude/skills/design-check'), { recursive: true });
+    writeFileSync(join(root, '.claude/skills/design-check/SKILL.md'), '# design-check\n', 'utf8');
+    git('add', '-A');
+    // Add the lowercase twin straight into the index. This is exactly what a rename on a
+    // case-insensitive filesystem leaves behind, and it never touches the working tree.
+    const hash = execFileSync('git', ['hash-object', '-w', join(root, '.claude/skills/design-check/SKILL.md')], {
+      cwd: root, encoding: 'utf8',
+    }).trim();
+    execFileSync(
+      'git',
+      ['update-index', '--add', '--cacheinfo', `100644,${hash},.claude/skills/design-check/skill.md`],
+      { cwd: root, stdio: 'ignore' },
+    );
+
+    const { byRule, results } = run(root);
+    const detail = results.find((r) => r.rule === 8)?.detail ?? '';
+    assert.equal(byRule[8], 'FAIL', `rule 8 should fail — got ${byRule[8]}\n${detail}`);
+    assert.match(detail, /differing only by case/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rule 8 passes on a correctly named skill in a clean index', () => {
+  const root = makeFixture();
+  try {
+    gitInit(root)('add', '-A');
+    mkdirSync(join(root, '.claude/skills/ship'), { recursive: true });
+    writeFileSync(join(root, '.claude/skills/ship/SKILL.md'), '# ship\n', 'utf8');
+    execFileSync('git', ['add', '-A'], { cwd: root, stdio: 'ignore' });
+    assert.equal(run(root).byRule[8], 'PASS');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
