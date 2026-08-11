@@ -105,7 +105,11 @@ not bumped, `validate.mjs` fails on version sync — which is the whole point of
    The app's HTML means the boundary holds. The file's contents mean it does not.
 
 > A `200` proves nothing here. Cloudflare serves the app as a fallback for unknown paths, so every
-> path returns 200. Always compare the **body**.
+> path returns 200. Always compare the **body** — which is what this does for you:
+>
+> ```bash
+> node quality/tools/verify-live.mjs --site https://mi-dia-app.pages.dev --hidden "CLAUDE.md,docs/DATA_SCHEMA.md"
+> ```
 
 ---
 
@@ -121,6 +125,10 @@ The README is the project's front door and it renders client-side.
   file breaks every link to it even though the file still exists. `check-docs` rule 1 checks links
   strictly for this reason.
 - Verify by loading the page, not by reasoning about it. Local rendering does not reproduce GitHub.
+
+```bash
+node quality/tools/verify-live.mjs --page https://github.com/InesPatricia/Mi-Dia-App/blob/main/README.md
+```
 
 ---
 
@@ -140,7 +148,8 @@ whether it shipped on the other branch.
 
 **Propagating a change**: it flows `branch → main → staging`, never sideways. When merging `main`
 into `staging`, the rule is **structure from `main`, product content from `staging`** — the layout,
-the tooling and the router come from `main`; the current build and its tests stay on `staging`.
+the tooling and the router come from `main`; the current build and its tests stay on `staging`. The
+full procedure, including the conflict table and the traps, is the `reconcile` skill.
 
 ---
 
@@ -154,4 +163,5 @@ cd quality/e2e && npx playwright test --grep-invert @visual
 
 Zero failures on all three, then promote. The device pass on a real Android phone is still a manual
 step, and headless Chromium does not replace it: native pickers, `backdrop-filter` and font
-rendering all differ.
+rendering all differ. The list is [`DEVICE-PASS.md`](DEVICE-PASS.md), organised by what a headless
+browser cannot tell you rather than by feature.

@@ -81,6 +81,9 @@ What the suite actually asserts:
 - **Accessibility, scanned.** axe-core runs across all views on a curated rule set covering names,
   roles, labels and valid ARIA. Colour contrast is deliberately out of scope here and handled in a
   separate design review, because a rule that fires on every brand colour trains you to ignore it.
+- **What the suite cannot reach** is written down rather than hand-waved:
+  [`docs/DEVICE-PASS.md`](docs/DEVICE-PASS.md) lists the manual checks by the reason they exist —
+  native pickers, blur, font loading, long-press, audio, and the installed PWA.
 - **A written contract between implementer and tester.** For larger features, the person writing
   the code and the person writing the tests work from the same spec and never read each other's
   work: acceptance criteria plus the stable handles the implementation guarantees. The template is
