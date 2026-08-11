@@ -111,6 +111,43 @@ not bumped, `validate.mjs` fails on version sync — which is the whole point of
 > node quality/tools/verify-live.mjs --site https://mi-dia-app.pages.dev --hidden "CLAUDE.md,docs/DATA_SCHEMA.md"
 > ```
 
+### A file you removed is still being served
+
+Found on 11 August 2026, by the first real run of the `verify-live` net: `/CLAUDE.md` was live on
+production, 6,184 bytes of it, weeks after the reorganisation moved everything except `public/` off
+the CDN. The origin was correct the whole time. **Cloudflare's edge was serving a copy cached before
+the move**, under `s-maxage=604800`, so it had up to seven days left to run.
+
+Tell the two apart before doing anything, because the fixes have nothing in common. Ask the origin
+directly, with a query string the edge has never seen:
+
+```bash
+curl -s "https://mi-dia-app.pages.dev/CLAUDE.md?cachebust=$RANDOM" | head -c 40
+curl -sI https://mi-dia-app.pages.dev/CLAUDE.md | grep -iE 'cf-cache-status|age'
+```
+
+The app's HTML from the cache-buster, plus `CF-Cache-Status: HIT` and a large `Age` on the plain
+request, means the origin is fine and you are looking at a remnant.
+
+**Purging it may not be available, and the first draft of this runbook said otherwise.** "Caching →
+Purge cache" in the Cloudflare dashboard operates on a **zone**, meaning a domain in your own
+account. `mi-dia-app.pages.dev` sits under Cloudflare's `pages.dev`, not yours, so there is nothing
+there to purge from. Look — it costs thirty seconds — but expect the answer to be no unless the
+project has been given a custom domain. Redeploying does not clear it either; this remnant survived
+several deploys.
+
+What is left is to let it expire. The response says how long: `s-maxage` minus `Age`, capped at
+seven days. `verify-live` prints the hours remaining on every run, so it stays visible rather than
+forgotten.
+
+If instead the cache-buster returns the file itself, the origin really is publishing it, and the
+build output directory is the thing to check. That one is a defect, it is fixable, and
+`verify-live` fails the run over it.
+
+The lesson worth keeping: **removing a file from the origin does not unpublish it.** Withdrawing
+something from a CDN needs a purge you may not have, so until it expires the internet still has it.
+Decide what goes into a published directory before publishing it, not after.
+
 ---
 
 ## Something looks wrong on GitHub, not in the app

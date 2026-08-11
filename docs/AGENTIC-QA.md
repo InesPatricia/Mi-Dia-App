@@ -29,7 +29,7 @@ a confidence level. It updates that same comment on re-runs instead of stacking 
 *acts* in the world (comments on the PR), triggered by an event, with a human in the loop. That is
 a small but real autonomous agent — not just a chatbot.
 
-**The security decision (the interview-grade part).** It is triggered by `workflow_run`, **not**
+**The security decision.** It is triggered by `workflow_run`, **not**
 `pull_request`. A `workflow_run` job executes the workflow file from the **default branch**, so the
 API-key secret and the write permission are never reachable by a hostile PR that edits the workflow.
 Principle: **untrusted input (the PR) is processed by trusted code (from `main`)** — a form of
@@ -102,8 +102,8 @@ triage, fail-loudly — only the object being measured is now probabilistic. The
 - **Cost & latency** — real, testable non-functional requirements for agentic products (tokens per
   task, tool-call count, wall-clock), the way p(95) and payload size are here.
 
-**Interview one-liner (bridges the whole portfolio):** *"The principles carry over from classic QA —
-baseline, thresholds with noise tolerance, triage, fail loudly — only the object is probabilistic.
-Where I put a p(95) threshold on k6 instead of asserting the mean, on an agent I put a pass-rate
-threshold on an eval set instead of asserting exact output; where a smoke test checks the console,
-an agent test checks the tool-call trajectory."*
+**Why this sits beside the k6 and ZAP layers rather than apart from them.** The principles are the
+ones classic QA already runs on: baseline first, set a threshold with tolerance for noise, triage
+what fires, fail loudly. Only the object is probabilistic. Where the load layer asserts p(95)
+instead of the mean, an eval asserts a pass-rate floor instead of exact output. Where a smoke test
+checks the console, an agent test checks the tool-call trajectory.

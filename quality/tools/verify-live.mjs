@@ -58,7 +58,12 @@ if (!pageUrl && !siteUrl) {
 }
 
 let problems = 0;
+let warnings = 0;
 const bad = (msg) => { problems++; console.log(`  FAIL  ${msg}`); };
+// Something true and worth saying that nobody can fix by changing this repository. It is reported
+// and it does not turn the run red, because a check that goes red over something you cannot act on
+// teaches you to stop reading it.
+const warn = (msg) => { warnings++; console.log(`  warn  ${msg}`); };
 const ok = (msg) => console.log(`  ok    ${msg}`);
 
 // ---------------------------------------------------------------- a rendered page
@@ -150,9 +155,33 @@ async function checkPage(url) {
 
 // ---------------------------------------------------------------- a served site
 
+/** How much longer a cached copy has to live, from its own headers. Null when it does not say. */
+function cacheLifeLeft(res) {
+  const cc = res.headers.get('cache-control') ?? '';
+  const ttl = Number(/s-maxage=(\d+)/.exec(cc)?.[1] ?? /max-age=(\d+)/.exec(cc)?.[1]);
+  const age = Number(res.headers.get('age'));
+  if (!Number.isFinite(ttl) || !Number.isFinite(age)) return null;
+  return Math.max(0, ttl - age);
+}
+
 /**
  * A static host can answer 200 for a path it does not serve, by falling back to the app. Compare
  * bodies: if the response is the app's HTML, the file is not published; if it is the file, it is.
+ *
+ * Every path is asked twice, because "this file is reachable" has two completely different causes
+ * and only one of them is a defect in this repository.
+ *
+ *   the ORIGIN, asked with a query string the CDN has never seen, so the request cannot be served
+ *   from cache. This is the boundary the repo actually controls: what public/ contains and what
+ *   wrangler.toml points at. If a file shows up here, a change broke the boundary → FAIL.
+ *
+ *   the EDGE, asked plainly. A file can still be served from a copy cached before it was withdrawn,
+ *   under a TTL that nothing in this repository can shorten. Removing a file from the origin does
+ *   not unpublish it. That is real, worth saying, and worth saying with a date attached → warn.
+ *
+ * The distinction is the one this project applies everywhere else: a gate blocks, a net observes.
+ * Failing the run over a remnant that expires on its own would train everyone to ignore the check,
+ * and then it would also be ignored on the day the boundary genuinely breaks.
  */
 async function checkSite(url, paths) {
   console.log(`\nsite: ${url}\n`);
@@ -161,22 +190,45 @@ async function checkSite(url, paths) {
   const home = await fetch(base).then((r) => r.text()).catch(() => null);
   if (home === null) return bad(`cannot reach ${base}`);
   const fingerprint = home.slice(0, 200);
+  const isFallback = (body) => body.slice(0, 200) === fingerprint;
   ok('the site answers');
 
   for (const p of paths) {
     const target = `${base}/${p.replace(/^\/+/, '')}`;
-    const res = await fetch(target).catch(() => null);
-    if (!res) { bad(`${p}: unreachable`); continue; }
-    const body = await res.text();
-    // served as the app's fallback → not published, which is what we want
-    body.slice(0, 200) === fingerprint
-      ? ok(`${p} is not published (falls back to the app)`)
-      : bad(`${p} IS published — ${res.status}, ${body.length} bytes of something else`);
+
+    const fresh = await fetch(`${target}?cache-bust=${Date.now()}-${Math.random().toString(36).slice(2)}`)
+      .catch(() => null);
+    if (!fresh) { bad(`${p}: unreachable`); continue; }
+    if (!isFallback(await fresh.text())) {
+      bad(`${p} IS published by the origin — ${fresh.status}. The public/ boundary is broken.`);
+      continue;
+    }
+
+    const cached = await fetch(target).catch(() => null);
+    if (!cached) { bad(`${p}: unreachable without the cache-buster`); continue; }
+    if (isFallback(await cached.text())) {
+      ok(`${p} is not published`);
+      continue;
+    }
+
+    const left = cacheLifeLeft(cached);
+    const when = left === null ? 'unknown remaining lifetime' : `about ${Math.ceil(left / 3600)}h left`;
+    warn(
+      `${p} still answers from the CDN cache (${cached.headers.get('cf-cache-status') ?? 'cached'}, ` +
+        `${when}). The origin is correct; this is a copy taken before the file was withdrawn. ` +
+        `Purge it if the domain is one you can purge, or let it expire.`,
+    );
   }
 }
 
 if (pageUrl) await checkPage(pageUrl);
 if (siteUrl) await checkSite(siteUrl, hidden);
 
-console.log(`\n${problems ? `FAILED — ${problems} problem(s)` : 'OK — verified where it actually runs'}`);
-process.exit(problems ? 1 : 0);
+const tail = warnings ? ` (${warnings} warning(s), nothing this repository can fix)` : '';
+console.log(`\n${problems ? `FAILED — ${problems} problem(s)` : 'OK — verified where it actually runs'}${tail}`);
+
+// Set the code and let node drain, rather than calling process.exit(). Exiting while the browser
+// transport and the link probes are still closing aborts libuv mid-teardown, and on Windows that
+// surfaced as an assertion failure and exit 127 — a run that had just reported OK looking like a
+// failure, intermittently. The exit code is the only thing CI reads, so it has to be the one earned.
+process.exitCode = problems ? 1 : 0;

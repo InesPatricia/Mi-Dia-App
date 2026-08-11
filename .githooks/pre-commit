@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Refuse to commit anything that must never reach a public repository.
+#
+# This exists because `git add -A` swept .wrangler/ — which holds Cloudflare account data — plus a
+# work-in-progress build and a folder of source images into a staged commit, twice in one day. Both
+# were caught by reading the diff before pushing. Neither was caught by anything that runs.
+#
+# It lives in .githooks/ rather than .git/hooks/ so that it is version-controlled and reviewable
+# like everything else here. That needs one command per clone, which the README's setup does not yet
+# mention because this is new:
+#
+#     git config core.hooksPath .githooks
+#
+# It is a guard, not a prison: `git commit --no-verify` bypasses it. That is deliberate. A hook that
+# cannot be overridden gets disabled entirely the first time it is wrong, and then it protects
+# nothing. Overriding it should feel like a decision, which is why the message names the file.
+#
+# Deliberately fast. The documentation gate asks Playwright to list the suite, which takes tens of
+# seconds; a hook that slow gets bypassed by habit and then it is a dead gate. Correctness checks
+# belong in CI. This one only answers: is anything staged that should not leave this machine?
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+blocked=""
+
+# 1. Paths that are private by nature. Hard-coded rather than derived from .gitignore, because the
+#    .wrangler/ incident happened while that folder was not yet ignored — the rule has to hold
+#    before anyone remembers to write it down.
+for path in $staged; do
+  case "$path" in
+    private/*|.wrangler/*|scratch/*|bougFlowers/*)
+      blocked="$blocked  $path\n" ;;
+    *.pem|*.key|*.p12|*.pfx|.env|.env.*|*credentials*.json|*service-account*.json)
+      blocked="$blocked  $path  (looks like a secret)\n" ;;
+  esac
+done
+
+# 2. Anything .gitignore names and someone force-added anyway. Catches the folders above once they
+#    are ignored, and every future one nobody thought to list here.
+#
+#    --no-index is the whole check. Without it, `git check-ignore` says nothing about a path that is
+#    already in the index — and a force-added file is, by definition, in the index. So the plain form
+#    is silent on precisely the case this branch exists to catch. It was written without the flag,
+#    and the test that force-added an ignored file sailed through and committed it.
+ignored=$(git check-ignore --no-index $staged 2>/dev/null)
+for path in $ignored; do
+  case "$path" in
+    private/*|.wrangler/*|scratch/*|bougFlowers/*) ;;  # already reported above
+    *) blocked="$blocked  $path  (gitignored, staged with --force)\n" ;;
+  esac
+done
+
+if [ -n "$blocked" ]; then
+  printf '\npre-commit: refusing to commit paths that must not be published.\n\n'
+  printf "$blocked"
+  printf '\nThis repository is public. Unstage them:\n\n'
+  printf '    git restore --staged <path>\n\n'
+  printf 'If this is genuinely wrong, the check is in .githooks/pre-commit and\n'
+  printf '`git commit --no-verify` will skip it.\n\n'
+  exit 1
+fi
+
+exit 0

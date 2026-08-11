@@ -1,137 +1,171 @@
 ---
 name: ship
-description: Ritualul complet de release pentru Mi Día — promoveaza cel mai nou mi-dia-vNN.html in index.html, bumpeaza CACHE in sw.js, ruleaza validari deterministe (validate.mjs: sync versiune + node --check + echilibru div) + suita e2e, apoi la Pas 4 **sincronizeaza PROACTIV si COMPLET toata documentatia + memoria + skill-urile** (CHANGELOG, satelitul potrivit din docs/ — DATA_SCHEMA pentru chei noi, DESIGN_SYSTEM pentru tokeni, APP-REFERENCE pentru comportament, history/BUILD-LOG pentru detaliul per-versiune, README, toate fisierele de memorie + MEMORY.md, skill-urile afectate; consecventa versiune + numar teste peste tot; nu astepta ca Ines sa ceara), apoi commit + tag vNN + push DIRECT pe main cu confirmare (push = auto-deploy Cloudflare). Foloseste cand Ines spune "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
+description: The full release ritual for Mi Día — promote the newest src/mi-dia-vNN.html to public/index.html, bump CACHE in public/sw.js, run the deterministic validators (validate.mjs: version sync + node --check + div balance) and the e2e suite, then at Step 4 **proactively and completely sync the documentation, the memory files and the skills** (CHANGELOG plus the right satellite in docs/ — DATA_SCHEMA for new keys, DESIGN_SYSTEM for tokens, APP-REFERENCE for behaviour, history/BUILD-LOG for per-version detail; README, every memory file plus MEMORY.md, any affected skill; consistency verified with check-docs.mjs rather than by eye; CLAUDE.md is never touched at release; do not wait to be asked), then commit + tag vNN + push straight to main with explicit confirmation (a push auto-deploys to Cloudflare). Use when Ines says "livreaza", "ship", "da drumul la vNN", "promoveaza", "push", "deploy".
 ---
 
-# /ship — release ritual Mi Día
+# /ship — the Mi Día release ritual
 
-Automatizeaza lantul de livrare descris in `docs/APP-REFERENCE.md` (sectiunile
-"File / versioning workflow" + "Deployment"). Ruleaza din radacina repo (`Mi-Dia-App/`). **Nu pushezi NICIODATA
-fara confirmarea explicita a lui Ines** — push pe `main` declanseaza auto-deploy pe
-Cloudflare Pages.
+Automates the delivery chain described in `docs/APP-REFERENCE.md` ("File / versioning workflow" and
+"Deployment"). Run it from the repository root (`Mi-Dia-App/`). **Never push without Ines's explicit
+confirmation** — a push to `main` triggers an auto-deploy on Cloudflare Pages.
 
-Unde traieste versiunea in acest proiect (descoperit, NU e un `var VERSION`):
-- **`mi-dia-vNN.html`** — build-ul propriu-zis (construit in timpul dezvoltarii, inainte de /ship).
-- **`index.html`** — copie byte-identica a celui mai nou `mi-dia-vNN.html` (build-ul PROMOVAT).
-- **`sw.js`** — `const CACHE = "mi-dia-vNN"` (forteaza stergerea cache-ului PWA vechi la deploy).
-- **`CHANGELOG.md`** + fisierele din **`docs/`** — documentatia. `CLAUDE.md` NU contine versiunea:
-  e neutru pe branch si nu se atinge la livrare.
+Where the version actually lives in this project (discovered, not a `var VERSION`):
 
-## Pas 0 — Pre-flight (read-only, nu modifici nimic)
-1. `git status --short` — arata ce e necomis si pe ce branch esti (`git branch --show-current`).
-2. Ruleaza validatorul determinist pe starea CURENTA:
-   `node .claude/skills/ship/validate.mjs`
-   - **FAIL > 0 → OPRESTE-TE** si raporteaza-i exact ce a picat. NU livra peste cod stricat.
-   - WARN nu blocheaza (le vei rezolva la Pas 4 — docs desincronizate, build-uri vechi in tree).
-   - Retine `mi-dia-vNN` detectat din output ca `vOLD`.
-3. Ruleaza suita e2e completa (gate-ul real): `cd e2e && npm test`
-   - Daca pica vreun test → raporteaza exact ce si OPRESTE-TE. (Daca Ines tocmai a rulat-o
-     verde in aceeasi sesiune, poti sari peste — spune clar ca ai sarit si de ce.)
+- **`src/mi-dia-vNN.html`** — the build itself, produced during development, before `/ship`.
+- **`public/index.html`** — a byte-identical copy of the newest build. This is the promoted one, and
+  `public/` is the build output directory, so it is the only place the CDN reads from.
+- **`public/sw.js`** — `const CACHE = "mi-dia-vNN"`, which is what forces the old PWA cache out on
+  deploy.
+- **`CHANGELOG.md`** and the files in **`docs/`** — the documentation. `CLAUDE.md` holds no version
+  and is not touched at release.
 
-## Pas 1 — Stabileste versiunea de livrat
-- In mod normal exista deja un `mi-dia-v(N+1).html` construit (cel mai nou fisier din tree).
-  Confirma cu Ines ca ACELA e build-ul de livrat. Retine numarul ca `vNEW`.
-- **Promovare PARTIALA (un feature, tinand restul deoparte):** `vNEW` poate fi un `vNN` INTERMEDIAR, nu
-  neaparat cel mai nou. In aplicatia de-un-singur-fisier NU se poate `git cherry-pick` cod de feature —
-  promovarea partiala = alegi build-ul de taiere (`vNN`-ul la care feature-ul dorit e complet SI nimic
-  nedorit nu e inca prezent) si il promovezi ca `index.html`. Posibil DOAR daca munca a fost ordonata cu
-  feature-ul de tinut deoparte ULTIMUL (vezi principiul din skill-ul `/staging` + `docs/APP-REFERENCE.md`). Daca livrezi
-  un `vNN` intermediar, **reconciliaza e2e**: specurile care testeaza feature-uri de mai tarziu (ex.
-  `garden.spec.js`) NU trebuie sa mearga pe acel build — tine-le deoparte odata cu feature-ul lor.
-- Daca `index.html` e deja byte-identic cu `mi-dia-vNEW.html` SI `sw.js` e deja pe `vNEW`
-  (validate.mjs a zis "version sync OK" la Pas 0 si `vOLD == vNEW`), promovarea e gata —
-  sari peste Pas 2 si spune asta.
+## Step 0 — Pre-flight, read-only
 
-## Pas 2 — Promoveaza + bumpeaza versiunea (in toate locurile)
-Cu confirmarea lui Ines pe `vNEW`:
-1. **Promoveaza:** copiaza `mi-dia-vNEW.html` peste `index.html` (byte-identic).
-   PowerShell: `Copy-Item mi-dia-vNEW.html index.html -Force`
-2. **sw.js:** `const CACHE = "mi-dia-vOLD";` → `"mi-dia-vNEW";` (edit targetat, o singura linie).
-3. Tag-ul git il pui la Pas 5 (`git tag vNEW`), NU acum.
-
-## Pas 3 — Re-valideaza (acum TREBUIE sa fie verde)
-`node .claude/skills/ship/validate.mjs`
-- Trebuie: `[1]` version sync OK (`index.html == mi-dia-vNEW.html == CACHE mi-dia-vNEW`),
-  `[2]` 0 erori de sintaxa, `[3]` div echilibrat, **FAIL: 0**.
-- WARN-urile `[5]` (docs) le rezolvi la Pas 4; WARN `[6]` (build-uri vechi) la Pas 5 (`git rm`).
-- Daca a aparut vreun FAIL, repara inainte sa continui.
-
-## Pas 4 — Sincronizeaza COMPLET documentatia + memoria + skill-urile (regula permanenta, PROACTIVA)
-**Fa asta INTOTDEAUNA la /ship, din proprie initiativa — Ines nu trebuie sa-ti spuna sa updatezi.**
-La finalul unui arc, TOT ce descrie aplicatia trebuie sa fie adevarat: complet, corect, consecvent, si
-**in spiritul viziunii** (Mediterranean quiet-luxury; onest despre limite; „living doc" — se editeaza in
-loc, nu se versioneaza; **RO fara diacritice in proza**, comentarii cod in engleza). Lucreaza din diff-ul
-REAL (`git diff` + `git log`), NU din memorie. Parcurge FIECARE dintre acestea si actualizeaza ce s-a
-schimbat (sari doar ce e demonstrabil deja la zi — si spune ca ai sarit):
-
-1. **`CHANGELOG.md`** — intrarea de arc `vOLD→vNEW` (in stilul de acolo, marcheaza „(curent)" pe noua,
-   scoate-l de pe cea veche).
-2. **Satelitii din `docs/`** — fiecare tip de schimbare are EXACT un fisier. Nu mai cauti „toate
-   locurile stale": daca nu esti sigur unde intra ceva, raspunsul e unul singur, nu trei.
-   - cheie noua de `localStorage` (structura, migratii, ce e in backup) → **`docs/DATA_SCHEMA.md`**,
-     cu build-ul in coloana *Since*;
-   - token, regula de tema, tipografie, radius → **`docs/DESIGN_SYSTEM.md`**;
-   - comportament nou, modul-sursa nou la root, schimbare in add-flow sau i18n → **`docs/APP-REFERENCE.md`**;
-   - detaliul fin per-versiune (ce a facut exact fiecare `vNN` si de ce) → **`docs/history/BUILD-LOG.md`**.
-
-   **`CLAUDE.md` nu se atinge la livrare.** Nu contine versiunea, numarul de teste sau arcul curent —
-   e acelasi fisier pe main, staging si worktree-urile de QA, iar orice numar scris in el ar fi gresit
-   pe toate branch-urile mai putin unul. `node quality/tools/check-docs.mjs` esueaza daca reapare unul.
-3. **`README.md`** (vitrina publica) — badge-uri (numar de teste), **Highlights/features**, lista de module,
-   descrierea RO, orice numar sau versiune care apare.
-4. **Memoria** (`~/.claude/.../memory/`) — actualizeaza FIECARE fisier ale carui fapte s-au schimbat
-   (numar de teste, build curent, status feature, arc) + pointer-ele din indexul MEMORY.md. Daca un feature a
-   trecut din „in design" in „livrat", rescrie fisierul (nu doar descrierea).
-5. **Skill-urile** (`.claude/skills/*`) — daca arcul a introdus/schimbat un flux, o poarta sau o conventie
-   (ex. un helper e2e nou, o regula de validare, un pas de QA), actualizeaza skill-ul relevant
-   (`design-check`, `theme-qa`, chiar acest `ship`) ca sa ramana adevarat. Inclusiv `validate.mjs` daca a
-   aparut o verificare noua.
-6. **Consecventa** — nu o mai verifici cu ochiul, o ruleaza masina:
+1. `git status --short`, and `git branch --show-current` to see where you are.
+2. Run the deterministic validator against the current state:
+   ```bash
+   node .claude/skills/ship/validate.mjs
    ```
-   node .claude/skills/ship/validate.mjs   # sync versiune: sw.js CACHE ↔ index.html ↔ mi-dia-vNN.html
-   node quality/tools/check-docs.mjs             # cai moarte, numar de teste, istoric, router neutru
+   - **Any FAIL → stop** and report exactly what failed. Never ship on top of broken code.
+   - A WARN does not block; you resolve those at Step 4 (stale docs, superseded builds in the tree).
+   - Note the `mi-dia-vNN` it detects as `vOLD`.
+3. Run the full e2e suite, which is the real gate:
+   ```bash
+   cd quality/e2e && npm test
    ```
-   Numarul de teste nu se scrie din memorie nicaieri — sursa e `node quality/e2e/count-tests.js`.
+   If anything fails, report exactly what and stop. If Ines has just run it green in this same
+   session you may skip it, but say clearly that you skipped it and why.
 
-Ruleaza din nou `node .claude/skills/ship/validate.mjs` — WARN-urile `[5]` trebuie sa dispara. (Memoria +
-README + skill-urile nu sunt prinse de validator — le verifici MANUAL, e responsabilitatea ta la fiecare
-ship.) Daca livrarea e doar promovarea unei versiuni deja documentate complet, spune explicit ce ai
-verificat si ca era la zi.
+## Step 1 — Decide which version ships
 
-## Pas 5 — Commit + tag + push (CERE CONFIRMARE INAINTE DE PUSH)
-Livrarea e **direct pe main** (ca ultimele commit-uri ale lui Ines). Arata-i comenzile EXACTE
-si ASTEAPTA "da" inainte sa rulezi push-ul (push = actiune externa → auto-deploy Cloudflare):
+- Normally a newer `src/mi-dia-v(N+1).html` already exists. Confirm with Ines that this is the build
+  to release, and note the number as `vNEW`.
+- If `public/index.html` is already byte-identical to `src/mi-dia-vNEW.html` **and** `public/sw.js`
+  already names `vNEW` (validate.mjs said "version sync OK" at Step 0 and `vOLD == vNEW`), the
+  promotion is already done. Skip Step 2 and say so.
+
+## Step 2 — Promote and bump, in both places
+
+With Ines's confirmation on `vNEW`:
+
+1. **Promote**, byte-identical:
+   ```bash
+   cp src/mi-dia-vNEW.html public/index.html
+   ```
+2. **`public/sw.js`**: `const CACHE = "mi-dia-vOLD";` → `"mi-dia-vNEW";`, one targeted edit.
+3. The git tag comes at Step 5, not here.
+
+## Step 3 — Re-validate, and now it has to be green
+
+```bash
+node .claude/skills/ship/validate.mjs
 ```
-git rm mi-dia-vX.html mi-dia-vY.html ...   # doar build-urile vNN superseded (pastreaza mi-dia-vNEW.html + index.html)
-git add -A
-git commit -m "feat: mi-dia-vNEW — <rezumat scurt>"
-git tag -l vNEW            # verifica INTAI daca tag-ul exista deja
-git tag vNEW              # DOAR daca linia de sus n-a intors nimic (tag-ul nu exista)
+
+Required: `[1]` version sync OK (`public/index.html == src/mi-dia-vNEW.html == CACHE mi-dia-vNEW`),
+`[2]` zero syntax errors, `[3]` balanced divs, **FAIL: 0**. Resolve WARN `[5]` (docs) at Step 4 and
+WARN `[6]` (superseded builds) at Step 5. If a FAIL appeared, fix it before continuing.
+
+## Step 4 — Sync the documentation, the memory and the skills, completely
+
+**Always do this at `/ship`, on your own initiative.** Ines should not have to ask for it.
+
+At the end of an arc, everything that describes the application has to be true: complete, correct,
+consistent, and in the spirit of the product (Mediterranean quiet luxury; honest about limits; a
+living document, edited in place rather than versioned; Romanian without diacritics in prose, code
+comments in English). Work from the **real diff** (`git diff`, `git log`), never from memory. Go
+through each of these and update what changed, skipping only what is demonstrably current — and say
+what you skipped.
+
+1. **`CHANGELOG.md`** — the `vOLD→vNEW` arc entry, in the style already there. Mark the new one
+   "(current)" and take that mark off the previous.
+2. **The satellites in `docs/`** — every kind of change has exactly one home. You are no longer
+   hunting for "all the stale places": if you are unsure where something belongs, the answer is one
+   file, not three.
+   - a new `localStorage` key (structure, migrations, what is in the backup) →
+     **`docs/DATA_SCHEMA.md`**, with the build in the *Since* column;
+   - a token, a theme rule, typography, radius → **`docs/DESIGN_SYSTEM.md`**;
+   - new behaviour, a new module source, a change to the add flow or to i18n →
+     **`docs/APP-REFERENCE.md`**;
+   - the fine per-version detail, what each `vNN` did and why → **`docs/history/BUILD-LOG.md`**.
+
+   **`CLAUDE.md` is not touched at release.** It carries no version, no test count and no current
+   arc, because it is the same file on `main`, on `staging` and in the QA worktrees, and any number
+   written into it would be wrong on every branch but one. `node quality/tools/check-docs.mjs` fails
+   if one reappears.
+3. **`README.md`**, the public shop window — badges (the test count), features, the module list, the
+   Romanian description, and any number or version that appears in it.
+4. **The memory files**, which live outside this repository under `~/.claude/`, in the per-project
+   `memory/` directory — update every file whose facts changed (test count, current build, feature
+   status, current arc) plus the pointers in that directory's index. If a feature moved from "in
+   design" to "shipped", rewrite the file rather than editing its description.
+5. **The skills** (`.claude/skills/*`) — if the arc introduced or changed a flow, a gate or a
+   convention (a new e2e helper, a validation rule, a QA step), update the skill it belongs to,
+   including this one, and `validate.mjs` if a new check appeared. Note that some skills are local
+   only and gitignored; they still need updating, they just will not appear in a commit.
+6. **Consistency**, which you no longer check by eye:
+   ```bash
+   node .claude/skills/ship/validate.mjs    # version sync: sw.js CACHE ↔ index.html ↔ src build
+   node quality/tools/check-docs.mjs        # dead paths, test counts, history, neutral router
+   ```
+   The test count is never written from memory anywhere. Its source is
+   `node quality/e2e/count-tests.js`.
+
+Run both again: `validate.mjs` with no WARN `[5]`, `check-docs` exiting 0. The memory files and the
+skills are caught by no validator, so you check those by hand — that is your responsibility on every
+ship. If the release is only the promotion of a version that was already documented in full, say
+explicitly what you verified and that it was current.
+
+## Step 5 — Commit, tag, push — ask before the push
+
+Releases go **straight to main**. Show Ines the exact commands and wait for a yes before running the
+push, because a push is an external action that auto-deploys:
+
+```bash
+git rm src/mi-dia-vX.html src/mi-dia-vY.html    # only builds superseded by vNEW
+git add <explicit paths>
+git commit -m "feat: mi-dia-vNEW — <short summary>"
+git tag -l vNEW                                  # check FIRST whether the tag exists
+git tag vNEW                                     # only if the line above printed nothing
 git push origin main && git push --tags
 ```
-- **git rm:** sterge din tree DOAR fisierele `mi-dia-vNN.html` mai vechi decat `vNEW`
-  (lista din WARN `[6]` de la validate.mjs) — regula "tree tine doar ultimul vNN + index.html".
-  Fisierele vechi raman in istoricul Git (`git show <commit>:mi-dia-vNN.html`).
-- **tag:** ruleaza `git tag -l vNEW` INTAI. Daca tag-ul exista deja, NU-l recrea —
-  sari peste `git tag vNEW` si fa doar `git push --tags`.
-- **mesajul de commit:** o linie clara in stilul istoricului (vezi `git log --oneline`),
-  RO fara diacritice, terminata cu linia de co-autor ceruta de harness.
-- **NU** `--no-verify`, **NU** `--force`.
 
-## Pas 6 — Confirma deploy-ul
-Dupa push, spune-i lui Ines:
-- Cloudflare Pages e git-connected → **auto-deploy in ~1-2 min** pe https://mi-dia-app.pages.dev/.
-- CI ruleaza `smoke-prod.yml` post-merge (asteapta noul `CACHE` in `/sw.js` live, apoi smoke pe cele 7 view-uri).
-- Optional smoke rapid local: `cd e2e && npm run wait:deploy && npm run smoke:prod`.
-- **Pasul manual al lui Ines ramane:** validarea pe Android real (native pickers, blur, fonturi,
-  contrast axe pe velvet) — headless ≠ device.
+- **`git rm`**: delete only the `src/mi-dia-vNN.html` files older than `vNEW` (the list comes from
+  validate.mjs WARN `[6]`). The tree keeps the latest build and `public/index.html`; everything
+  earlier stays in git history, recoverable with `git show <commit>:src/mi-dia-vNN.html`.
+- **Stage explicit paths. Never `git add -A` in this worktree.** It has twice swept the
+  work-in-progress build, scratch assets and `.wrangler/`, which holds account data, into a staged
+  commit in a public repository. `.githooks/pre-commit` now refuses those, but the hook is a
+  backstop, not a licence to be careless.
+- **Tag**: run `git tag -l vNEW` first. If it already exists, do not recreate it — skip straight to
+  `git push --tags`.
+- **The commit message**: one clear line in the style of the history (`git log --oneline`), in
+  English, ending with the co-author line the harness requires.
+- **No `--no-verify`, no `--force`.**
+
+## Step 6 — Confirm the deploy
+
+After the push, tell Ines:
+
+- Cloudflare Pages is git-connected, so the deploy lands in about one to two minutes on
+  https://mi-dia-app.pages.dev/.
+- CI runs `smoke-prod.yml` post-merge: it waits for the new `CACHE` to appear in the live `/sw.js`,
+  then smokes the seven views. `verify-live.yml` separately checks the published README and the
+  `public/` boundary.
+- A quick local check if you want one:
+  ```bash
+  cd quality/e2e && npm run wait:deploy && npm run smoke:prod
+  ```
+- **Ines's manual step remains**: the real-Android pass — native pickers, blur, fonts, axe contrast
+  on velvet. Headless is not a device. The list is in `docs/DEVICE-PASS.md`.
 
 ---
-### Note
-- **Validatorul** (`validate.mjs`) e fara dependente (ESM, doar `node`). Prinde automat:
-  versiune desincronizata (`sw.js` CACHE ↔ `index.html` ↔ `mi-dia-vNN.html`), `SyntaxError` in
-  orice bloc `<script>`, dezechilibru `<div>`, ghilimele curbate in atribute HTML (WARN),
-  docs desincronizate (WARN), build-uri vechi ramase in tree (WARN).
-- **FAIL blocheaza** ship-ul; **WARN doar semnaleaza.** Ruleaza-l la Pas 0, Pas 3 si Pas 4.
-- **Ce ramane pe seama ta / device (validate.mjs NU acopera):** contrast axe pe velvet, native
-  pickers, blur/backdrop, fonturi (Ephesis + `background-clip:text`), UX pe Android real.
+
+### Notes
+
+- **The validator** (`validate.mjs`) has no dependencies — ESM, plain `node`. It catches a
+  desynchronised version (`sw.js` CACHE ↔ `public/index.html` ↔ `src/mi-dia-vNN.html`), a
+  `SyntaxError` in any `<script>` block, unbalanced `<div>`s, curly quotes in HTML attributes
+  (WARN), stale docs (WARN), and superseded builds left in the tree (WARN).
+- **FAIL blocks the ship; WARN only reports.** Run it at Step 0, Step 3 and Step 4.
+- **What it does not cover, and stays with you or the device**: axe contrast on velvet, native
+  pickers, blur and backdrop, fonts (Ephesis and `background-clip: text`), and real Android UX.

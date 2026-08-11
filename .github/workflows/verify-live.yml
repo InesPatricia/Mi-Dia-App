@@ -1,0 +1,92 @@
+name: verify-live
+
+# Checks the published artefacts where they are actually served.
+#
+# This is a NET, not a gate. It cannot be a gate: both things it looks at only exist once a merge
+# has happened. GitHub renders the README from the default branch, and Cloudflare publishes after
+# the push. So it runs afterwards and goes red when it finds something, which is the whole point —
+# an alert nobody armed is the failure this repo has already shipped once (see README, incident 1).
+#
+# It exists because in one day the same class of mistake got made four times, and every one of them
+# passed a local check first:
+#
+#   a mermaid diagram rendered fine on mermaid 10 and 11; GitHub strips the HTML in its labels and
+#   fused the words together, and the diagram still drew, so nothing looked broken
+#
+#   four README links pointed at files that were present in the repository and 404'd as links,
+#   because GitHub resolves a link literally, relative to the file it sits in
+#
+#   every path on the Pages site answered 200, including the ones that are not published, because
+#   unknown paths fall back to the app — the status code proved nothing about the boundary
+#
+# Local rendering lies and a 200 is not an answer. The only faithful check is the real renderer and
+# the real host, so this loads them in a real browser.
+#
+# Deliberately NOT using quality/e2e/wait-for-deploy.js: that poller watches the live service worker
+# for a new cache name, which only changes when the app build changes. A documentation-only merge
+# would leave it waiting for a build that is never coming. What this job checks — which paths the
+# host publishes — is a property of the configuration, not of the current build.
+
+on:
+  push:
+    branches: [main]
+  # Links rot without anyone touching the repository. A weekly pass catches that.
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-live
+  cancel-in-progress: true
+
+env:
+  REPO_URL: https://github.com/InesPatricia/Mi-Dia-App
+  PROD_URL: https://mi-dia-app.pages.dev
+
+jobs:
+  verify:
+    name: verify live
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: quality/e2e/package-lock.json
+
+      # verify-live borrows Playwright from the test harness rather than carrying its own copy,
+      # so there is one browser version in this repository instead of two that can disagree.
+      - name: install the browser
+        working-directory: quality/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # Cloudflare publishes a moment after the push. Nothing here depends on the newest build,
+      # but giving the deploy a head start avoids checking a site mid-swap.
+      - name: let the deploy settle
+        run: sleep 45
+
+      # Each check runs even if an earlier one failed, so one run reports every problem instead of
+      # revealing them one re-run at a time.
+
+      - name: the README, as GitHub renders it
+        if: ${{ !cancelled() }}
+        run: node quality/tools/verify-live.mjs --page "$REPO_URL"
+
+      - name: the QA architecture page, which carries the diagram
+        if: ${{ !cancelled() }}
+        run: node quality/tools/verify-live.mjs --page "$REPO_URL/blob/main/docs/QA-ARCHITECTURE.md"
+
+      # The public/ boundary is the reason the repository was reorganised: only what ships is under
+      # public/, and wrangler.toml points Cloudflare at it. This proves the boundary holds, by
+      # comparing bodies — under a fallback, every one of these paths answers 200.
+      - name: the public/ boundary on the live site
+        if: ${{ !cancelled() }}
+        run: |
+          node quality/tools/verify-live.mjs --site "$PROD_URL" \
+            --hidden "CLAUDE.md,README.md,wrangler.toml,src/modules/ritual.js,quality/e2e/package.json,private/notes.md"

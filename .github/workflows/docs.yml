@@ -7,8 +7,8 @@ name: docs
 # on several branches, no test counts drifting away from what the runner actually reports, and no
 # archived history quietly disappearing.
 #
-# The checker is itself tested — see scripts/check-docs.test.mjs. A gate that never fails is not a
-# gate, and this repo has already shipped one of those.
+# The checker is itself tested — see quality/tools/check-docs.test.mjs. A gate that never fails is
+# not a gate, and this repo has already shipped one of those.
 
 on:
   push:

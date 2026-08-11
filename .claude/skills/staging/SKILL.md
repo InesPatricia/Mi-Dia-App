@@ -1,128 +1,150 @@
 ---
 name: staging
-description: Duce munca in curs (WIP) din working tree pe branch-ul permanent `staging` si o publica pe un preview Cloudflare izolat (staging.mi-dia-app.pages.dev), FARA sa atinga productia (`main`). Foloseste cand Ines spune "du pe staging", "vreau sa vad pe staging", "preview", "staging environment", "arata-mi live inainte de ship". NU e /ship (aia promoveaza in prod pe main) — staging e vitrina de test dinaintea livrarii.
+description: Take work in progress onto the permanent `staging` branch and publish it to an isolated Cloudflare preview (staging.mi-dia-app.pages.dev) without touching production (`main`). Use when Ines says "du pe staging", "vreau sa vad pe staging", "preview", "staging environment", "arata-mi live inainte de ship". This is NOT /ship, which promotes to production on main — staging is the shop window you test in before release.
 ---
 
-# /staging — preview izolat inainte de livrare
+# /staging — an isolated preview before release
 
-> **⭐ SCOPE (D-42, iul 2026): acest skill acopera DOAR aplicatia veche** (`mi-dia-vNN.html`,
-> proiectul Cloudflare `mi-dia-app`). **Laboratorul MVP / noua identitate NU trece pe aici** —
-> el traieste pe un proiect Cloudflare SEPARAT (`mi-dia-lab.pages.dev`), cu sursa in
-> `private/Prototype/site/` (gitignored in repo-ul public, git local propriu) si deploy DIRECT:
-> `cd private/Prototype && npx wrangler pages deploy site --project-name=mi-dia-lab
-> --branch=main --commit-dirty=true`. NICIODATA nu urca prototipul/identitatea noua prin
-> repo-ul public. Context complet: `private/mi-dia-status.md`.
+**Reply in Romanian without diacritics.** Code, commits and commands stay English. Run from the
+repository root (`Mi-Dia-App/`).
 
-Mi Día se deployeaza pe **Cloudflare Pages din GitHub**: `main` -> productie
-(`mi-dia-app.pages.dev`); orice **branch non-productie** -> preview propriu la
-`<branch>.mi-dia-app.pages.dev`. Acest skill foloseste un branch **permanent `staging`**
-ca sa ai mereu aceeasi vitrina (URL fix, bookmarkabil) pentru munca in curs, complet
-izolata de prod. Raspunde in **romana fara diacritice**. Ruleaza din radacina repo
-(`Mi-Dia-App/`).
+Mi Día deploys to **Cloudflare Pages from GitHub**: `main` becomes production at
+`mi-dia-app.pages.dev`, and any non-production branch gets its own preview at
+`<branch>.mi-dia-app.pages.dev`. This skill uses a **permanent `staging` branch** so the shop window
+is always at the same bookmarkable URL, fully isolated from production.
 
-**Relatia cu celelalte skill-uri:**
-- `/staging` = publica WIP-ul pe preview (test, non-prod). NU atinge `main`.
-- `/ship` = promoveaza in PRODUCTIE (index.html + CACHE + docs + push pe `main`).
-- Fluxul normal: construiesti felii -> **`/staging`** (vezi live, feedback pe device) ->
-  cand e ok -> **`/ship`** (prod).
+**Scope.** This covers the application in this repository. Separate prototypes live in their own
+Cloudflare projects with their own sources, and never travel through this repo — if a task involves
+one of those, this is the wrong skill.
 
-## Regulile de aur (siguranta prod)
+**How it relates to the others:**
 
-1. **Niciodata push pe `main` cand vrei DOAR staging.** Prod se deployeaza exclusiv din `main`.
-   Staging traieste pe branch-ul `staging`.
-2. **Staging e pe alt subdomeniu** (`staging.mi-dia-app.pages.dev`) -> cache, service worker
-   si localStorage sunt COMPLET izolate de prod. Fara coliziuni, fara sa strici datele nimanui.
-3. **URL-ul de preview e public** (dar nedescoperibil). Repo-ul e oricum public + `private/` e
-   gitignored, deci nu se expune nimic sensibil in plus — dar nu pune date reale in ce se serveste.
-4. **Fiecare push pe `staging` reimprospateaza ACELASI URL.** Ai mereu ultima versiune acolo.
-5. **Commit-uri per-felie, nu un monolit** — dau puncte curate de rollback si marcheaza EXACT unde intra
-   fiecare feature (linia de taiere pentru o promovare partiala). **Atentie la ce inseamna „cherry-pick"
-   aici** (vezi principiul de mai jos): intr-o aplicatie de-un-singur-fisier NU poti despica cod de feature
-   cu `git cherry-pick`.
+- `/staging` publishes work in progress to a preview. It never touches `main`.
+- `/ship` promotes to production: `public/index.html`, the `CACHE` bump, the docs, a push to `main`.
+- `/reconcile` brings `main` back into `staging` so the two stop drifting.
+- Normal flow: build slices → **`/staging`** (see it live, get device feedback) → when it is right,
+  **`/ship`**.
 
-## Pasii
+## The safety rules
 
-### 0. Verifica de unde pornesti
-- `git rev-parse --abbrev-ref HEAD` (pe ce branch esti) + `git status -sb`.
-- Munca de dus pe staging = ce e necomis in working tree SAU deja pe un branch de lucru.
-- Confirma cu Ines CE anume duce (de obicei: tot ce e necomis = arcul curent).
+1. **Never push to `main` when you only want staging.** Production deploys exclusively from `main`.
+2. **Staging is a different subdomain**, so its cache, service worker and localStorage are completely
+   isolated from production. No collisions, and nobody's data gets damaged.
+3. **The preview URL is public**, if undiscoverable. The repository is public anyway, so nothing
+   extra is exposed — but do not put real personal data into what gets served.
+4. **Every push to `staging` refreshes the same URL.** The latest version is always there.
+5. **Commit per slice, not one monolith.** Slices give clean rollback points and mark exactly where
+   each feature enters, which is the cut line for a partial promotion. Note what "cherry-pick"
+   actually means here — see the principle below.
 
-### 1. Adu munca pe branch-ul `staging`
-- **Daca `staging` nu exista inca:** din branch-ul cu munca (ex. `main` cu working tree murdar):
-  `git checkout -b staging` — modificarile necomise MERG cu tine (nu erau in `main`), deci `main`
-  ramane curat.
-- **Daca `staging` exista deja** si vrei sa-l aduci la nivelul muncii curente:
-  `git checkout staging` apoi commit-uiesti WIP-ul; SAU, daca `staging` a divergit si vrei sa-l
-  resincronizezi de la zero cu munca curenta, poti reseta cu confirmarea lui Ines
-  (`git checkout staging && git reset --hard <ref-cu-munca>`) — reset-ul e distructiv, cere confirmare.
+## Steps
 
-### 2. Commit per-felie
-- Grupeaza pe felii logice (S1, S2, ...), nu un commit urias. Fisierele `mi-dia-vNN.html` sunt deja
-  snapshot-uri curate per felie -> un commit per felie/versiune.
-- Testele e2e + tooling care evolueaza cross-cutting merg in commit-uri proprii clar etichetate
-  (`test: ...`, `chore: ...`).
-- Foloseste `git add <fisiere explicite>` — niciodata `git add -A` orb (ignora artefactele: `private/`,
-  `sandbox/`, rapoartele Playwright sunt deja gitignored, dar fii explicit).
-- Mesaje in romana fara diacritice; termina fiecare commit cu linia `Co-Authored-By` a proiectului.
+### 0. Check where you are starting from
 
-### 3. (optional) Coerenta build-ului pentru preview
-- `index.html` = copia celui mai nou `mi-dia-vNN.html` (ce vrei sa vezi pe staging). Verifica cu
-  `wc -c index.html mi-dia-vNN.html` (dimensiuni egale) sau diff.
-- `sw.js` e **network-first** (fetch fresh online), deci preview-ul arata build-ul nou chiar daca
-  `CACHE` inca zice o versiune veche — **nu bumpa `CACHE` pentru staging** (bump-ul e treaba /ship,
-  ca sa nu creezi diff inutil fata de prod). Pe subdomeniu proaspat nu exista cache vechi oricum.
+```bash
+git rev-parse --abbrev-ref HEAD && git status -sb
+```
 
-### 4. Push -> declanseaza preview-ul
-- `git push -u origin staging` (prima data) sau `git push origin staging` (ulterior).
-- **NU** pushezi pe `main`. Cere confirmarea lui Ines inainte de push (push = actiune spre exterior).
-- In ~1-2 min: **`https://staging.mi-dia-app.pages.dev`**. (Numele branch-ului devine subdomeniul,
-  scurtat la 28 caractere; `staging` -> `staging.…`.)
+The work to publish is whatever is uncommitted in the working tree, or already on a working branch.
+Confirm with Ines exactly what is going, which is usually everything uncommitted.
 
-### 5. CI care se declanseaza (asteptat, informativ)
-- Push-ul pe `staging` declanseaza build-ul de preview Cloudflare + workflow-ul `smoke-preview.yml`
-  (7 teste smoke pe preview, informativ) si eventual `e2e.yml` pe branch. Niciunul nu blocheaza nimic
-  in prod. Daca smoke pica, e semnal util inainte de /ship.
+### 1. Get the work onto `staging`
 
-### 6. Raporteaza
-- Da-i lui Ines URL-ul + ce felii sunt acolo + reminderul de device-pass (headless != Android real).
+- **If `staging` does not exist yet**, from the branch holding the work: `git checkout -b staging`.
+  Uncommitted changes travel with you, so `main` stays clean.
+- **If `staging` already exists**, `git checkout staging` and commit the work in progress. If it has
+  diverged and needs resynchronising from scratch, `git reset --hard <ref>` will do it — but that is
+  destructive, so ask Ines first.
 
-## Setare Cloudflare de verificat (o singura data, daca preview-ul nu apare)
-Cloudflare -> Workers & Pages -> **mi-dia-app** -> Settings -> Builds & deployments ->
-**Preview deployments -> "All non-production branches"**. (Nu pot verifica setarea din CLI/MCP fara
-autentificare — e un pas manual al lui Ines daca subdomeniul nu se genereaza.)
+### 2. Commit per slice
 
-## ⭐ Principiul de constructie pentru promovare partiala (single-file app — CITESTE)
+- Group by logical slice, not one enormous commit. The `src/mi-dia-vNN.html` files are already clean
+  per-slice snapshots, so one commit per slice or version.
+- Cross-cutting e2e tests and tooling go in their own clearly labelled commits (`test:`, `chore:`).
+- **Stage explicit paths. Never `git add -A` in this worktree.** It has twice swept the
+  work-in-progress build, scratch assets and `.wrangler/`, which holds account data, into a staged
+  commit in a public repository. `.githooks/pre-commit` refuses those now, but treat the hook as a
+  backstop rather than a reason to stop looking.
+- Commit messages in English, ending with the project's `Co-Authored-By` line.
 
-Mi Día e **un singur fisier HTML**; ce se serveste in prod = `index.html`, o copie a unui `mi-dia-vNN.html`
-**intreg**. Fiecare felie/`vNN` e un snapshot COMPLET al aplicatiei, nu un petic de cod. De aici, doua
-adevaruri pe care orice agent nou trebuie sa le stie:
+### 3. Optional: make the build coherent for the preview
 
-- **`git cherry-pick` NU izoleaza un feature aici.** Un cherry-pick al unui commit de felie doar adauga
-  fisierul `mi-dia-vNN.html` (inactiv) pe branch — NU schimba `index.html`, deci nu face feature-ul live.
-  Cherry-pick e util curat DOAR pentru schimbari ortogonale (un doc, un test, `sw.js`, un fisier-modul
-  aditiv), nu pentru feature-uri care traiesc in monolitul `index.html`.
-- **Promovarea partiala = alegerea BUILD-ului.** „Duc feature-ul X in prod, tin restul" = promovezi `vNN`-ul
-  la care X e complet SI nimic nedorit nu e inca prezent → acel `vNN` devine `index.html` (un `/ship` tintit
-  pe un vNN intermediar, nu pe cel mai nou).
+- `public/index.html` should be a copy of the `src/mi-dia-vNN.html` you want to see on staging.
+  Compare sizes or diff them to confirm.
+- `public/sw.js` is **network-first**, so the preview serves the new build even when `CACHE` still
+  names an older version. **Do not bump `CACHE` for staging** — that belongs to `/ship`, and bumping
+  it here only creates a pointless diff against production. A fresh subdomain has no stale cache
+  anyway.
 
-**Regula de constructie care PASTREAZA capacitatea de promovare partiala (asa construiesti):**
-1. **Ordoneaza munca** asa incat ce ai putea vrea sa livrezi mai devreme sa fie COMPLET la un `vNN` mai
-   timpuriu, iar feature-urile **optionale / riscante / aditive sa vina ULTIMELE**. Atunci le poti tine
-   deoparte pur si simplu nepromovand dincolo de linia lor. (Ex. arcul „Floarea vie": Gradina/S4 = ultima →
-   se poate promova floarea la v182 tinand Gradina la v183.)
-2. **Un feature cu adevarat independent** → pe **branch propriu din `main`** (nu stivuit peste WIP-ul de pe
-   staging) SAU ca **modul aditiv** (`ritual.js`/`cycle.js`/`onboard.js`/`garden` — fisier separat + un mount
-   mic), cel mai apropiat de o unitate promovabila singura.
-3. **Fiecare `vNN` trebuie sa fie o stare coerenta, livrabila** (valideaza + e2e verde, fara jumatati de
-   feature) — altfel nu e o linie de taiere valida. Ordoneaza feature-urile, nu le intercala.
-4. **Reconciliaza si testele:** daca promovezi un `vNN` intermediar, specurile e2e care testeaza feature-uri
-   de mai tarziu (spec-ul unei felii ulterioare) NU trebuie sa mearga pe acel build — le tii deoparte odata cu
-   feature-ul lor.
+### 4. Push, which triggers the preview
 
-## Promovare din staging in prod
-- **Tot arcul:** `/ship` (promoveaza cel mai nou `vNN` → `index.html`, bumpeaza `CACHE`, sync docs, push `main`).
-- **Partial (un feature, tinand restul):** `/ship` **tintit pe `vNN`-ul de taiere** (nu pe cel mai nou) —
-  vezi Pas 1 din `/ship`. NU `git cherry-pick` de cod de feature (nu functioneaza — vezi principiul de sus).
-  Posibil DOAR daca munca a fost ordonata cu feature-ul de tinut deoparte ULTIMUL.
-- **Ortogonal (doc / test / sw.js / modul aditiv):** acela chiar se poate `git cherry-pick` pe `main` via PR
-  (`main` e branch-protected).
+```bash
+git push -u origin staging     # first time
+git push origin staging        # afterwards
+```
+
+**Do not push to `main`.** Ask Ines before pushing, since a push reaches outside the machine. The
+preview appears in a minute or two at **`https://staging.mi-dia-app.pages.dev`** — the branch name
+becomes the subdomain, truncated to 28 characters.
+
+### 5. What CI does, all of it informational
+
+A push to `staging` triggers the Cloudflare preview build, `smoke-preview.yml` (7 smoke tests
+against the preview) and `e2e.yml` on the branch. None of them blocks anything in production. A
+failing smoke here is a useful signal before `/ship`.
+
+### 6. Report
+
+Give Ines the URL, which slices are on it, and the reminder that headless is not a real Android
+device (`docs/DEVICE-PASS.md`).
+
+## If the preview never appears
+
+Cloudflare → Workers & Pages → **mi-dia-app** → Settings → Builds & deployments → **Preview
+deployments → "All non-production branches"**. This cannot be verified from the CLI without
+authentication, so it is a manual check for Ines if the subdomain fails to generate.
+
+## The construction principle behind partial promotion
+
+Mi Día is **one HTML file**. What production serves is `public/index.html`, a copy of a whole
+`src/mi-dia-vNN.html`. Every slice is a complete snapshot of the application, not a patch. Two
+consequences follow, and any agent new to this repository needs both:
+
+- **`git cherry-pick` does not isolate a feature here.** Cherry-picking a slice commit only adds an
+  inactive `src/mi-dia-vNN.html` to the branch. It does not change `public/index.html`, so the
+  feature does not go live. Cherry-pick is clean only for orthogonal changes: a document, a test,
+  `sw.js`, an additive module file.
+- **Partial promotion means choosing the build.** "Ship feature X, hold the rest" means promoting
+  the `vNN` at which X is complete and nothing unwanted has landed yet. That `vNN` becomes
+  `public/index.html` — a `/ship` aimed at an intermediate build rather than the newest one.
+
+**How to build so partial promotion stays possible:**
+
+1. **Order the work** so anything you might want to ship early is complete at an earlier `vNN`, and
+   optional, risky or additive features come **last**. Then holding them back is just not promoting
+   past their line.
+2. **A genuinely independent feature** belongs on its own branch off `main`, rather than stacked on
+   top of staging's work in progress, or as an additive module file with a small mount point. That
+   is the closest thing here to a separately shippable unit.
+3. **Every `vNN` must be a coherent, shippable state** — validators and e2e green, no half-built
+   features — or it is not a valid cut line. Order features; do not interleave them.
+4. **Reconcile the tests too.** If you promote an intermediate `vNN`, the e2e specs covering later
+   features must not run against that build. They are held back with the feature they belong to.
+
+## Promoting from staging to production
+
+**Never merge `staging` into `main`, and never open a pull request from it.** `staging` is behind on
+structure by design — it receives layout, gates, tooling and documentation from `main`, it does not
+send them — so that merge reverts whatever `main` has gained since the last reconciliation, in bulk
+and without a single check reporting it. Production is reached by **promoting a build**, not by
+merging a branch.
+
+Run `/reconcile` first, so staging holds main's current structure, then:
+
+- **The whole arc**: `/ship`, which promotes the newest `vNN`, bumps `CACHE`, syncs the docs and
+  pushes `main`.
+- **Partial**: `/ship` aimed at the cut-line `vNN` rather than the newest — see Step 1 of `/ship`.
+  Not `git cherry-pick` of feature code, which does not work here. Only possible if the work was
+  ordered with the held-back feature last.
+- **Orthogonal** (a doc, a test, `sw.js`, an additive module): that genuinely can be cherry-picked
+  onto `main` through a pull request, since `main` is branch-protected.
