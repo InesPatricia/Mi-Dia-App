@@ -152,10 +152,18 @@ broken helper must never turn a pull request red. Only real gates get to do that
 [`quality/evals/`](quality/evals/) where it runs. A golden dataset is scored two ways: deterministic
 property assertions, and an LLM judging the semantics properties cannot see. It passes on a
 **pass-rate floor**, not per case, for the same reason k6 asserts p(95): with a non-deterministic
-system, one unlucky case is noise and a dropped rate is a regression.
+system, one unlucky case is noise and a dropped rate is a regression. The judge can be pointed at a
+different model from the subject, because a model grading its own output flatters it.
 
-Two gaps are still open, and that directory's README says so: guardrail and prompt-injection cases,
-and cost and latency treated as budgets.
+Running it was worth more than writing it. Ten cases against free models returned 90% over an 80%
+floor, and turned up three defects — every one of them in the harness, not in the models: an em dash
+in an HTTP header, so `fetch` threw before a request ever left the machine and all ten cases failed
+identically; a token budget that starved reasoning models, because reasoning is spent from the same
+allowance as the answer; and an exit that crashed instead of returning its own status. A suite that
+fails uniformly is never telling you about the thing it measures.
+
+Three gaps are still open, and that directory's README says so: the judge is uncalibrated, one run is
+not a baseline, and guardrail, prompt-injection and cost/latency cases are not written yet.
 
 ---
 
