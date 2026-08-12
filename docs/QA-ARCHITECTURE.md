@@ -2,7 +2,7 @@
 
 The whole quality pipeline in one picture. The core distinction: **gates block** (a red gate stops
 a change before it reaches `main`), while **nets observe** (they run after the fact and report,
-tuned to tolerate noise so they don't cry wolf). Getting the reglaj right — zero tolerance on
+tuned to tolerate noise so they don't cry wolf). Getting that calibration right — zero tolerance on
 gates, budgets-with-headroom on nets — is a deliberate design choice, not an accident.
 
 ```mermaid
@@ -11,6 +11,7 @@ flowchart TD
         PR["Pull request"] --> E2E["e2e\nvalidate build → 2 shards → merge report\n(required check)"]
         PR --> CFP["Cloudflare builds\na preview deployment"]
         CFP --> SP["smoke-preview\nwait-for-preview → 7 smoke\n+ Lighthouse shift-left (informational)"]
+        PR --> DOCS["docs\ncheck-docs 8 rules + its own 24 tests\n(reports, not required)"]
         E2E -. on failure .-> TRIAGE["ai-triage agent\ncomments a likely cause on the PR\n(helper, via workflow_run)"]
     end
 
@@ -21,6 +22,7 @@ flowchart TD
 
     subgraph POST["After deploy — NETS (observe)"]
         DEPLOY --> SPROD["smoke-prod\nwait-for-deploy → 7 smoke\n→ Lighthouse budgets"]
+        DEPLOY --> VL["verify-live\nrendered README + published boundary\nweekly too, for link rot"]
     end
 
     subgraph SCHED["Scheduled / manual"]
@@ -35,8 +37,8 @@ flowchart TD
     classDef net fill:#2e5e3a,stroke:#1e3f27,color:#fff;
     classDef helper fill:#7a5c1e,stroke:#5a4315,color:#fff;
     class E2E,SP gate;
-    class SPROD,ZAP net;
-    class TRIAGE,EVALS,K6,DEPS helper;
+    class SPROD,ZAP,VL net;
+    class TRIAGE,EVALS,K6,DEPS,DOCS helper;
 ```
 
 ## Reading it
@@ -52,11 +54,27 @@ flowchart TD
   after it was found never to fire, but it was never added to the required list, so it ran green
   and stopped nothing. Verify this list against the branch-protection settings, not against the
   existence of a workflow file — a workflow and a rule that enforces it are two different things.
-- **Nets (green):** `smoke-prod` re-checks the live site after deploy; `zap-baseline` scans weekly.
-  They report and, where budgets apply, fail only on hard regressions — headroom is built in so
-  network noise doesn't raise false alarms.
+- **Nets (green):** `smoke-prod` re-checks the live site after deploy; `verify-live` opens the
+  published README in a real browser and asks the live site which paths it actually serves;
+  `zap-baseline` scans weekly. They report and, where budgets apply, fail only on hard regressions —
+  headroom is built in so network noise doesn't raise false alarms.
+
+  `verify-live` cannot be a gate, and the reason is worth stating: both things it looks at only
+  exist *after* a merge. GitHub renders the README from the default branch, and Cloudflare publishes
+  on push. It also draws the gate/net line inside itself. A file served by the **origin** means the
+  `public/` boundary broke, which is a defect in this repository, so it fails. A file served only
+  from the **CDN's cache** is a copy taken before that file was withdrawn, expiring under a TTL
+  nothing here can shorten — so it warns, with the hours remaining, and the run stays green. Failing
+  over something nobody can act on is how a check gets ignored on the day it matters.
 - **Helpers (gold):** the `ai-triage` agent (explains a failure), `evals` (agentic pass-rate),
-  `perf-k6` (latency baseline), and Dependabot (proposes updates) assist but never block on noise.
+  `perf-k6` (latency baseline), Dependabot (proposes updates), and `docs` assist but never block.
+
+  **`docs` is in the helper column deliberately, and that is a finding rather than a design.** The
+  workflow does fail on a broken rule, and it runs on every pull request — but it is not on the
+  required-checks list, so a red run reports and stops nothing. By this document's own standard that
+  makes it a reporter, not a gate. Adding `check docs` to the required checks is a settings change,
+  not a code change, and it is the one thing that would make the documentation genuinely gated
+  rather than merely checked.
 
 ## The one rule
 

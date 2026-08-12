@@ -245,12 +245,21 @@ a build number without being wrong on two of them.
 **Mandatory per-session context went from 170,934 bytes to 6,184**, a 96% reduction, with no history
 lost. The archive is complete and a rule proves it.
 
-`quality/tools/check-docs.mjs` runs in CI and fails the build on a dead path, a build number in the
-router, a test count that disagrees with the runner, an archived section that went missing, or a
-router that has forked between branches. It has **its own tests, including negative cases**, for the
-reason in the first incident below: this repository has already shipped a gate that ran green
-without checking anything, and a checker nobody checks is the same mistake wearing a different
-filename.
+`quality/tools/check-docs.mjs` runs on every pull request and goes red on eight things: a dead path,
+a build number in the router, a router that outgrew its limit, a test count that disagrees with the
+runner, an archived section that went missing, a router that has forked between branches, HTML
+inside a diagram label that GitHub will strip, and a filename whose spelling is off by a capital.
+
+Two of those exist because the checker was blind to them for weeks. Links were compared with a
+filesystem that folds case, so a link 404ing on GitHub passed here on every run; and a file tracked
+twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
+now have tests that fail without the fix.
+
+It has **its own tests, including negative cases** — 24 of them — for the reason in the first
+incident below: this repository has already shipped a gate that ran green without checking anything,
+and a checker nobody checks is the same mistake wearing a different filename. It is not on the
+required-checks list yet, which by the standard set two sections above makes it a reporter rather
+than a gate. That is a settings change, and it is on the list.
 
 ---
 
