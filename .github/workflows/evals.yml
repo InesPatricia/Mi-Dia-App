@@ -1,9 +1,13 @@
 name: evals
 
-# MANUAL agentic-eval run: scores the extraction task in evals/ against its golden dataset and
-# fails if the pass-rate drops below the floor. Manual (workflow_dispatch) because each run costs
-# LLM tokens and the subject is a stable demonstration, not a per-commit gate. Needs the
-# ANTHROPIC_API_KEY secret; without it the runner cleanly no-ops (see evals/run.mjs).
+# MANUAL agentic-eval run: scores the extraction task in quality/evals/ against its golden dataset
+# and fails if the pass-rate drops below the floor. Manual (workflow_dispatch) because each run
+# costs LLM tokens and the subject is a stable demonstration, not a per-commit gate. In a product
+# where the extractor IS the product, this would run nightly and on any PR touching the prompt or
+# the model — frequency follows the subject's rate of change and the cost of a run, not habit.
+#
+# Needs a key: ANTHROPIC_API_KEY or OPENROUTER_API_KEY. Without either, the runner cleanly no-ops
+# (see quality/evals/run.mjs) — a missing key is never a red build.
 
 on:
   workflow_dispatch:
@@ -12,6 +16,24 @@ on:
         description: "Pass-rate floor (0..1)"
         required: false
         default: "0.8"
+      provider:
+        description: "Which provider to use"
+        required: false
+        default: "openrouter"
+        type: choice
+        options: [openrouter, anthropic]
+      model:
+        description: "Model under test (blank = the provider's default)"
+        required: false
+        default: "inclusionai/ling-3.0-tiny:free"
+      judge_model:
+        description: "Judge model — deliberately NOT the model under test, to avoid self-preference bias"
+        required: false
+        default: "openai/gpt-oss-20b:free"
+      limit:
+        description: "Run only the first N cases (0 = all). A free-tier account allows ~50 model requests a day and a full run spends 20, so the first run after a change is worth doing as a 2-case smoke."
+        required: false
+        default: "0"
 
 permissions:
   contents: read
@@ -27,5 +49,10 @@ jobs:
       - name: Run evals
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EVAL_PROVIDER: ${{ inputs.provider }}
+          EVAL_MODEL: ${{ inputs.model }}
+          EVAL_JUDGE_MODEL: ${{ inputs.judge_model }}
           EVAL_THRESHOLD: ${{ inputs.threshold }}
+          EVAL_LIMIT: ${{ inputs.limit }}
         run: node quality/evals/run.mjs
