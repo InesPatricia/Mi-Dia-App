@@ -37,6 +37,11 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: 20 }
       - run: node validate-build.js
+      # The eval harness scores a probabilistic system, so its own scorer has to be deterministic
+      # and correct. These fixtures need no key and no model, which is why they can gate every PR
+      # while the eval itself stays a manual run. A broken scorer makes every pass-rate it ever
+      # printed fiction, so this belongs with the fast checks rather than in the paid workflow.
+      - run: node ../evals/run.mjs --self-test
 
   test:
     name: test (shard ${{ matrix.shard }}/2)

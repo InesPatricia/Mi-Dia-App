@@ -1,0 +1,62 @@
+{
+  "at": "2026-08-12T10:43:53.022Z",
+  "provider": "openrouter",
+  "model": "inclusionai/ling-3.0-tiny:free",
+  "judge": "openai/gpt-oss-20b:free",
+  "threshold": 0.8,
+  "coverage": 1,
+  "rate": 0.6,
+  "inconclusive": false,
+  "rows": [
+    {
+      "id": "coffee-ana",
+      "status": "fail",
+      "got": {
+        "title": "Coffee with Ana",
+        "time": null,
+        "category": "social"
+      },
+      "detail": "hasTime false != true"
+    },
+    {
+      "id": "gym-morning",
+      "status": "pass",
+      "got": {
+        "title": "Gym session",
+        "time": "07:00",
+        "category": "health"
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "standup",
+      "status": "pass",
+      "got": {
+        "title": "Team standup",
+        "time": "09:30",
+        "category": "work"
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "groceries",
+      "status": "pass",
+      "got": {
+        "title": "Buy groceries",
+        "time": null,
+        "category": "errands"
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "read-evening",
+      "status": "fail",
+      "got": {
+        "title": "Read my book",
+        "time": null,
+        "category": "learning"
+      },
+      "detail": "category learning != rest"
+    }
+  ]
+}
