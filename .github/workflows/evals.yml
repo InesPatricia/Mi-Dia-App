@@ -22,14 +22,17 @@ on:
         default: "openrouter"
         type: choice
         options: [openrouter, anthropic]
+      # Free slugs get retired without notice. The previous default here died overnight and would
+      # have returned 404 on every case, so treat these as a starting point and check what is
+      # actually alive with `node quality/evals/run.mjs --list-free`.
       model:
         description: "Model under test (blank = the provider's default)"
         required: false
-        default: "inclusionai/ling-3.0-tiny:free"
-      judge_model:
-        description: "Judge model — deliberately NOT the model under test, to avoid self-preference bias"
-        required: false
         default: "openai/gpt-oss-20b:free"
+      judge_model:
+        description: "Judge model, deliberately different from the model under test, since a model grading its own output flatters it"
+        required: false
+        default: "nvidia/nemotron-3-super-120b-a12b:free"
       limit:
         description: "Run only the first N cases (0 = all). A free-tier account allows ~50 model requests a day and a full run spends 20, so the first run after a change is worth doing as a 2-case smoke."
         required: false

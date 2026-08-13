@@ -43,10 +43,11 @@ const PROVIDER =
 
 const DEFAULT_MODEL = {
   anthropic: 'claude-sonnet-5',
-  // OpenRouter's free tier renames and retires slugs constantly — the first default written here
-  // was already dead. `--list-free` asks the API which ones cost nothing right now, which is the
-  // same rule as everywhere else in this repo: derive the answer, don't write it down.
-  openrouter: 'google/gemma-4-31b-it:free',
+  // OpenRouter's free tier renames and retires slugs constantly. Two defaults written into this
+  // file have already died, one of them overnight between two runs, so `--list-free` asks the API
+  // which models cost nothing right now. Same rule as everywhere else in this repo, derive the
+  // answer instead of writing it down.
+  openrouter: 'openai/gpt-oss-20b:free',
 };
 
 const MODEL = process.env.EVAL_MODEL || process.env.ANTHROPIC_MODEL || DEFAULT_MODEL[PROVIDER];
@@ -138,10 +139,15 @@ async function chat(prompt, maxTokens = MAX_TOKENS, model = MODEL) {
       const text = PROVIDER === 'anthropic'
         ? json.content.map((b) => b.text).join('')
         : (json.choices?.[0]?.message?.content ?? '');
-      // Some free models return an empty content block with the answer in a reasoning field, or
-      // nothing at all. Treat that as a failed extraction rather than crashing the run.
-      if (!text || !text.trim()) throw new Error('empty completion');
-      return text;
+      if (text && text.trim()) return text;
+      // A 200 with nothing in it. Free pools do this intermittently, and the identical request
+      // usually succeeds seconds later. An empty response holds no answer, so it cannot be a wrong
+      // answer, which is what makes retrying it fair: retrying a missing answer is legitimate,
+      // retrying a wrong one would be gaming the result. If it never fills in, the case is
+      // reported as unmeasurable rather than blamed on the model.
+      lastErr = 'empty completion';
+      await sleep(2000 * 2 ** attempt);
+      continue;
     }
 
     lastErr = `${res.status}: ${(await res.text()).slice(0, 200).replace(/\s+/g, ' ')}`;

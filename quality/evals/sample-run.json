@@ -1,22 +1,26 @@
 {
-  "at": "2026-08-12T10:43:53.022Z",
+  "at": "2026-08-13T14:35:27.097Z",
   "provider": "openrouter",
-  "model": "inclusionai/ling-3.0-tiny:free",
-  "judge": "openai/gpt-oss-20b:free",
+  "model": "openai/gpt-oss-20b:free",
+  "judge": "nvidia/nemotron-3-super-120b-a12b:free",
   "threshold": 0.8,
   "coverage": 1,
-  "rate": 0.6,
+  "rate": 0.9,
   "inconclusive": false,
   "rows": [
     {
       "id": "coffee-ana",
-      "status": "fail",
+      "status": "pass",
       "got": {
         "title": "Coffee with Ana",
-        "time": null,
+        "time": "15:00",
         "category": "social"
       },
-      "detail": "hasTime false != true"
+      "judge": {
+        "correct": true,
+        "reason": "Model answer matches reference answer exactly: title 'Coffee with Ana', time '15:00', category 'social', satisfying the criteria."
+      },
+      "detail": "ok"
     },
     {
       "id": "gym-morning",
@@ -25,6 +29,10 @@
         "title": "Gym session",
         "time": "07:00",
         "category": "health"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "Model answer matches reference answer exactly: title 'Gym session', time '07:00', category 'health'."
       },
       "detail": "ok"
     },
@@ -36,6 +44,10 @@
         "time": "09:30",
         "category": "work"
       },
+      "judge": {
+        "correct": true,
+        "reason": "The model answer matches the reference answer exactly, capturing the activity in the title, correctly formatting the time, and assigning the appropriate work category."
+      },
       "detail": "ok"
     },
     {
@@ -45,6 +57,10 @@
         "title": "Buy groceries",
         "time": null,
         "category": "errands"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "The model answer matches the reference answer exactly; title captures activity, time and category are correct."
       },
       "detail": "ok"
     },
@@ -56,7 +72,78 @@
         "time": null,
         "category": "learning"
       },
+      "judge": null,
       "detail": "category learning != rest"
+    },
+    {
+      "id": "spanish-class",
+      "status": "pass",
+      "got": {
+        "title": "Spanish class",
+        "time": "18:00",
+        "category": "learning"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "The model answer matches the reference answer exactly: title \"Spanish class\" captures the activity, time \"18:00\" and category \"learning\" are correct."
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "dentist",
+      "status": "pass",
+      "got": {
+        "title": "Dentist appointment",
+        "time": "10:15",
+        "category": "health"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "Model answer matches reference answer exactly; title captures activity, time and category match the intent."
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "call-mom",
+      "status": "pass",
+      "got": {
+        "title": "Call mom",
+        "time": null,
+        "category": "social"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "The model answer matches the reference answer exactly; the title captures the activity, and the time and category fields are consistent with the reference, which is considered correct per the grading criteria."
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "deploy",
+      "status": "pass",
+      "got": {
+        "title": "Deploy the release",
+        "time": "12:00",
+        "category": "work"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "Model answer exactly matches reference answer: title captures the activity, time is 12:00, category is work."
+      },
+      "detail": "ok"
+    },
+    {
+      "id": "nap",
+      "status": "pass",
+      "got": {
+        "title": "Short nap",
+        "time": null,
+        "category": "rest"
+      },
+      "judge": {
+        "correct": true,
+        "reason": "Model answer matches reference answer exactly; title captures the activity, time and category are correct."
+      },
+      "detail": "ok"
     }
   ]
 }

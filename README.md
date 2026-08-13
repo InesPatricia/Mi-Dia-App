@@ -287,8 +287,8 @@ filesystem that folds case, so a link 404ing on GitHub passed here on every run;
 twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
 now have tests that fail without the fix.
 
-It has **its own tests, including negative cases** — 24 of them — for the reason in the first
-incident below: this repository has already shipped a gate that ran green without checking anything,
+It has **its own tests, including negative cases**, 24 of them, for the reason in the first
+incident below. This repository has already shipped a gate that ran green without checking anything,
 and a checker nobody checks is the same mistake wearing a different filename. It is not on the
 required-checks list yet, which by the standard set two sections above makes it a reporter rather
 than a gate. That is a settings change, and it is on the list.
