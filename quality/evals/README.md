@@ -33,9 +33,23 @@ second opinion with a well-argued voice.
 
 ## Proof it runs
 
-[`sample-run.json`](sample-run.json) is a real captured run, five cases against
-`inclusionai/ling-3.0-tiny:free`, judged by `openai/gpt-oss-20b:free`, scoring 3 of 5. The most
-interesting row:
+[`sample-run.json`](sample-run.json) is a real captured run of the full set, `openai/gpt-oss-20b:free`
+answering and `nvidia/nemotron-3-super-120b-a12b:free` judging, scoring 9 of 10 against the 80%
+floor. Here is the judge doing its job on a case the property checks had already cleared:
+
+```json
+{ "id": "dentist", "status": "pass",
+  "got": { "title": "Dentist appointment", "time": "10:15", "category": "health" },
+  "judge": { "correct": true,
+             "reason": "Model answer matches reference answer exactly; title captures activity,
+                        time and category match the intent" }
+}
+```
+
+"Dentist appointment at quarter past ten" became `10:15`, which no property assertion could have
+confirmed on its own. That is the whole reason the second layer exists.
+
+The one failure is the interesting row:
 
 ```json
 { "id": "read-evening", "status": "fail",
@@ -44,13 +58,14 @@ interesting row:
 ```
 
 The sentence was "Read my book for an hour tonight". Every property holds and the disagreement is
-purely about taxonomy, since the model files reading under learning and the reference calls it rest.
-It stays in the dataset on purpose. A golden set where every answer is obvious is flattering itself,
-and this case is the living argument for scoring a rate instead of demanding per-case equality.
+purely about taxonomy, since the model files reading under learning while the reference calls it
+rest. It stays in the dataset on purpose. A golden set where every answer is obvious is flattering
+itself, and this case is the living argument for scoring a rate instead of demanding per-case
+equality.
 
-In the same batch, `coffee-ana` failed by dropping the 3pm, having passed cleanly twice earlier that
-morning. That is what non-determinism looks like in a report, and it is exactly why the gate is a
-floor over a set.
+Earlier runs make the same point from the other direction. A smaller model dropped the "3pm" from
+"Coffee with Ana at 3pm" on one run after getting it right twice that morning. Same input, same
+prompt, different answer, which is exactly why the gate is a floor over a set.
 
 ## Who tests the scorer
 
@@ -112,8 +127,14 @@ The token budget has a story. It used to be 400, and reasoning models kept retur
 at random, which looked like an unstable model until the usage figures showed reasoning tokens
 coming out of the same allowance as the answer. The instrument was starving them.
 
+Empty responses get retried before anything is concluded from them. Free pools hand back a 200 with
+no content now and then, and the identical request usually succeeds seconds later. An empty response
+holds no answer, so it cannot be a wrong answer, and that is what makes retrying it fair. Retrying a
+missing answer is legitimate, retrying a wrong one would be gaming the result. If it never fills in,
+the case is reported as unmeasurable rather than blamed on the model.
+
 One thing deliberately left undone. When a model returns empty content with perfectly good JSON
-sitting in its `reasoning` field, the harness still records a failure. The contract under test is
+sitting in its `reasoning` field, the harness still refuses to use it. The contract under test is
 what the model hands over as its answer, and reading its scratchpad would be marking work it never
 submitted.
 
