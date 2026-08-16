@@ -29,6 +29,15 @@ function emojiIn(text) {
   return [...new Set([...stripped].filter(isEmoji))];
 }
 
+function inProgress(ref) {
+  try {
+    execSync(`git rev-parse -q --verify ${ref}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function fail(lines) {
   process.stderr.write(`\n${lines.join('\n')}\n\n`);
   process.stderr.write('If this is genuinely wrong, `git commit --no-verify` skips the check.\n\n');
@@ -64,6 +73,15 @@ if (mode === '--message') {
 }
 
 if (mode === '--staged') {
+  // A merge, a cherry-pick and a revert all carry lines authored somewhere else, on a branch where
+  // this same check already ran. Every added line of the incoming side reads as new here, so
+  // gating them would refuse work nobody is writing at this commit. Reconciling main into staging
+  // hit exactly that: the eval tooling prints emoji to a terminal, and the merge that brought it
+  // across was refused.
+  if (inProgress('MERGE_HEAD') || inProgress('CHERRY_PICK_HEAD') || inProgress('REVERT_HEAD')) {
+    process.exit(0);
+  }
+
   let diff;
   try {
     diff = execSync('git diff --cached -U0 --diff-filter=ACMR', {
