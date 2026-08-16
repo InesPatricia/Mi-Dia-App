@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Refuse commit messages carrying emoji or em dashes.
+#
+# It lives in .githooks/ rather than .git/hooks/ so that it is version-controlled and reviewable
+# like everything else here, and it needs the same one command per clone as pre-commit:
+#
+#     git config core.hooksPath .githooks
+#
+# The checker is kept inside the repository rather than in a home directory, so a fresh clone gets
+# the same gate without anyone setting a machine up first.
+
+command -v node >/dev/null 2>&1 || {
+  echo "commit-msg: node not found on PATH, skipping the emoji check."
+  exit 0
+}
+
+exec node .githooks/check-emoji.mjs --message "$1"
