@@ -78,3 +78,6 @@ scratch/
 # always were: docs/DESIGN_SYSTEM.md.
 .claude/skills/design-check/
 .claude/skills/revamp/
+
+# Eval run artifact: per-case model outputs, rewritten on every run (see quality/evals/run.mjs).
+quality/evals/last-run.json

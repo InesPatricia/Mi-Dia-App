@@ -62,4 +62,8 @@ if [ -n "$blocked" ]; then
   exit 1
 fi
 
-exit 0
+# 3. Emoji added to tracked files. A ratchet, not a sweep: this repository already carries emoji in
+#    the app builds and in the tooling, and refusing those outright would block the next build from
+#    being committed at all. Only newly added lines are checked. The reasoning is in the checker.
+command -v node >/dev/null 2>&1 || exit 0
+exec node .githooks/check-emoji.mjs --staged

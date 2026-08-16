@@ -73,6 +73,14 @@ fixed, not written down.
 > **This section is runnable, not just theory:** [`quality/evals/`](../quality/evals/) is a working eval harness
 > (golden dataset + property assertions + LLM-as-judge + pass-rate floor) over a representative
 > extraction task. Trigger the `evals` workflow or run `node quality/evals/run.mjs`.
+>
+> **And it has been run,** which is a different claim. Scored against free models through OpenRouter
+> it returned a 90% pass-rate over ten cases against an 80% floor, and it surfaced three defects.
+> All three were in the harness rather than in the models. An em dash in an HTTP header made `fetch`
+> throw before any request left the machine. A token budget starved reasoning models, since their
+> thinking is billed to the same allowance as their answer. And a libuv assertion on exit replaced
+> the real exit code with a crash. Code that has never executed is a claim. The captured run and the
+> full account live in [`quality/evals/README.md`](../quality/evals/README.md).
 
 If the product under test is itself built on LLM agents, classic assertions break. The good news:
 the *principles* are the ones already used in this repo — baseline, thresholds with tolerance,

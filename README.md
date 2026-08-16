@@ -149,13 +149,45 @@ cannot edit the agent into handing over the API key. And it fails safe: no key, 
 broken helper must never turn a pull request red. Only real gates get to do that.
 
 **Testing a system that is itself agentic** is a different problem, and it lives in
-[`quality/evals/`](quality/evals/) where it runs. A golden dataset is scored two ways: deterministic
-property assertions, and an LLM judging the semantics properties cannot see. It passes on a
-**pass-rate floor**, not per case, for the same reason k6 asserts p(95): with a non-deterministic
-system, one unlucky case is noise and a dropped rate is a regression.
+[`quality/evals/`](quality/evals/), where it really does run. A golden dataset gets scored twice.
+First by deterministic property assertions, which check the schema, keep the category inside the
+allowed set, and catch invented fields. Then by a second model, the **LLM-as-judge**, which reads the
+answer against the reference and says whether it means the right thing. The suite passes on an
+aggregate pass-rate floor, the same way the load layer asserts p(95). In a probabilistic system, one
+unlucky case is weather and a falling rate is climate.
 
-Two gaps are still open, and that directory's README says so: guardrail and prompt-injection cases,
-and cost and latency treated as budgets.
+The judge runs on a different model from the one under test, since a model grading its own homework
+tends to be generous. Here is a real verdict from
+[`quality/evals/sample-run.json`](quality/evals/sample-run.json), an actual captured run:
+
+```json
+{ "id": "read-evening", "status": "fail",
+  "got": { "title": "Read my book", "time": null, "category": "learning" },
+  "detail": "category learning != rest" }
+```
+
+That sentence was "Read my book for an hour tonight". The properties are all fine, the model just
+files reading under learning while the reference calls it rest. Honestly, both of us have a point.
+The case stays in the set, because a golden dataset where every answer is obvious is flattering
+itself.
+
+Writing the harness taught me less than running it did. The first real run found three defects and
+all three were mine. An em dash in an HTTP header made `fetch` throw before a single request left
+the laptop, so all ten cases failed in exactly the same way. The token budget sat at 400, which
+quietly starves reasoning models, since their thinking is billed to the same allowance as their
+answer. And the process exited through a path that trips an assertion on Windows, so it reported a
+crash instead of its own result. When an entire suite fails identically, the instrument is broken
+and the subject is innocent.
+
+So the runner now sorts failures into two piles. A wrong answer counts against the model. A rate
+limit or a dead socket counts against nobody, drops out of the denominator, and comes back as
+`INCONCLUSIVE` with its own exit code, so a red build means one thing at a time. That distinction
+earned its keep the same afternoon, when the free-tier quota ran out mid-run and the report said so
+in plain language.
+
+Three gaps stay open, and the directory README says them out loud. The judge has never been
+calibrated against human verdicts, a single run is not a baseline, and the guardrail,
+prompt-injection and cost cases exist as a plan rather than as code.
 
 ---
 
@@ -255,8 +287,8 @@ filesystem that folds case, so a link 404ing on GitHub passed here on every run;
 twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
 now have tests that fail without the fix.
 
-It has **its own tests, including negative cases** — 24 of them — for the reason in the first
-incident below: this repository has already shipped a gate that ran green without checking anything,
+It has **its own tests, including negative cases**, 24 of them, for the reason in the first
+incident below. This repository has already shipped a gate that ran green without checking anything,
 and a checker nobody checks is the same mistake wearing a different filename. It is not on the
 required-checks list yet, which by the standard set two sections above makes it a reporter rather
 than a gate. That is a settings change, and it is on the list.
