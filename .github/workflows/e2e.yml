@@ -75,8 +75,33 @@ jobs:
       - name: Install Playwright (full, on cache miss)
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+      # This step hung on shard 1 three times in a row, once for 98 minutes, while shard 2 ran the
+      # identical command on the same commit in about 70 seconds. `install-deps` hands over to
+      # apt-get under sudo, and the log stops dead right after "Switching to root user" without a
+      # single line of apt output, so apt never got a reply from its mirror. It is a network
+      # problem on that runner, not a slow install.
+      #
+      # An earlier version of this comment blamed the two shards colliding on an apt lock. That was
+      # wrong and is corrected here: every job in a matrix gets its own virtual machine, so there is
+      # no lock for them to share.
+      #
+      # timeout-minutes is the fix that matters, and it is independent of whatever apt is doing. The
+      # step had no bound, so it inherited the job's six-hour default. That is why a stuck package
+      # manager cost an hour and a half of a required check instead of three minutes.
+      #
+      # continue-on-error was added as a workaround and turned out to be the right answer. When the
+      # timeout fired, the suite ran anyway and every test on this shard passed, which proves the
+      # libraries were already in the runner image and this step is redundant on the cache-hit path.
+      # Nothing is hidden either way: if they were ever genuinely missing, the browser would fail to
+      # launch in the step below with Playwright's own error naming the package. The gate is the
+      # suite running, not the deps installing.
+      #
+      # Left in place rather than deleted, because removing it belongs in its own change, where the
+      # cache-miss path can be reasoned about at the same time.
       - name: Install OS deps only (on cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
+        timeout-minutes: 3
+        continue-on-error: true
         run: npx playwright install-deps chromium
       # Drift guard: the README publishes a test count, and a hand-maintained number in docs goes
       # stale silently. This asks the runner for the real count and fails if the badge disagrees.
@@ -85,11 +110,21 @@ jobs:
       - name: Check the README test count has not drifted
         if: matrix.shard == 1
         run: node count-tests.js --check
+      # A disabled test is invisible to every other check here: it still appears in `--list`, so the
+      # count above does not move and the run below still goes green. This is the only thing that
+      # notices. It matters most now that an agent can edit the suite (see the healer's local policy).
+      - name: Check no test has been silently disabled
+        if: matrix.shard == 1
+        run: node ../../quality/tools/check-skips.mjs
       # @visual is filtered by the config (grepInvert), not by a flag here, so the same rule holds
       # for every entry point. It stays off until Linux baselines exist; the visual-baselines
       # workflow generates them, and enabling this gate is the commit that adds them.
+      # --project is load-bearing. The config declares a second project, `generated`, which is the
+      # authoring zone for agent-drafted tests. Those gate nothing and nobody has reviewed them, so
+      # a red one must never block a merge and a green one must never be mistaken for coverage.
+      # Naming the gated project here is what keeps that true no matter what lands in the zone.
       - name: Run shard ${{ matrix.shard }} of 2
-        run: npx playwright test --shard=${{ matrix.shard }}/2
+        run: npx playwright test --project=mobile-chromium --shard=${{ matrix.shard }}/2
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

@@ -12,12 +12,14 @@
 //   ADDS false positives (`/favicon/i.test(path)` is a regex method call, not a test). The only
 //   authority on what will run is the runner: `playwright test --list`.
 //
-// WHY THREE NUMBERS, NOT ONE
-//   They are three different suites and none of them ever run together:
+// WHY FOUR NUMBERS, NOT ONE
+//   They are four different suites and none of them ever run together:
 //     functional - the deterministic suite, what runs on a dev machine and in CI.
 //     visual     - screenshot regression, gated behind PW_VISUAL because pixel baselines are only
 //                  meaningful in a pinned environment (see the note in playwright.config.js).
 //     prod       - the post-deploy smoke, which runs against a live URL under a different config.
+//     quarantine - the `generated` project: agent-drafted tests awaiting review. Reported so the
+//                  backlog is visible, never asserted, and deliberately excluded from the badge.
 //
 // USAGE
 //   node count-tests.js            print the counts (human + JSON)
@@ -41,13 +43,22 @@ function count(args, env = {}) {
   return { tests: Number(m[1]), files: Number(m[2]) };
 }
 
-const functional = count('');
-const withVisual = count('', { PW_VISUAL: '1' });
+// --project is not optional here. The config declares a second project, `generated`, which is the
+// authoring zone for agent-drafted tests. Those are NOT coverage: they gate nothing and no one has
+// reviewed them yet. Counting them would publish a badge that claims a suite the repo does not
+// have, which is the exact drift this file exists to prevent, just sourced from a new place.
+const GATED = '--project=mobile-chromium';
+
+const functional = count(GATED);
+const withVisual = count(GATED, { PW_VISUAL: '1' });
 
 const counts = {
   functional,
   visual: { tests: withVisual.tests - functional.tests },
   prod: count('--config=playwright.prod.config.js'),
+  // Reported, never asserted. This is the size of the unreviewed backlog waiting for promotion,
+  // and it is useful precisely because it is allowed to be non-zero.
+  quarantine: count('--project=generated'),
 };
 
 // The badge is the only place the number is published, so it is the only place that can drift.
@@ -75,4 +86,5 @@ if (process.argv.includes('--check')) {
 console.log(`functional (dev + CI)   ${counts.functional.tests} tests in ${counts.functional.files} files`);
 console.log(`visual     (PW_VISUAL)  ${counts.visual.tests} tests`);
 console.log(`prod       (smoke)      ${counts.prod.tests} tests in ${counts.prod.files} files`);
+console.log(`quarantine (generated)  ${counts.quarantine.tests} tests in ${counts.quarantine.files} files  [not coverage]`);
 console.log(JSON.stringify(counts));
