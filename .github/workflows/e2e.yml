@@ -85,11 +85,21 @@ jobs:
       - name: Check the README test count has not drifted
         if: matrix.shard == 1
         run: node count-tests.js --check
+      # A disabled test is invisible to every other check here: it still appears in `--list`, so the
+      # count above does not move and the run below still goes green. This is the only thing that
+      # notices. It matters most now that an agent can edit the suite (see the healer's local policy).
+      - name: Check no test has been silently disabled
+        if: matrix.shard == 1
+        run: node ../../quality/tools/check-skips.mjs
       # @visual is filtered by the config (grepInvert), not by a flag here, so the same rule holds
       # for every entry point. It stays off until Linux baselines exist; the visual-baselines
       # workflow generates them, and enabling this gate is the commit that adds them.
+      # --project is load-bearing. The config declares a second project, `generated`, which is the
+      # authoring zone for agent-drafted tests. Those gate nothing and nobody has reviewed them, so
+      # a red one must never block a merge and a green one must never be mistaken for coverage.
+      # Naming the gated project here is what keeps that true no matter what lands in the zone.
       - name: Run shard ${{ matrix.shard }} of 2
-        run: npx playwright test --shard=${{ matrix.shard }}/2
+        run: npx playwright test --project=mobile-chromium --shard=${{ matrix.shard }}/2
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

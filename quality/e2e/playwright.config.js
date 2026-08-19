@@ -45,7 +45,25 @@ module.exports = defineConfig({
   projects: [
     {
       name: 'mobile-chromium',
+      testDir: './tests',
       use: { ...devices['Pixel 5'] }, // mobile Chromium, 393x851, isMobile
+    },
+    // AUTHORING ZONE. Agent-drafted tests land here and gate nothing.
+    //
+    // This exists because a trust boundary that is only written down is not a boundary. The
+    // Playwright generator (generator_write_test) refuses any path outside a testDir declared by
+    // some project in this config, so declaring a second project is what makes "the hand-authored
+    // suite is the source of truth" enforced by the tool rather than promised in a document.
+    // Without it the ONLY legal destination for a generated file is ./tests, next to the reviewed
+    // specs that gate every merge.
+    //
+    // Nothing here is a required check. Promotion into ./tests is a reviewed move: read the diff,
+    // break the feature on purpose, watch the test go red, then move the file. See
+    // docs/AGENTIC-QA.md.
+    {
+      name: 'generated',
+      testDir: './tests-generated',
+      use: { ...devices['Pixel 5'] },
     },
   ],
   webServer: {
