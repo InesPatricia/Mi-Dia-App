@@ -75,8 +75,25 @@ jobs:
       - name: Install Playwright (full, on cache miss)
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+      # This step hung twice in a row on shard 1, once for 98 minutes, while shard 2 ran the exact
+      # same command on the same commit and the same runner image in 70 seconds. It is apt waiting
+      # forever on a lock or a mirror, and the two shards start simultaneously, so a collision
+      # between them is the leading hypothesis. Not yet proven: GitHub does not serve a job log
+      # while the job is running, so the debug output is only readable once it stops.
+      #
+      # timeout-minutes is the actual fix. Without it the step has no bound and inherits the job's
+      # six-hour default, which is why a stuck apt costs an hour and a half instead of a minute.
+      #
+      # continue-on-error is a WORKAROUND, and is written down as one. It does not repair apt. It
+      # moves the failure to a place where it is fast and loud: if OS libraries really are missing,
+      # the browser fails to launch in the test step below with Playwright's own error naming the
+      # missing package. Nothing is hidden, because the gate is the suite running, not the deps
+      # installing. The real fix, if the log confirms the collision, is to install deps once in a
+      # job the shards depend on, instead of twice in parallel.
       - name: Install OS deps only (on cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
+        timeout-minutes: 3
+        continue-on-error: true
         run: npx playwright install-deps chromium
       # Drift guard: the README publishes a test count, and a hand-maintained number in docs goes
       # stale silently. This asks the runner for the real count and fails if the badge disagrees.
