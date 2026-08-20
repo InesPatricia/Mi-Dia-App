@@ -56,16 +56,33 @@ const SCANNED = [
   ROUTER,
   'README.md',
   'CHANGELOG.md',
-  'docs/DATA_SCHEMA.md',
-  'docs/DESIGN_SYSTEM.md',
-  'docs/APP-REFERENCE.md',
-  'docs/QA-ARCHITECTURE.md',
-  'docs/AGENTIC-QA.md',
-  'docs/SECURITY-NOTES.md',
-  'docs/RUNBOOK.md',
-  'docs/DEVICE-PASS.md',
+  ...topLevelDocs(),
   ...shippableSkillDocs(),
 ];
+
+/**
+ * Every markdown file directly inside docs/.
+ *
+ * This used to be a hand-written list of eight filenames, and it drifted the way hand-written lists
+ * do: docs/testing-notes.md sat in the repository unscanned for months, pointing at a CLAUDE.md
+ * section that had been deleted, and the gate stayed green because the file was never on the list.
+ * A doc added tomorrow would have been ungated the same way, silently, by default.
+ *
+ * This file already says of a different allowlist that "an allowlist is how a gate stops gating".
+ * It was true here too.
+ *
+ * docs/history/ is deliberately excluded. It is an archive of what past builds did, so it names
+ * files that were correct when written and have since been pruned. Holding a record of the past to
+ * the present state of the filesystem would fail the gate over the archive doing its job. Its own
+ * rule, [5], checks the thing that actually matters about it: that nothing was quietly removed.
+ */
+function topLevelDocs() {
+  const dir = join(ROOT, 'docs');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => `docs/${e.name}`);
+}
 
 /** Every markdown file under .claude/skills, which is where the routing instructions live. */
 function skillDocs(dir = join(ROOT, '.claude', 'skills'), acc = []) {
