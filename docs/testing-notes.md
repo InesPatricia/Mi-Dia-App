@@ -1,7 +1,13 @@
 # Testing notes — Smoke vs Sanity (and on complex systems)
 
-> Reference notes (general testing theory + how it maps to Mi Día). Not a spec — the
-> project's concrete test setup lives in `CLAUDE.md` ("Test harness" section).
+> Reference notes: general testing theory, and how it maps to Mi Día. Not a specification. The
+> concrete pipeline, which gate blocks what and which net only observes, is in
+> [`QA-ARCHITECTURE.md`](QA-ARCHITECTURE.md).
+>
+> (This pointed at a "Test harness" section of `CLAUDE.md` until 2026-08-20. That section was
+> removed when the router was slimmed down, and nothing noticed for months, because no document
+> linked to this one and the gate's scanned set was a hand-written list this file was never on.
+> Both halves of that are fixed now.)
 
 ## 1. Definitions
 - **Smoke** = "is it up? did the build boot?" — **broad and shallow**, many screens, zero depth,

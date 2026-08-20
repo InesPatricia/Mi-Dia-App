@@ -1,4 +1,14 @@
-# Playwright agent scaffolding that must stay LOCAL:
-# the seed spec is a scratch starting point for the generator agent; if committed it would
-# be collected by testDir:./tests and inflate the suite count with an empty passing test.
+# Belt and braces against a seed file landing in the gated suite.
+#
+# `npx playwright init-agents` and the test MCP server both write `<testDir>/seed.spec.ts` when they
+# cannot find an existing file whose name contains "seed". If that ever resolved to ./tests, an empty
+# passing test would join the suite the README badge is checked against.
+#
+# The real defence is structural and lives in playwright.config.js: the agents target the `generated`
+# project, whose testDir is ./tests-generated, and `generator_write_test` refuses any path outside a
+# declared testDir. The hand-written seed at tests-generated/seed.spec.js is what stops either tool
+# creating one of its own in the first place.
+#
+# This line stays as the last line of defence, for the case where somebody re-runs init-agents
+# against the wrong project. It is not the reason the boundary holds.
 tests/seed.spec.ts
