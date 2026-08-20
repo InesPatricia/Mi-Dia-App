@@ -1,15 +1,44 @@
 // Refuses emoji at the git boundary, for every commit, whoever makes it.
 //
 //   --message <file>   the commit message: no emoji, no em dash
-//   --staged           lines being ADDED by this commit: no emoji (a ratchet, existing lines stay)
+//   --staged           lines being ADDED by this commit: no emoji, no em dash (a ratchet)
 //
 // A ratchet rather than a sweep. This repository already carries emoji in the app builds, in the
 // build log and in the tooling that prints them to a terminal. Blocking those outright would stop
 // the next build from being committed at all, so the check only refuses NEW ones and leaves the
 // existing ones for a decision of their own.
 //
-// Em dashes are checked in the message only, never in source. A commit message is prose written by
-// hand; source is not.
+// EM DASHES: the standing rule is zero, everywhere that gets published, and that includes product
+// copy shown to a user. An earlier version of this file checked them in the commit message only,
+// on the reasoning that "source is not prose written by hand". That reasoning is wrong for this
+// repository: its source carries documentation, agent skills and the app's own interface copy in
+// three languages, all of which are prose. The ratchet now covers added lines too.
+//
+// KNOWN DEBT, and the plan for it. The existing em dashes were counted on 2026-08-20:
+//
+//     public/index.html   300   of which 178 sit in the i18n tables, roughly 59 distinct strings
+//                               written three times over for ro / es / en, and 72 in comments
+//     docs/*.md           511
+//     CHANGELOG.md         29
+//     CLAUDE.md             7
+//     README.md             0
+//
+// The 59 interface strings are the only ones a user ever sees, and they are NOT a mechanical
+// find-and-replace, because two different jobs share the character. Most are punctuation in the
+// middle of a sentence, where a comma replaces it and nobody notices. Some are a decorative marker
+// opening a short label, where deleting it leaves a stray leading space and a worse-looking result,
+// so each of those needs a decision rather than a substitution. To see both shapes, search
+// public/index.html for U+2014 inside the `ro:` / `es:` / `en:` entries.
+//
+// (This file quotes neither shape on purpose. It carried no literal U+2014 before this change and
+// still carries none: a file that refuses a character has no business containing it, and the
+// constant below is built from its code point for exactly that reason.)
+//
+// That pass is deliberately not folded into this change. It is an editorial job on product copy in
+// three languages, it belongs in its own reviewable diff, and doing it under the pressure of a
+// blocked commit is how a design detail gets lost. Until it happens, expect this hook to refuse an
+// edit to any OLD line that still contains one. That is not a bug in the hook. It is the debt
+// asking to be paid, and the failure message says so.
 //
 // It is a guard, not a prison: `git commit --no-verify` bypasses it, deliberately, for the same
 // reason the privacy check in pre-commit says so.
@@ -102,30 +131,39 @@ if (mode === '--staged') {
     }
     if (!line.startsWith('+') || line.startsWith('+++')) continue;
 
-    const emoji = emojiIn(line.slice(1));
-    if (!emoji.length) continue;
+    const body = line.slice(1);
+    const emoji = emojiIn(body);
+    const dash = body.includes(EM_DASH);
+    if (!emoji.length && !dash) continue;
 
     if (!offenders.has(file)) {
-      offenders.set(file, { emoji: new Set(), sample: line.slice(1).trim().slice(0, 70), count: 0 });
+      offenders.set(file, { marks: new Set(), sample: body.trim().slice(0, 70), count: 0 });
     }
     const entry = offenders.get(file);
-    emoji.forEach((e) => entry.emoji.add(e));
+    emoji.forEach((e) => entry.marks.add(e));
+    if (dash) entry.marks.add(EM_DASH);
     entry.count += 1;
   }
 
   if (offenders.size) {
     const report = [...offenders].map(
       ([name, e]) =>
-        `  ${name}\n      ${[...e.emoji].join(' ')}   in ${e.count} added line(s)\n      first: ${e.sample}`,
+        `  ${name}\n      ${[...e.marks].join(' ')}   in ${e.count} added line(s)\n      first: ${e.sample}`,
     );
 
+    // A ratchet only stops the bleeding, so the message has to explain why an untouched old line can
+    // still block an edit. Someone rewording a sentence that has carried an em dash since 2025 needs
+    // to know the answer is to remove it, not to reach for --no-verify.
     fail([
-      'pre-commit: this commit adds emoji to tracked files.',
+      'pre-commit: this commit adds emoji or em dashes to tracked files.',
       '',
       ...report,
       '',
-      'Lines already committed are left alone; this only stops new ones.',
-      'Replace them with a word.',
+      'Lines already committed are left alone; this only stops new ones. Editing an old',
+      'line counts as adding it, so a line that already carried one has to lose it now.',
+      '',
+      'Replace an emoji with a word. Replace an em dash with a comma, a semicolon, or a',
+      'rewrite. See the header of this file for the known debt and why it is not swept.',
     ]);
   }
   process.exit(0);
