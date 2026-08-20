@@ -104,7 +104,7 @@ task, and skipping them is how the same decision gets made twice, differently.
 | what a specific historical build did | `docs/history/BUILD-LOG.md` |
 | what is gated versus merely observed | `docs/QA-ARCHITECTURE.md` |
 | the AI parts of the quality loop | `docs/AGENTIC-QA.md` |
-| headers, CSP, the accepted risks | `SECURITY-NOTES.md` |
+| headers, CSP, the accepted risks | `docs/SECURITY-NOTES.md` |
 
 Do not guess history. If a decision looks arbitrary, it is usually in the build log with a reason.
 </routing_triggers>
