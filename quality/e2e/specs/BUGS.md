@@ -213,9 +213,35 @@ covered by the boundaries this repository just spent a week building.
 This is the situation `/reconcile` exists for, and rule 6 of the documentation gate is the thing that
 will report it. Recorded here because a number this large stops being obvious once it is normal.
 
-### Not checked
+### Measured, 2026-08-20
 
-Whether the 37 commits contain anything that conflicts. Nobody has attempted the merge.
+`git merge-tree --write-tree origin/main staging` computes the merge without touching either branch:
+
+```
+conflicts   0
+```
+
+The merged tree is what the reconciliation rule asks for, checked file by file rather than assumed.
+Structure arrives: `check-skips.mjs`, `tests-generated/seed.spec.js`, `tests-generated/strings.js`,
+`specs/ritual.plan.md` and this file are all absent from staging today and all present after. Product
+survives: `tests/garden.spec.js` stays, and `src/` holds staging's build rather than reverting to
+main's older one, because git resolved the rename correctly.
+
+The first attempt used the local `main` ref, which was two merges stale, and reported that the plan
+and this file would not arrive. The numbers did not fit what was known to be on main, which is what
+prompted the second look. Recorded because a stale ref produces a confident wrong answer rather than
+an error.
+
+### Still not checked
+
+Zero textual conflicts is not zero semantic conflicts. Both branches edited roughly fifteen files
+under `quality/e2e/tests/`, and git can merge those line by line into a suite that does not run.
+Nobody has executed the merged tree. The reconciliation is finished when the suite is green on
+staging afterwards, not when the merge command exits.
+
+Two things will land on staging that were never enforced there, and either may go red on first
+contact, which is them working rather than failing. `check-skips.mjs` refuses a `test.skip` that
+carries no reason, and the commit hook now refuses an added em dash.
 
 ---
 
