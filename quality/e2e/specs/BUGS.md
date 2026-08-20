@@ -216,3 +216,32 @@ will report it. Recorded here because a number this large stops being obvious on
 ### Not checked
 
 Whether the 37 commits contain anything that conflicts. Nobody has attempted the merge.
+
+---
+
+## TD-002. Nothing gates markdown that GitHub renders differently from its source
+
+**Status** CONFIRMED, and one instance is fixed. The gap is not.
+
+`SPEC-TEMPLATE.md` carried `# Feature spec ... <NAME>` and a table cell containing `<key>`. GitHub
+treats angle brackets as HTML and strips them, so the rendered title read as a heading with a
+dangling dash and no subject, and the table cell lost half its content. Both are now wrapped in
+backticks.
+
+The instance was found by opening the page on GitHub, not by any check. Rule 7 of the documentation
+gate already encodes exactly this reasoning for mermaid labels, where HTML is stripped and words fuse
+together. The same failure in ordinary markdown is ungated.
+
+Two things make this class expensive: it is invisible in the source, so review does not catch it, and
+it only appears in the place a reader actually looks.
+
+### A candidate rule 10
+
+Refuse a bare `<PLACEHOLDER>` outside a code span or fence, in any scanned doc. The hard part is not
+the detection, it is the exceptions: real HTML in markdown is legal and this repository may want it
+somewhere. Worth writing only with a test that proves it does not fire on a legitimate use.
+
+### Not checked
+
+Whether other rendered defects exist that the source hides. Only two documents have ever been opened
+on GitHub and compared against their source.
