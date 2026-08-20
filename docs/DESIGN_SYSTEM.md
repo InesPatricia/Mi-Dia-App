@@ -131,7 +131,7 @@ computed by `paleTint(color, amount)`.
    `CLAUDE.md`.
 2. **`node quality/e2e/theme-grid.js ../mi-dia-vNN.html`** — every view in both themes as one review grid,
    plus the legibility checklist. This is what catches invisible text on velvet.
-3. **`cd e2e && npx playwright test --grep-invert @visual`**.
+3. **`cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual`**.
 4. Screenshot the changed view in **both** themes at 412px.
 
 Headless Chromium is not a real Android device. Blur, `backdrop-filter`, native pickers and font

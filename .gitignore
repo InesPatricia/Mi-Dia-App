@@ -39,6 +39,9 @@ quality/e2e/all-blob-reports/
 quality/e2e/theme-grid-out/
 quality/e2e/.playwright/
 quality/e2e/.playwright-cli/
+# Written by the playwright-test MCP server during an agent session: page snapshots and console
+# dumps from whatever the planner or healer was looking at. Session scratch, not evidence.
+quality/e2e/.playwright-mcp/
 quality/e2e/tests-generated/test-results/
 quality/e2e/results.json
 quality/e2e/TEST-REPORT.md
@@ -80,6 +83,18 @@ scratch/
 # always were: docs/DESIGN_SYSTEM.md.
 .claude/skills/design-check/
 .claude/skills/revamp/
+
+# Imported skills — local, because none of them is this repository's.
+#
+# These three arrived with a plugin install rather than being written here, and two of them route
+# the reader to files that do not exist in this repo: git-guardrails-claude-code configures
+# `.claude/settings.json` and `~/.claude/settings.json`, writing-for-agents points at `AGENTS.md`.
+# check-docs rule 1 reads every skill on disk and reported all three as dead paths, which is the
+# gate working: a public skill that names a file a cloner will not find is the same defect the
+# eleven above were removed for. They stay on disk and stay usable; they are just not ours to ship.
+.claude/skills/git-guardrails-claude-code/
+.claude/skills/research/
+.claude/skills/writing-for-agents/
 
 # Eval run artifact: per-case model outputs, rewritten on every run (see quality/evals/run.mjs).
 quality/evals/last-run.json

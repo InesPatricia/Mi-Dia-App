@@ -64,7 +64,7 @@ that list, a red mark is information, not a stop sign.
 | Check | What it means | What to do |
 |---|---|---|
 | **validate build** | The single-file build is structurally broken: unbalanced `<div>`, or an inline script does not parse. | `node quality/e2e/validate-build.js` locally. It names the block and the line. |
-| **test (shard n/2)** | A behaviour or stored-state assertion failed. | `cd quality/e2e && npx playwright test --grep-invert @visual`. Open the HTML report: `npm run test:report`. Every test leaves a screenshot of its final state, pass or fail. |
+| **test (shard n/2)** | A behaviour or stored-state assertion failed. | `cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual`. Open the HTML report: `npm run test:report`. Every test leaves a screenshot of its final state, pass or fail. |
 | **preview smoke** | The Cloudflare preview deployment does not serve a working app. | Open the preview URL from the pull request. If the page is fine, the poller timed out — re-run the job before assuming a real failure. |
 | **docs** | A documentation link is dead, a test count disagrees with the runner, the router acquired a build number, or archived history went missing. | `node quality/tools/check-docs.mjs`. It names the file and the rule. |
 | **smoke-prod** | Production failed its post-deploy check. | This one is a net, not a gate — the deploy already happened. Treat it as a page: check the live site yourself, then roll back if it is real. |
@@ -195,7 +195,7 @@ full procedure, including the conflict table and the traps, is the `reconcile` s
 ```bash
 node .claude/skills/ship/validate.mjs        # version sync, syntax, div balance
 node quality/tools/check-docs.mjs            # documentation gate
-cd quality/e2e && npx playwright test --grep-invert @visual
+cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual
 ```
 
 Zero failures on all three, then promote. The device pass on a real Android phone is still a manual
