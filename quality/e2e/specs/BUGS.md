@@ -1,0 +1,189 @@
+# Known defects and open questions
+
+A backlog, not a report. Every entry is something a person could pick up and act on, written so that
+picking it up does not require re-deriving how it was found.
+
+## How an entry is written
+
+- **Status** is one of CONFIRMED, UNCONFIRMED, or OPEN QUESTION. CONFIRMED means somebody reproduced
+  it deliberately and can do it again on demand. UNCONFIRMED means it was observed once, in one
+  configuration, and the generalisation has not been tested. OPEN QUESTION means the facts are known
+  and their meaning is not.
+- **Evidence** is a command or a file path, never a recollection.
+- **Not checked** is mandatory. An entry that claims no limits is an entry nobody can trust.
+- Nothing here is fixed as a side effect of other work. These are separate changes, each with its own
+  diff, so the fix is reviewable next to the defect it closes.
+
+This file was opened on 2026-08-20, while the repository's focus was on learning the Playwright MCP
+agent workflow rather than on fixing the application. The defects below were found BY that workflow,
+which is the reason they are recorded rather than acted on immediately.
+
+---
+
+## BUG-001. A CSS class-name collision makes the ritual tick untouchable after a check
+
+**Status** CONFIRMED
+**Severity** High. It is reachable by a normal user with two taps, and it breaks the control it
+decorates.
+**Found by** The generated test for scenario 1.2, on its first run. See
+`specs/ritual-1.2-dead-ends.md` for the full investigation log.
+
+### What happens
+
+Check a ritual on Home, then try to un-check it. The second tap never lands. The tick is also no
+longer where it was: it is pinned to the top left corner of the viewport, overlapping the flower,
+while the card it belongs to has no tick at all.
+
+### Root cause
+
+Two rules claim the same class name, and the specific one does not cover everything the general one
+sets.
+
+1. `public/index.html` defines an unscoped rule for the full-screen congratulations overlay:
+   `.celebrate{position:fixed;inset:0;pointer-events:none;display:none;...}`
+2. The ritual module calls `celebrate(id)`, which adds that same class to the card's tick purely to
+   restart a pulse animation.
+3. The rule the ritual module means to hit, `#ritualMount .r-tick.celebrate`, sets `animation` and
+   nothing else. `position` and `pointer-events` therefore fall through to rule 1.
+
+`display:none` does NOT leak, because `#ritualMount .r-tick` has higher specificity and sets
+`display:grid`. That detail matters: it is why the runner reports the element as visible, enabled and
+stable, and then hangs on hit-testing, instead of failing fast on visibility.
+
+`celebrate(id)` is called only on the branch where a ritual becomes done, so a check triggers it and
+an un-check does not. The blast radius is the same in practice, because the check comes first.
+
+The tick recovers on the next re-render of `#ritualMount`, since the renderer reassigns `innerHTML`
+and rebuilds the cards. The trap is that the usual way to trigger a re-render is to tap a tick, and
+this tick is the one that no longer works. Checking a different ritual repairs it.
+
+### Evidence
+
+```
+cd quality/e2e
+npx playwright test tests-generated/second-tap-un-checks-a-done-ritual.spec.js \
+  --project=generated --retries=0 --workers=1
+```
+
+The run fails at the second `tick.click()` with:
+
+```
+<div class="flower"> from <div class="bloom-wrap"> subtree intercepts pointer events
+```
+
+Independently measured with `document.elementFromPoint` at the tick's centre, before and after a
+check:
+
+```
+BEFORE  tick {x:334, y:647, w:28, h:28}
+AFTER   tick {x:0,   y:0,   w:28, h:28}
+```
+
+The `AFTER` rectangle is the signature of `position:fixed; inset:0`.
+
+### A wrong diagnosis, recorded so nobody repeats it
+
+The first reading of that geometry was that the flower had grown over the tick and was swallowing the
+tap, and the proposed fix was `pointer-events: none` on `.bloom-wrap`. **Both are wrong.** The flower
+never moved. The tick was teleported onto it. The proposed fix would also have broken real behaviour,
+since `toggleBloom`, `closeBloom` and `bloomAction` are live handlers in that area.
+
+The general lesson: a measurement can be correct and its explanation still wrong. Reading the CSS
+settled it; inferring from coordinates did not.
+
+### Candidate fixes, none of them applied or verified
+
+- Rename the ritual module's pulse class so it cannot collide, for example `r-celebrate`. Smallest
+  blast radius, since only the ritual module uses it.
+- Scope the overlay rule to the element it was written for, instead of leaving `.celebrate` global.
+- Have the specific rule reset what it does not want to inherit. Least attractive, because it leaves
+  the collision in place and depends on remembering it forever.
+
+Do NOT "fix" this in the test. Retrying, forcing the click, adding a wait, or softening the assertion
+all turn a real defect into a green tick.
+
+### What it blocks
+
+Scenario 1.2 stays red until the CSS is fixed, deliberately. Its mutation-register entry, deleting
+the un-check branch in `toggleCheck`, cannot be exercised through a real tap either, because the tap
+never reaches that function.
+
+### Not checked
+
+- Whether it reproduces on a real Android device. Headless Chromium at phone viewport is not a phone.
+- Whether the same collision affects any other element that takes the `celebrate` class.
+
+---
+
+## BUG-002. The tick's centre can sit under the bottom bar
+
+**Status** UNCONFIRMED
+**Severity** Unknown until it is generalised.
+**Found by** Incidental measurement while investigating BUG-001.
+
+At one scroll position in the 393x851 viewport, `document.elementFromPoint` at the tick's centre
+returned the `.bottombar` element rather than the tick.
+
+This did not break the test, because Playwright scrolls an element into view before clicking, and
+after that scroll the tick was clear. A human who has scrolled to that exact position would tap the
+bottom bar instead of the ritual.
+
+### Evidence
+
+```
+BEFORE  hit: bottombar   tick {x:334, y:647}
+```
+
+### Not checked
+
+Everything that would make this a real defect. It was observed at one scroll offset, in one viewport,
+with one ritual seeded. Before treating it as a bug, measure the tick's centre against
+`elementFromPoint` across scroll positions and across a list long enough to push cards under the bar.
+
+---
+
+## OPEN-001. Production and local `public/index.html` are not the same file
+
+**Status** OPEN QUESTION
+
+The page served from production and the local `public/index.html` differ in size, 645628 bytes
+against 653390 at the time of writing. Both contain the three pieces of BUG-001, so the defect is
+present in both, but the divergence itself has not been explained.
+
+This matters beyond this bug. If the two differ, then any local reproduction is evidence about the
+local file only, and every "verified in production" claim needs the fetch to prove it.
+
+### Not checked
+
+Which build is promoted, when it was promoted, and whether the difference is meaningful or an
+artefact of how the page is served. Start from the `CACHE` name in `sw.js`.
+
+---
+
+## Test debt
+
+Not defects, but the reason a defect this visible survived a green suite.
+
+**TD-001. Nothing in the functional suite taps the same control twice.** The only second tap in
+`tests/ritual.spec.js` is on the delete button, which is a deliberate two-tap confirm. Scenario 1.2 is
+the first thing in the repository to press the same tick again. A control that behaves differently on
+its second activation is a common defect shape and the suite has no coverage of it anywhere.
+
+---
+
+## Harness notes
+
+Operational, not product defects. Recorded because they cost time and will cost it again.
+
+**HN-001. Stopping a background `playwright test` on Windows does not stop its children.** Both the
+`npx` parent and the test process survive, along with any worker. Two live runners competing for port
+5173 look exactly like a broken harness: runs produce no output at all and hang for minutes. After
+stopping a background run, list surviving Playwright processes and kill them by pid before starting
+another.
+
+**HN-002. When a run goes quiet, do not theorise about the test body.** Two cheap diagnostics settle
+it in seconds: list the tests, then run the seed test alone. Both returning fast and clean means the
+harness is fine and the problem is in the scenario or the app.
+
+**HN-003. MCP test-server processes outlive the agent session that started them.** They were left
+running after the generator session. Check for them before blaming a later run.

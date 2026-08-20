@@ -58,11 +58,11 @@ tests failed. Lesson: **always exercise the app, not just parse it.**
 
 - Mandatory chain first (see [`docs/DESIGN_SYSTEM.md`](../../../docs/DESIGN_SYSTEM.md)): div-balance +
   `node --check` on each `<script>`, which `node quality/e2e/validate-build.js` does in one pass.
-- Then the e2e safety net (from `quality/e2e/`): `npx playwright test --grep-invert @visual --reporter=line`.
+- Then the e2e safety net (from `quality/e2e/`): `npx playwright test --project=mobile-chromium --grep-invert @visual --reporter=line`.
   For a small visual slice, at least run the specs your change could touch (add-flow / slot-interactions /
   the view you edited) — a full run is ~4–7 min.
 - If the design-locked flower/bottom-bar changed, the `@visual` baselines WILL change — regenerate, don't
-  treat as failure: `npx playwright test visual.spec.js --update-snapshots`.
+  treat as failure: `npx playwright test --project=mobile-chromium visual.spec.js --update-snapshots`.
 - **Per-slice, not just at the end:** run the relevant e2e subset as part of EACH visual slice's gate. The
   `esc` bug would have been caught the same slice instead of after five more.
 

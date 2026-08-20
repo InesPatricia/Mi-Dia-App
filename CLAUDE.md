@@ -48,7 +48,7 @@ overwriting one destroys it. A release copies the chosen build to `index.html` a
 **Validation after every edit, before saying it is done.** Div balance must be equal, and every
 `<script>` block must parse. Then run the suite.
 → `node quality/e2e/validate-build.js`
-→ `cd e2e && npx playwright test --grep-invert @visual`
+→ `cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual`
 
 **Visual changes get a second gate.** Any change to colour, theme, tokens or layout is reviewed in
 both themes as one grid, because dark-mode legibility bugs do not show up in a single screenshot.

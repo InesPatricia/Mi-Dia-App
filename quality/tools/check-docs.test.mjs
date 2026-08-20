@@ -67,6 +67,9 @@ function makeFixture() {
   write('docs/history/.headings-baseline.txt', 'Changelog (v23 → v47)\n');
   write('index.html', '<!doctype html>');
   write('quality/e2e/count-tests.js', COUNT_STUB);
+  // A correctly pinned run, so rule 9's green on the clean fixture means it looked at a real
+  // command and accepted it, rather than finding nothing to look at.
+  write('docs/RUNBOOK.md', '# Runbook\n\nRun the suite: `npx playwright test --project=mobile-chromium`\n');
   return root;
 }
 
@@ -107,7 +110,7 @@ test('clean fixture: every rule that can pass without git does', () => {
   const root = makeFixture();
   try {
     const { byRule, results } = run(root);
-    for (const rule of [1, 2, 3, 4, 5, 7]) {
+    for (const rule of [1, 2, 3, 4, 5, 7, 9]) {
       const detail = results.find((r) => r.rule === rule)?.detail ?? '';
       assert.equal(byRule[rule], 'PASS', `rule ${rule} should pass — got ${byRule[rule]}\n${detail}`);
     }
@@ -388,4 +391,100 @@ test('rule 1 catches a link whose case does not match the file on disk', () => {
     writeFileSync(join(root, 'docs/RUNBOOK.md'), '# runbook\n', 'utf8');
     writeFileSync(join(root, 'CLAUDE.md'), `${CLEAN_ROUTER}\nSee [the runbook](docs/runbook.md).\n`, 'utf8');
   });
+});
+
+// Rule 9. The boundary this guards was already enforced in CI and in the badge count, and stated
+// wrongly in the prose a human actually follows — so the interesting case is a command that looks
+// perfectly reasonable and silently widens the run to include the unreviewed authoring zone.
+test('rule 9 catches a documented run that leaves the project unpinned', () => {
+  expectRuleFails(9, (root, write) => {
+    write('docs/RUNBOOK.md', '# Runbook\n\nRun the suite: `npx playwright test --grep-invert @visual`\n');
+  });
+});
+
+test('rule 9 accepts a run that names a config instead, as the prod smoke does', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(join(root, 'playwright.prod.config.js'), '', 'utf8');
+    writeFileSync(
+      join(root, 'docs/RUNBOOK.md'),
+      '# Runbook\n\nSmoke prod: `npx playwright test --config=playwright.prod.config.js`\n',
+      'utf8',
+    );
+    const { byRule, results } = run(root);
+    assert.equal(byRule[9], 'PASS', results.find((r) => r.rule === 9)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// The pin is allowed to land on the next line, so the rule has to read a continued command as one
+// command. Without the join this fixture reads as an unpinned run and the rule cries wolf.
+test('rule 9 reads a pin that lands on the continuation of the same command', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'docs/RUNBOOK.md'),
+      '# Runbook\n\n```\nnpx playwright test --grep-invert @visual \\\n  --project=mobile-chromium\n```\n',
+      'utf8',
+    );
+    const { byRule, results } = run(root);
+    assert.equal(byRule[9], 'PASS', results.find((r) => r.rule === 9)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ---------------------------------------------------------------- rule 1 and gitignored skills
+//
+// Rule 1 scans skill docs off the disk. A gitignored skill ships to nobody, so gating its links
+// holds the repository to a promise it never makes. These two tests pin the narrowing in both
+// directions: ignored is out of scope, everything else still is not.
+
+// gitInit is defined above, for the rule 8 tests. Reused here so `git check-ignore` has a
+// repository to answer against.
+
+test('rule 1 ignores a dead path inside a gitignored skill, and says that it did', () => {
+  const root = makeFixture();
+  try {
+    gitInit(root);
+    writeFileSync(join(root, '.gitignore'), '.claude/skills/borrowed/\n', 'utf8');
+    mkdirSync(join(root, '.claude/skills/borrowed'), { recursive: true });
+    writeFileSync(
+      join(root, '.claude/skills/borrowed/SKILL.md'),
+      '# Borrowed\n\nConfigure [settings](.claude/settings.json).\n',
+      'utf8',
+    );
+
+    const { byRule, results } = run(root);
+    const detail = results.find((r) => r.rule === 1)?.detail ?? '';
+    assert.equal(byRule[1], 'PASS', detail);
+    // The narrowing must be visible. A gate that quietly shrinks its own scope is the failure mode
+    // this whole file exists to prevent.
+    assert.match(detail, /gitignored skill doc/, `rule 1 skipped a file without saying so: ${detail}`);
+    assert.match(detail, /borrowed/, `rule 1 did not name what it skipped: ${detail}`);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('rule 1 still catches a dead path in a skill that is NOT gitignored', () => {
+  const root = makeFixture();
+  try {
+    gitInit(root);
+    writeFileSync(join(root, '.gitignore'), '.claude/skills/borrowed/\n', 'utf8');
+    mkdirSync(join(root, '.claude/skills/ours'), { recursive: true });
+    writeFileSync(
+      join(root, '.claude/skills/ours/SKILL.md'),
+      '# Ours\n\nRead [the plan](docs/NO-SUCH-FILE.md).\n',
+      'utf8',
+    );
+
+    const { ok, byRule, results } = run(root);
+    const detail = results.find((r) => r.rule === 1)?.detail ?? '';
+    assert.equal(byRule[1], 'FAIL', `rule 1 should still gate a shipped skill — got ${byRule[1]}\n${detail}`);
+    assert.equal(ok, false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
