@@ -102,7 +102,9 @@ task, and skipping them is how the same decision gets made twice, differently.
 | how a feature currently behaves, i18n, the add flow, the release workflow | `docs/APP-REFERENCE.md` |
 | what changed recently and why | `CHANGELOG.md` |
 | what a specific historical build did | `docs/history/BUILD-LOG.md` |
+| where a file lives, why there are two worktrees, what belongs on which branch | `docs/REPO-LAYOUT.md` |
 | what is gated versus merely observed | `docs/QA-ARCHITECTURE.md` |
+| smoke versus sanity, and why production is smoke-only | `docs/testing-notes.md` |
 | the AI parts of the quality loop | `docs/AGENTIC-QA.md` |
 | headers, CSP, the accepted risks | `docs/SECURITY-NOTES.md` |
 
