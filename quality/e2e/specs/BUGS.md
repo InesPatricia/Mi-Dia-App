@@ -187,3 +187,32 @@ harness is fine and the problem is in the scenario or the app.
 
 **HN-003. MCP test-server processes outlive the agent session that started them.** They were left
 running after the generator session. Check for them before blaming a later run.
+
+---
+
+## OPEN-002. main and staging have drifted far enough to need reconciling
+
+**Status** OPEN QUESTION, in the sense that the size is known and the decision is not.
+
+Measured 2026-08-20, on the merge base at that date:
+
+```
+staging ahead of main    37 commits
+main ahead of staging     4 commits
+
+quality/tools/check-skips.mjs        exists on main, not on staging
+quality/e2e/tests-generated/         exists on main, not on staging
+quality/e2e/tests/garden.spec.js     exists on staging, not on main
+src/mi-dia-v172.html  ->  v184       836 lines apart
+```
+
+The four commits main is ahead by are structure: the silent-skip checker, the quarantine project and
+the agent scaffolding. Staging does not have any of it, so work generated there today would not be
+covered by the boundaries this repository just spent a week building.
+
+This is the situation `/reconcile` exists for, and rule 6 of the documentation gate is the thing that
+will report it. Recorded here because a number this large stops being obvious once it is normal.
+
+### Not checked
+
+Whether the 37 commits contain anything that conflicts. Nobody has attempted the merge.
