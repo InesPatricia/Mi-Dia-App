@@ -241,8 +241,14 @@ for (const phase of phases) {
   }
 }
 
+// Line endings are not content. Git checks this file out with CRLF on Windows and LF on the CI
+// runner, while the block above is always joined with LF, so a raw string comparison called the file
+// stale on a developer machine after every checkout and clean on CI. That is an alarm that fires
+// only where somebody is working, which is the fastest way to teach them to ignore it.
+const sameText = (a, b) => a.replace(/\r\n/g, '\n') === b.replace(/\r\n/g, '\n');
+
 if (process.argv.includes('--check')) {
-  const stale = rebuilt !== current;
+  const stale = !sameText(rebuilt, current);
   if (!stale && lies.length === 0) {
     console.log('qa-status: docs/QA-STATUS.md is current and consistent with the repository. OK');
     process.exit(0);
@@ -254,7 +260,9 @@ if (process.argv.includes('--check')) {
   process.exit(1);
 }
 
-fs.writeFileSync(STATUS, rebuilt);
+// Write back in whatever convention the file already uses, so regenerating never shows up as a
+// whole-file diff just because the tool prefers one newline over another.
+fs.writeFileSync(STATUS, current.includes('\r\n') ? rebuilt.replace(/\r?\n/g, '\r\n') : rebuilt);
 console.log(`qa-status: rewrote the derived block in ${path.relative(ROOT, STATUS)}.`);
 for (const phase of phases) console.log(`  phase ${phase.id}  ${phase.state.padEnd(12)} ${phase.title}`);
 if (lies.length) {
