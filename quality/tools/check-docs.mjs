@@ -5,7 +5,7 @@
  * The repo's own argument is that a change should be gated by something that runs, not by a
  * convention someone remembers. This applies that to the docs themselves.
  *
- * Nine rules:
+ * Ten rules:
  *   [1] no dead paths          — every file path mentioned in the docs exists on disk
  *   [2] no state in the router — CLAUDE.md must not hard-code build numbers or point at private/
  *   [3] router stays small     — CLAUDE.md under MAX_ROUTER_LINES
@@ -15,6 +15,7 @@
  *   [7] diagrams render        — no HTML in mermaid labels; GitHub strips it and fuses words
  *   [8] filenames are exact    — skill entry points are SKILL.md; no two tracked paths differ only by case
  *   [9] runs are pinned        — a documented `playwright test` names its project, not both of them
+ *  [10] config paths resolve:    a path configured in dependabot, wrangler or a workflow still exists
  *
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
@@ -581,6 +582,91 @@ function checkDocumentedRunsArePinned() {
     : pass(9, `${seen} documented playwright run(s), every one pinned to a project or a config`);
 }
 
+// ---------------------------------------------------------------- [10] config paths resolve
+
+/**
+ * Configuration that names a path is a link like any other, and it rots in exactly the same way.
+ *
+ * Rule 1 only ever reads documents, so when the suite moved from e2e/ to quality/e2e/ the
+ * `directory: "/e2e"` in .github/dependabot.yml sat outside every gate in this repository.
+ * Dependabot did not report an error either. It rescanned the old path, found no manifest there,
+ * concluded @playwright/test had been removed from the project, and closed its own open bump with
+ * "no longer a dependency". Three weeks of silence that looked identical to having no work to do,
+ * which is the same shape as a workflow that never fires.
+ *
+ * Only INPUT paths are checked, meaning something a run reads. A key that names an OUTPUT, such
+ * as `path:` on upload-artifact or a runner-local cache location, points at something that does not
+ * exist until a job has written it, so including those needs an allowlist, and an allowlist is how a
+ * gate stops gating.
+ *
+ * For Dependabot the directory existing is not enough. A directory that survives while its manifest
+ * moves out from under it fails in precisely the same silent way, so this asks the question
+ * Dependabot itself asks, which is whether the ecosystem's manifest is in there.
+ */
+const CONFIG_INPUT_KEY =
+  /^\s*(?:-\s*)?(working-directory|cache-dependency-path|rules_file_name|pages_build_output_dir)\s*[:=]\s*["']?([^"'\s#]+)/;
+
+/** The manifest each ecosystem looks for inside its `directory`. This is Dependabot's own contract. */
+const ECOSYSTEM_MANIFEST = {
+  npm: 'package.json',
+  'github-actions': '.github/workflows',
+};
+
+const DEPENDABOT = '.github/dependabot.yml';
+
+/** Every workflow file, which is where most of the path-shaped configuration lives. */
+function workflowFiles() {
+  const dir = join(ROOT, '.github', 'workflows');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((n) => /\.ya?ml$/i.test(n))
+    .map((n) => `.github/workflows/${n}`);
+}
+
+function checkConfigPaths() {
+  const dead = [];
+  let seen = 0;
+
+  if (has(DEPENDABOT)) {
+    let ecosystem = null;
+    read(DEPENDABOT).split(/\r?\n/).forEach((line, i) => {
+      const eco = line.match(/^\s*-?\s*package-ecosystem\s*:\s*["']?([\w-]+)/);
+      if (eco) return void (ecosystem = eco[1]);
+      const dir = line.match(/^\s*directory\s*:\s*["']?([^"'\s#]+)/);
+      if (!dir || !ecosystem) return;
+      seen++;
+      // Dependabot writes `directory` repo-relative, with a leading slash. "/" is the repo root.
+      const base = dir[1].replace(/^\/+/, '') || '.';
+      const manifest = ECOSYSTEM_MANIFEST[ecosystem];
+      const target = manifest ? `${base}/${manifest}` : base;
+      if (!has(target)) {
+        dead.push(
+          `${DEPENDABOT}:${i + 1}: ${ecosystem} points at ${dir[1]}, which holds no ${manifest ?? 'such directory'}`,
+        );
+      }
+    });
+  }
+
+  for (const file of ['wrangler.toml', ...workflowFiles()]) {
+    if (!has(file)) continue;
+    read(file).split(/\r?\n/).forEach((line, i) => {
+      const m = line.match(CONFIG_INPUT_KEY);
+      if (!m) return;
+      const raw = m[2];
+      // an expression is resolved by the runner; ~ or a drive letter is not in this repository
+      if (/\$\{\{/.test(raw) || /^[~/]|^[A-Za-z]:/.test(raw) || raw === '.') return;
+      seen++;
+      const rel = raw.replace(/^\.\//, '').replace(/\/+$/, '');
+      if (!has(rel)) dead.push(`${file}:${i + 1}: ${m[1]} points at ${raw}`);
+    });
+  }
+
+  if (!seen) return skip(10, 'no dependabot, wrangler or workflow path to check');
+  dead.length
+    ? fail(10, `${dead.length} configured path(s) that no longer resolve:\n      ${dead.join('\n      ')}`)
+    : pass(10, `${seen} configured input path(s) resolve, across dependabot, wrangler and the workflows`);
+}
+
 // ---------------------------------------------------------------- run
 
 const RULES = [
@@ -593,6 +679,7 @@ const RULES = [
   ['diagrams render', checkDiagramsRender],
   ['filenames are exact', checkSkillNaming],
   ['documented runs are pinned', checkDocumentedRunsArePinned],
+  ['config paths resolve', checkConfigPaths],
 ];
 
 for (const [, fn] of RULES) {
