@@ -12,15 +12,38 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 0, not started. Nothing in this arc has been built yet.
+**Phase:** 0, in progress. Two pull requests are open and nothing has landed on `main` yet.
 
-**Next action:** get this file and its tool onto `main`. They live in three local commits on
-`qa/architecture-doc` and exist nowhere else, so a branch cut from `main` today would carry neither,
-and the end-of-session ritual below could not run on it. Open the pull request, land it, and only
-then continue with the rest of phase 0.
+**Next action, in this order:**
 
-**Until that lands, the working branch is `qa/architecture-doc`,** not `qa/test-architecture`. The
+1. Merge **#52**, this file and its tool. All checks green.
+2. Merge **#53**, the commit gate baseline. All checks green. Without it no build can be committed
+   at all, see below.
+3. On `staging`, remove the em dash from the four comment lines `v185` adds, then commit the
+   `v185` build on its own, under `src/` on that branch. It is written and structurally valid,
+   div balance 241 of 241 and all three script blocks parse, but it is not committed.
+4. Run the `reconcile` skill. Structure from `main`, product content from `staging`.
+5. Cut `qa/test-architecture` from `main`, in the QA worktree.
+6. Record the baseline measurements.
+
+**Until #52 lands, the working branch is `qa/architecture-doc`,** not `qa/test-architecture`. The
 latter does not exist yet and must not be cut from `main` before the status system is there.
+
+**What phase 0 ran into, and why it is worth keeping.** Step 3 could not be done. The commit gate
+refused `v185` over thirty emoji, and all thirty sit unchanged in the committed `v184`. The gate
+describes itself as a ratchet that refuses only what a commit introduces, and its header says it
+works that way so that it would not "stop the next build from being committed at all". It did.
+
+The cause is that two standing rules contradict each other and neither is wrong. The versioning law
+never edits a build in place, so every change writes a new file. The gate measures novelty per added
+line of a diff. In a brand new file every line is an added line, so there is nothing to be new
+against and the ratchet degenerates into a sweep. #53 gives a newly added build the build it
+succeeds as its baseline. Measured on the real staged file, the refusal drops from thirty-two lines
+to four, and those four are genuinely new.
+
+Two things follow. Committing `v185` has to happen before the reconcile, not after, because `main`'s
+gate is the stricter one and the reconcile brings it to `staging`. And the ordering already written
+into phase 0 turns out to be right for a reason nobody had named.
 
 **Why the reconcile is in phase 0 at all:** the anti-skip guard does not exist where the product is
 being built. `main` has
@@ -29,7 +52,7 @@ skipping on its own authority. `staging` has none of them, and its copy of
 `quality/e2e/.claude/agents/playwright-test-healer.md` still instructs the agent to mark a stubborn
 test as skipped. Both halves of that defence live on one branch only.
 
-**Blocked on:** nothing.
+**Blocked on:** two merges, which are not the agent's to make.
 
 **Two ordering rules that cost rework if broken:**
 
@@ -39,7 +62,8 @@ test as skipped. Both halves of that defence live on one branch only.
 - Phase 7 comes after phase 6, so new specs are written once, in the final shape.
 
 **Known unarmed promise:** `qa-status.mjs --check` is not wired into CI yet. Phase 2 arms it. Until
-then this file is checked only when somebody runs it by hand.
+then this file is checked only when somebody runs it by hand. The commit gate's own tests were armed
+in #53, in the fast `validate` job, and are confirmed running on the CI runner.
 
 ---
 
@@ -50,7 +74,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 
 | Phase | Delivers | Status | Proof |
 |---|---|---|---|
-| 0 | Land the status system on main, reconcile, branch, baseline | NOT STARTED | `node quality/tools/check-docs.mjs` |
+| 0 | Land the status system on main, reconcile, branch, baseline | IN PROGRESS | `node quality/tools/check-docs.mjs` |
 | 1 | Point defects, and the count rule that missed one | NOT STARTED | `node quality/tools/check-docs.mjs` |
 | 2 | Linting, and the status check armed in CI | NOT STARTED | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
@@ -105,6 +129,15 @@ and the documentation gate checks that claim.
    thing it records.
 
 2. On `staging`, commit the work-in-progress build on its own so it does not ride along in a merge.
+
+   The commit gate refuses it until #53 lands. A build is a new file, so every mark it inherited
+   reads as one it introduces, and `v185` was refused over thirty emoji that all sit unchanged in
+   the committed `v184`. #53 gives a new build the build it succeeds as its baseline. Four lines
+   `v185` genuinely adds still carry an em dash, in its own comments, and have to lose it first.
+
+   This has to happen before the reconcile, not after. `main` carries the stricter gate, which
+   checks em dashes in source as well, and the reconcile brings it to `staging`.
+
 3. Run the `reconcile` skill. Conflicts resolve one way: structure from `main`, product content from
    `staging`.
 4. Open `qa/test-architecture` from `main`, in the QA worktree. Everything after this happens there.
