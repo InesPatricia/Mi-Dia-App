@@ -14,11 +14,16 @@ floor that was never poured.
 
 **Phase:** 0, not started. Nothing in this arc has been built yet.
 
-**Next action:** commit the work-in-progress build on `staging` on its own, run `/reconcile` to bring
-`main` into `staging`, then open `qa/test-architecture` from `main` in the QA worktree and do phase 0
-there.
+**Next action:** get this file and its tool onto `main`. They live in three local commits on
+`qa/architecture-doc` and exist nowhere else, so a branch cut from `main` today would carry neither,
+and the end-of-session ritual below could not run on it. Open the pull request, land it, and only
+then continue with the rest of phase 0.
 
-**Why that first:** the anti-skip guard does not exist where the product is being built. `main` has
+**Until that lands, the working branch is `qa/architecture-doc`,** not `qa/test-architecture`. The
+latter does not exist yet and must not be cut from `main` before the status system is there.
+
+**Why the reconcile is in phase 0 at all:** the anti-skip guard does not exist where the product is
+being built. `main` has
 `quality/tools/check-skips.mjs`, the `generated` authoring zone, and a healer policy that forbids
 skipping on its own authority. `staging` has none of them, and its copy of
 `quality/e2e/.claude/agents/playwright-test-healer.md` still instructs the agent to mark a stubborn
@@ -45,7 +50,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 
 | Phase | Delivers | Status | Proof |
 |---|---|---|---|
-| 0 | Reconcile, branch, baseline measurements | NOT STARTED | `node quality/tools/check-docs.mjs` |
+| 0 | Land the status system on main, reconcile, branch, baseline | NOT STARTED | `node quality/tools/check-docs.mjs` |
 | 1 | Point defects, and the count rule that missed one | NOT STARTED | `node quality/tools/check-docs.mjs` |
 | 2 | Linting, and the status check armed in CI | NOT STARTED | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
@@ -88,13 +93,22 @@ Enough to execute without the session that produced it. Files that do not exist 
 code blocks rather than as inline paths, because an inline path is a claim that something is there
 and the documentation gate checks that claim.
 
-### Phase 0. Reconcile, branch, baseline
+### Phase 0. Land the status system, reconcile, branch, baseline
 
-1. On `staging`, commit the work-in-progress build on its own so it does not ride along in a merge.
-2. Run the `reconcile` skill. Conflicts resolve one way: structure from `main`, product content from
+1. **Land this file and its tool on `main` first.** They exist only in local commits on
+   `qa/architecture-doc`. Cutting the working branch from `main` before that gives a branch on which
+   the closing ritual cannot run, because neither the file nor the checker is there.
+
+   This ordering was wrong in the first draft of this plan and a later session caught it: the
+   document that tracks the work did not exist on the branch the work was told to start from. Worth
+   remembering as a shape, since anything that records progress has to reach the ground before the
+   thing it records.
+
+2. On `staging`, commit the work-in-progress build on its own so it does not ride along in a merge.
+3. Run the `reconcile` skill. Conflicts resolve one way: structure from `main`, product content from
    `staging`.
-3. Open `qa/test-architecture` from `main`, in the QA worktree. Everything after this happens there.
-4. Record the numbers this arc will be measured against, because a cleanup without a measurement is
+4. Open `qa/test-architecture` from `main`, in the QA worktree. Everything after this happens there.
+5. Record the numbers this arc will be measured against, because a cleanup without a measurement is
    a matter of taste: suite wall-clock time, the real flake rate from a `--repeat-each=5` run, how
    many distinct locator strategies exist for one action, and total spec line count.
 
