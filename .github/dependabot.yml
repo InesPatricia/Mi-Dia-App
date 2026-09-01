@@ -11,9 +11,17 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
 
-  # The Playwright/test toolchain in e2e/ (the only package.json in the repo).
+  # The Playwright/test toolchain, the only package.json in the repository.
+  #
+  # This path is load-bearing and it has already gone stale once. It read "/e2e" until the folder
+  # reorganisation (ac69adb) moved the suite to quality/e2e, and Dependabot did not report an
+  # error: it rescanned the old path, found no manifest there, concluded @playwright/test had been
+  # removed from the project, and closed its own open bump with "no longer a dependency" (PR #29,
+  # @playwright/test 1.62.0 to 1.62.1). The npm half then sat silent while the toolchain drifted,
+  # looking exactly like a half with nothing to do. If this directory moves again, this line moves
+  # in the same commit.
   - package-ecosystem: "npm"
-    directory: "/e2e"
+    directory: "/quality/e2e"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
