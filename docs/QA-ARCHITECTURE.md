@@ -11,7 +11,7 @@ flowchart TD
         PR["Pull request"] --> E2E["e2e\nvalidate build → 2 shards → merge report\n(required check)"]
         PR --> CFP["Cloudflare builds\na preview deployment"]
         CFP --> SP["smoke-preview\nwait-for-preview → 7 smoke\n+ Lighthouse shift-left (informational)"]
-        PR --> DOCS["docs\ncheck-docs 9 rules + its own 27 tests\n(reports, not required)"]
+        PR --> DOCS["docs\ncheck-docs 10 rules + its own 34 tests\n(reports, not required)"]
         E2E -. on failure .-> TRIAGE["ai-triage agent\ncomments a likely cause on the PR\n(helper, via workflow_run)"]
     end
 

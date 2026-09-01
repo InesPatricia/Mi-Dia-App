@@ -69,7 +69,24 @@ function makeFixture() {
   write('quality/e2e/count-tests.js', COUNT_STUB);
   // A correctly pinned run, so rule 9's green on the clean fixture means it looked at a real
   // command and accepted it, rather than finding nothing to look at.
-  write('docs/RUNBOOK.md', '# Runbook\n\nRun the suite: `npx playwright test --project=mobile-chromium`\n');
+  // Configuration rule 10 reads. Every value here is real and resolves, so green on the clean
+  // fixture means the rule looked at live paths and accepted them, rather than finding nothing.
+  write(
+    '.github/dependabot.yml',
+    'version: 2\nupdates:\n' +
+      '  - package-ecosystem: "npm"\n    directory: "/quality/e2e"\n    schedule:\n      interval: "weekly"\n' +
+      '  - package-ecosystem: "github-actions"\n    directory: "/"\n    schedule:\n      interval: "weekly"\n',
+  );
+  write('quality/e2e/package.json', '{ "name": "fixture", "private": true }\n');
+  write('quality/e2e/package-lock.json', '{}\n');
+  write('wrangler.toml', 'name = "fixture"\npages_build_output_dir = "./public"\n');
+  write('public/index.html', '<!doctype html>');
+  write(
+    '.github/workflows/e2e.yml',
+    'name: e2e\njobs:\n  test:\n    defaults:\n      run:\n        working-directory: quality/e2e\n' +
+      '    steps:\n      - uses: actions/setup-node@v7\n        with:\n' +
+      '          cache-dependency-path: quality/e2e/package-lock.json\n',
+  );
   return root;
 }
 
@@ -110,7 +127,7 @@ test('clean fixture: every rule that can pass without git does', () => {
   const root = makeFixture();
   try {
     const { byRule, results } = run(root);
-    for (const rule of [1, 2, 3, 4, 5, 7, 9]) {
+    for (const rule of [1, 2, 3, 4, 5, 7, 9, 10]) {
       const detail = results.find((r) => r.rule === rule)?.detail ?? '';
       assert.equal(byRule[rule], 'PASS', `rule ${rule} should pass — got ${byRule[rule]}\n${detail}`);
     }
@@ -484,6 +501,73 @@ test('rule 1 still catches a dead path in a skill that is NOT gitignored', () =>
     const detail = results.find((r) => r.rule === 1)?.detail ?? '';
     assert.equal(byRule[1], 'FAIL', `rule 1 should still gate a shipped skill — got ${byRule[1]}\n${detail}`);
     assert.equal(ok, false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ---------------------------------------------------------------- rule 10
+//
+// The defect this rule exists for: .github/dependabot.yml kept `directory: "/e2e"` after the suite moved
+// to quality/e2e. Nothing went red. Dependabot rescanned, found no manifest, decided the dependency
+// had been removed, and closed its own open bump. Configuration was outside rule 1, which only ever
+// reads documents, so no gate in the repository was looking at it.
+
+test('rule 10 catches a dependabot directory that no longer exists', () => {
+  expectRuleFails(10, (root, write) => {
+    write(
+      '.github/dependabot.yml',
+      'version: 2\nupdates:\n  - package-ecosystem: "npm"\n    directory: "/e2e"\n',
+    );
+  });
+});
+
+// The subtler half, and the reason a plain existsSync on the directory would not have been enough:
+// the folder is still there and the manifest has moved out from under it. Dependabot fails exactly
+// as silently in this case as in the one above.
+test('rule 10 catches a dependabot directory that exists but holds no manifest', () => {
+  expectRuleFails(10, (root, write) => {
+    mkdirSync(join(root, 'quality', 'e2e-old'), { recursive: true });
+    write(
+      '.github/dependabot.yml',
+      'version: 2\nupdates:\n  - package-ecosystem: "npm"\n    directory: "/quality/e2e-old"\n',
+    );
+  });
+});
+
+test('rule 10 catches a workflow whose working directory moved', () => {
+  expectRuleFails(10, (root, write) => {
+    write(
+      '.github/workflows/e2e.yml',
+      'name: e2e\njobs:\n  test:\n    defaults:\n      run:\n        working-directory: e2e\n',
+    );
+  });
+});
+
+test('rule 10 catches a wrangler output directory that does not exist', () => {
+  expectRuleFails(10, (root, write) => {
+    write('wrangler.toml', 'name = "fixture"\npages_build_output_dir = "./dist"\n');
+  });
+});
+
+// A rule that fails on everything is as useless as one that fails on nothing. An artifact path and
+// a runner cache are written by a job rather than read by it, and an expression is resolved on the
+// runner, so none of the three is a path this repository can be asked to hold.
+test('rule 10 leaves outputs, runner caches and expressions alone', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, '.github/workflows/e2e.yml'),
+      'name: e2e\njobs:\n  test:\n    defaults:\n      run:\n        working-directory: quality/e2e\n' +
+        '    steps:\n' +
+        '      - uses: actions/upload-artifact@v7\n        with:\n          path: quality/e2e/blob-report\n' +
+        '      - uses: actions/cache@v6\n        with:\n          path: ~/.cache/ms-playwright\n' +
+        '      - run: echo hi\n        working-directory: ${{ github.workspace }}/quality/e2e\n',
+      'utf8',
+    );
+    const { byRule, results } = run(root);
+    const detail = results.find((r) => r.rule === 10)?.detail ?? '';
+    assert.equal(byRule[10], 'PASS', `rule 10 should pass, got ${byRule[10]}\n${detail}`);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
