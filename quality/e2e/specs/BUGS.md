@@ -187,3 +187,87 @@ harness is fine and the problem is in the scenario or the app.
 
 **HN-003. MCP test-server processes outlive the agent session that started them.** They were left
 running after the generator session. Check for them before blaming a later run.
+
+---
+
+## OPEN-002. main and staging have drifted far enough to need reconciling
+
+**Status** OPEN QUESTION, in the sense that the size is known and the decision is not.
+
+Measured 2026-08-20, on the merge base at that date:
+
+```
+staging ahead of main    37 commits
+main ahead of staging     4 commits
+
+quality/tools/check-skips.mjs        exists on main, not on staging
+quality/e2e/tests-generated/         exists on main, not on staging
+quality/e2e/tests/garden.spec.js     exists on staging, not on main
+src/mi-dia-v172.html  ->  v184       836 lines apart
+```
+
+The four commits main is ahead by are structure: the silent-skip checker, the quarantine project and
+the agent scaffolding. Staging does not have any of it, so work generated there today would not be
+covered by the boundaries this repository just spent a week building.
+
+This is the situation `/reconcile` exists for, and rule 6 of the documentation gate is the thing that
+will report it. Recorded here because a number this large stops being obvious once it is normal.
+
+### Measured, 2026-08-20
+
+`git merge-tree --write-tree origin/main staging` computes the merge without touching either branch:
+
+```
+conflicts   0
+```
+
+The merged tree is what the reconciliation rule asks for, checked file by file rather than assumed.
+Structure arrives: `check-skips.mjs`, `tests-generated/seed.spec.js`, `tests-generated/strings.js`,
+`specs/ritual.plan.md` and this file are all absent from staging today and all present after. Product
+survives: `tests/garden.spec.js` stays, and `src/` holds staging's build rather than reverting to
+main's older one, because git resolved the rename correctly.
+
+The first attempt used the local `main` ref, which was two merges stale, and reported that the plan
+and this file would not arrive. The numbers did not fit what was known to be on main, which is what
+prompted the second look. Recorded because a stale ref produces a confident wrong answer rather than
+an error.
+
+### Still not checked
+
+Zero textual conflicts is not zero semantic conflicts. Both branches edited roughly fifteen files
+under `quality/e2e/tests/`, and git can merge those line by line into a suite that does not run.
+Nobody has executed the merged tree. The reconciliation is finished when the suite is green on
+staging afterwards, not when the merge command exits.
+
+Two things will land on staging that were never enforced there, and either may go red on first
+contact, which is them working rather than failing. `check-skips.mjs` refuses a `test.skip` that
+carries no reason, and the commit hook now refuses an added em dash.
+
+---
+
+## TD-002. Nothing gates markdown that GitHub renders differently from its source
+
+**Status** CONFIRMED, and one instance is fixed. The gap is not.
+
+`SPEC-TEMPLATE.md` carried `# Feature spec ... <NAME>` and a table cell containing `<key>`. GitHub
+treats angle brackets as HTML and strips them, so the rendered title read as a heading with a
+dangling dash and no subject, and the table cell lost half its content. Both are now wrapped in
+backticks.
+
+The instance was found by opening the page on GitHub, not by any check. Rule 7 of the documentation
+gate already encodes exactly this reasoning for mermaid labels, where HTML is stripped and words fuse
+together. The same failure in ordinary markdown is ungated.
+
+Two things make this class expensive: it is invisible in the source, so review does not catch it, and
+it only appears in the place a reader actually looks.
+
+### A candidate rule 10
+
+Refuse a bare `<PLACEHOLDER>` outside a code span or fence, in any scanned doc. The hard part is not
+the detection, it is the exceptions: real HTML in markdown is legal and this repository may want it
+somewhere. Worth writing only with a test that proves it does not fire on a legitimate use.
+
+### Not checked
+
+Whether other rendered defects exist that the source hides. Only two documents have ever been opened
+on GitHub and compared against their source.

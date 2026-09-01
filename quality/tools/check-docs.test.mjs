@@ -69,6 +69,7 @@ function makeFixture() {
   write('quality/e2e/count-tests.js', COUNT_STUB);
   // A correctly pinned run, so rule 9's green on the clean fixture means it looked at a real
   // command and accepted it, rather than finding nothing to look at.
+  write('docs/RUNBOOK.md', '# Runbook\n\nRun the suite: `npx playwright test --project=mobile-chromium`\n');
   // Configuration rule 10 reads. Every value here is real and resolves, so green on the clean
   // fixture means the rule looked at live paths and accepted them, rather than finding nothing.
   write(
@@ -501,6 +502,40 @@ test('rule 1 still catches a dead path in a skill that is NOT gitignored', () =>
     const detail = results.find((r) => r.rule === 1)?.detail ?? '';
     assert.equal(byRule[1], 'FAIL', `rule 1 should still gate a shipped skill — got ${byRule[1]}\n${detail}`);
     assert.equal(ok, false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ---------------------------------------------------------------- rule 1 and new docs
+//
+// The scanned set used to be a hand-written list of filenames, so a doc added to docs/ was ungated
+// by default and nobody found out. This pins the fix: a file nobody registered anywhere still gets
+// checked, purely by being a markdown file in docs/.
+
+test('rule 1 gates a doc that was never added to any list', () => {
+  expectRuleFails(1, (root) => {
+    writeFileSync(
+      join(root, 'docs/brand-new-note.md'),
+      '# Brand new\n\nRead [the plan](docs/NOT-THERE.md).\n',
+      'utf8',
+    );
+  });
+});
+
+// docs/history/ is an archive of what past builds did, so it names files that were right when
+// written and have since been pruned. Gating it against today's filesystem would fail over the
+// archive doing its job, so it stays out of scope and rule 5 covers it instead.
+test('rule 1 leaves the history archive out of scope', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'docs/history/OLD-NOTES.md'),
+      '# Old\n\nBuilt from [v99](src/mi-dia-v99.html), long since pruned.\n',
+      'utf8',
+    );
+    const { byRule, results } = run(root);
+    assert.equal(byRule[1], 'PASS', results.find((r) => r.rule === 1)?.detail);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
