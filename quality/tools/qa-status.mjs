@@ -210,7 +210,13 @@ function claimedStatuses(text) {
     const trimmed = line.trim();
     if (!trimmed.startsWith('|')) continue;
     const [phaseId, , status] = trimmed.split('|').slice(1, -1).map((cell) => cell.trim());
-    if (/^\d$/.test(phaseId) && status) claims.set(Number(phaseId), status);
+    // Emphasis is not a status. A claim written as bold DONE read as a different string from
+    // plain DONE, so emphasising a finished phase silently disarmed the check for it and the
+    // tool answered OK on a phase with nothing on disk. Found by writing the claim in bold and
+    // watching it stay green. Strip the markers and fold the case, so a claim is read for what
+    // it says rather than how it is set.
+    const claim = status ? status.replace(/[*_`]/g, '').trim().toUpperCase() : '';
+    if (/^\d$/.test(phaseId) && claim) claims.set(Number(phaseId), claim);
   }
   return claims;
 }
