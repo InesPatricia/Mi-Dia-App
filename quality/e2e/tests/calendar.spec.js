@@ -5,8 +5,8 @@ const { test, expect } = require('@playwright/test');
 const { gotoApp, seedStorage, dayKey } = require('./helpers');
 
 const daysInThisMonth = () => {
-  const n = new Date();
-  return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate();
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 };
 
 async function openCalendar(page) {
