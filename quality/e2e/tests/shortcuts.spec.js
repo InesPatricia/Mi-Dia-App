@@ -38,7 +38,7 @@ test.describe('shortcuts', () => {
     await pill(page, 'Movement / walk').getByRole('button', { name: ADD_DIRECT, exact: true }).click();
 
     await expect(page.locator('#list').getByText('Movement / walk')).toBeVisible();
-    const block = (await readBlocks(page)).find((b) => b.title === 'Movement / walk');
+    const block = (await readBlocks(page)).find((entry) => entry.title === 'Movement / walk');
     expect(block.time).toBe(''); // untimed
   });
 
@@ -62,9 +62,9 @@ test.describe('shortcuts', () => {
     await page.locator('#scEditBtn').click(); // enter edit mode -> pills show ✕
 
     // two-tap the pill's ✕ to delete it
-    const x = pill(page, 'Movement / walk').locator('.scp-x');
-    await x.click(); // arms
-    await x.click(); // confirms
+    const closeButton = pill(page, 'Movement / walk').locator('.scp-x');
+    await closeButton.click(); // arms
+    await closeButton.click(); // confirms
 
     // the deleted shortcut is gone from the grid
     await expect(chips(page).getByRole('button', { name: 'Movement / walk', exact: true })).toHaveCount(0);

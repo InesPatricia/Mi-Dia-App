@@ -49,8 +49,8 @@ test.describe('add flow (composer)', () => {
 
     // persisted as an untimed block
     const blocks = await readBlocks(page);
-    expect(blocks.map((b) => b.title)).toContain('Call mom');
-    expect(blocks.find((b) => b.title === 'Call mom').time).toBe('');
+    expect(blocks.map((entry) => entry.title)).toContain('Call mom');
+    expect(blocks.find((entry) => entry.title === 'Call mom').time).toBe('');
   });
 
   test('duration chip is captured and commit via the "+" button works', async ({ page }) => {
@@ -67,7 +67,7 @@ test.describe('add flow (composer)', () => {
 
     // the slot is listed and the chosen duration persisted
     await expect(page.locator('#list').getByText('Workout')).toBeVisible();
-    const block = (await readBlocks(page)).find((b) => b.title === 'Workout');
+    const block = (await readBlocks(page)).find((entry) => entry.title === 'Workout');
     expect(block.dur).toBe(45);
   });
 
@@ -87,7 +87,7 @@ test.describe('add flow (composer)', () => {
     // the timed slot lands in the "Timed" group with the chosen time persisted
     await expect(page.getByText('Timed', { exact: true })).toBeVisible();
     await expect(page.locator('#list').getByText('Meeting')).toBeVisible();
-    const block = (await readBlocks(page)).find((b) => b.title === 'Meeting');
+    const block = (await readBlocks(page)).find((entry) => entry.title === 'Meeting');
     expect(block.time).toBe('14:30');
   });
 
@@ -106,7 +106,7 @@ test.describe('add flow (composer)', () => {
 
     // the slot is listed and the chosen area is persisted on it
     await expect(page.locator('#list').getByText('Coaching call')).toBeVisible();
-    const block = (await readBlocks(page)).find((b) => b.title === 'Coaching call');
+    const block = (await readBlocks(page)).find((entry) => entry.title === 'Coaching call');
     expect(block.cat).toBe('relatii');
   });
 });

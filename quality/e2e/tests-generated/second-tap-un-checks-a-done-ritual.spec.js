@@ -2,7 +2,7 @@
 // seed: tests-generated/seed.spec.js
 const { test, expect } = require('@playwright/test');
 const { gotoApp, seedStorage, readRituals, ritual, dayKey } = require('../tests/helpers');
-const S = require('./strings');
+const STRINGS = require('./strings');
 
 test.describe('Check / Un-check Toggle', () => {
   test('Second tap on a done ritual un-checks it (toggle off)', async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('Check / Un-check Toggle', () => {
     await gotoApp(page);
 
     const card = page.locator('#ritualMount .r-card').filter({ hasText: 'Move' });
-    const tick = card.getByRole('button', { name: S.tickLabel });
+    const tick = card.getByRole('button', { name: STRINGS.tickLabel });
 
     await expect(card.locator('.r-n')).toHaveText('2');
     await expect(tick).toHaveAttribute('aria-pressed', 'false');

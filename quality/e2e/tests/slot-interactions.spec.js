@@ -32,19 +32,19 @@ test.describe('slot interactions', () => {
     await gotoApp(page);
     await addSlot(page, 'Read book');
 
-    const b = block(page, 'Read book');
+    const slot = block(page, 'Read book');
     // v128: the tick is now a real role="button" with an i18n aria-label + aria-pressed
-    const tick = b.getByRole('button', { name: 'Mark as done' });
+    const tick = slot.getByRole('button', { name: 'Mark as done' });
     await tick.click();
-    await expect(b).toHaveClass(/done/);
+    await expect(slot).toHaveClass(/done/);
     await expect(tick).toHaveAttribute('aria-pressed', 'true');
 
     // the done state is persisted to the model
-    expect((await readBlocks(page)).find((x) => x.title === 'Read book').done).toBe(true);
+    expect((await readBlocks(page)).find((entry) => entry.title === 'Read book').done).toBe(true);
 
     // toggling again clears it
     await tick.click();
-    await expect(b).not.toHaveClass(/done/);
+    await expect(slot).not.toHaveClass(/done/);
     await expect(tick).toHaveAttribute('aria-pressed', 'false');
   });
 
@@ -64,9 +64,9 @@ test.describe('slot interactions', () => {
     await gotoApp(page);
     await addSlot(page, 'Move me');
 
-    const b = block(page, 'Move me');
-    await b.locator('.time').click(); // open the inline editor
-    await b.getByRole('button', { name: 'Tomorrow', exact: true }).click();
+    const slot = block(page, 'Move me');
+    await slot.locator('.time').click(); // open the inline editor
+    await slot.getByRole('button', { name: 'Tomorrow', exact: true }).click();
 
     // moved to tomorrow -> no longer on today's list
     await expect(page.locator('#list').getByText('Move me')).toHaveCount(0);
