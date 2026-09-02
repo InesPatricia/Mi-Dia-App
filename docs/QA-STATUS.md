@@ -14,7 +14,7 @@ floor that was never poured.
 
 **Phase:** 1. Phase 0 is done and pushed.
 
-**Next action:** the point defects. Retire `quality/e2e/make-report.js` and its npm script, replace
+**Next action:** the point defects. Retire the hand-rolled report script and its npm entry, replace
 the two fixed waits with conditions, and widen rule 4 of the documentation gate so a bare test count
 cannot slip past it again. Detail below.
 
@@ -102,7 +102,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | Phase | Evidence found on disk | State |
 |---|---|---|
 | 0 | not machine-checkable, a merge and a set of measurements leave no single file behind | UNVERIFIABLE |
-| 1 | no make-report retired; n/a vacuous assertion gone; no fixed waits removed; no count rule widened | NONE |
+| 1 | yes make-report retired; n/a vacuous assertion gone; no fixed waits removed; no count rule widened | PARTIAL |
 | 2 | no eslint config present; no status check wired into CI | NONE |
 | 3 | no module loader present; no ritual calc tests present; no cycle calc tests present | NONE |
 | 4 | no schema spec present; no import spec present; no integration project declared | NONE |
@@ -157,8 +157,10 @@ Split by branch, because one of these lives elsewhere.
 
 On the working branch:
 
-- Retire `quality/e2e/make-report.js`, its npm script, and the untracked report it produces. It
-  duplicates `playwright merge-reports` and its output is dozens of tests out of date.
+- Retire the hand-rolled report script under the e2e folder, its npm script, and the untracked
+  report it produced. It duplicated `playwright merge-reports`, its output was dozens of tests out
+  of date, and it ran every project including the ungated authoring zone, so its totals counted a
+  test that is red by design. Done.
 - `quality/e2e/tests/ritual.spec.js` has a fixed wait around the backup import. Replace it with
   `expect.poll` on the stored rituals.
 - `quality/e2e/tests-prod/smoke-prod.spec.js` has a fixed wait before the 404 scan. Replace it with

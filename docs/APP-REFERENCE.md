@@ -56,10 +56,9 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
 - Config serves the repo **parent dir (`..`)** over http via `http-server` (so root `index.html` + the
   service worker behave like production) and runs in a **mobile Chromium** viewport (Pixel 5) because
   the app is phone-first.
-- Run (from `quality/e2e/`): `npm test` · HTML report: `npm run test:report` · **concise Markdown
-  summary: `npm run report`** (runs the suite, writes `quality/e2e/TEST-REPORT.md` — per-suite + per-test
-  pass/fail, totals, duration; via `make-report.js`, JSON-reporter-to-file so server logs can't corrupt
-  it) · record new flows: `npm run codegen`. Watch live: `npm run test:watch` (headed) /
+- Run (from `quality/e2e/`): `npm test` · HTML report: `npm run test:report`, merged across shards
+  with `npm run test:merge` · record new flows: `npm run codegen`. Watch live: `npm run test:watch`
+  (headed) /
   `npm run test:ui`. Shard across CI machines: `--shard=i/n` (see `.github/workflows/e2e.yml`).
 - **Evidence:** config sets `screenshot:'on'`, so every run captures a screenshot of each test's final
   state (pass or fail) — browsable in the HTML report at `quality/e2e/playwright-report/index.html` (open via
