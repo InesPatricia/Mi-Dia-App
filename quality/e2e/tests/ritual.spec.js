@@ -114,9 +114,14 @@ test.describe('rituals', () => {
     // wipe + import restores
     await page.evaluate(() => localStorage.removeItem('rituals'));
     await page.locator('#importFile').setInputFiles(p);
-    await page.waitForTimeout(600);
-    const rits = await readRituals(page);
-    expect(rits.some((r) => r.name === 'Gratitude')).toBe(true);
+
+    // The import is asynchronous and writes to storage, not to the DOM, so there is nothing on
+    // the page to assert against and no web-first assertion to inherit the waiting from. Poll the
+    // stored value instead of sleeping: a fixed wait is a guess that is either too short on a
+    // loaded machine or wasted on every run that did not need it.
+    await expect
+      .poll(async () => (await readRituals(page)).map((r) => r.name))
+      .toContain('Gratitude');
   });
 
   test('i18n: switching to Romanian relabels the section header', async ({ page }) => {
