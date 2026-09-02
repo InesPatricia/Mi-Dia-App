@@ -76,8 +76,9 @@
   artifact) is enough. This holds **only** because of the architecture; with a backend you would need
   staging + sanity on prod.
 - What we built:
-  - **`quality/e2e/` (64 tests, pre-merge)** = the **sanity + regression** layer (add-flow, persistence,
-    journal, slots, i18n…).
+  - **`quality/e2e/` (pre-merge)** = the **sanity + regression** layer (add-flow, persistence,
+    journal, slots, i18n…). `node quality/e2e/count-tests.js` reports how many, on whichever branch
+    you are reading it from.
   - **`smoke-preview.yml`** = **pre-merge gate** on the Cloudflare PR preview (prevents a broken build).
   - **`smoke-prod.yml`** = **post-deploy net** on the live URL (detects, does not prevent).
 - Limit: the post-deploy smoke only **alerts** (email + red X), it does not auto-rollback → rollback =

@@ -102,7 +102,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | Phase | Evidence found on disk | State |
 |---|---|---|
 | 0 | not machine-checkable, a merge and a set of measurements leave no single file behind | UNVERIFIABLE |
-| 1 | yes make-report retired; n/a vacuous assertion gone; yes fixed waits removed; no count rule widened | PARTIAL |
+| 1 | yes make-report retired; n/a vacuous assertion gone; yes fixed waits removed; yes count rule widened | COMPLETE |
 | 2 | no eslint config present; no status check wired into CI | NONE |
 | 3 | no module loader present; no ritual calc tests present; no cycle calc tests present | NONE |
 | 4 | no schema spec present; no import spec present; no integration project declared | NONE |
@@ -165,10 +165,12 @@ On the working branch:
   `expect.poll` on the stored rituals.
 - `quality/e2e/tests-prod/smoke-prod.spec.js` has a fixed wait before the 404 scan. Replace it with
   a load-state wait.
-- Widen rule 4 in `quality/tools/check-docs.mjs`. Its patterns require the words "end-to-end tests"
-  or "Playwright tests", so a bare "(64 tests, pre-merge)" slipped through unnoticed in
-  `docs/testing-notes.md`. Name the new pattern `BARE_TEST_COUNT`, add a test to
-  `quality/tools/check-docs.test.mjs` that fails without it, and fix the stale number.
+- Widen rule 4 in `quality/tools/check-docs.mjs`. Its patterns require a word beside the number,
+  "end-to-end tests" or "Playwright tests" or "smoke tests", so a bare parenthesised count slipped
+  through unnoticed in `docs/testing-notes.md` and stayed wrong for months. Name the new pattern
+  `BARE_TEST_COUNT`, add a test to `quality/tools/check-docs.test.mjs` that fails without it, and
+  fix the stale figure. Done. The figure was removed rather than corrected: that document lives on
+  both branches, which report different counts, so any number written there is wrong on one of them.
 
 On `staging`, as its own change: the Garden spec there has three defects. An assertion that a count
 is at least zero, which can never fail. A branch that takes a different path depending on whether

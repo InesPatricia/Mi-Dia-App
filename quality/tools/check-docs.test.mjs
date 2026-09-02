@@ -607,3 +607,39 @@ test('rule 10 leaves outputs, runner caches and expressions alone', () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// The patterns rule 4 shipped with all required a word beside the number: "end-to-end", "Playwright",
+// "smoke", or the "e2e N" badge form. A count with none of them was invisible to the rule, and one
+// sat in docs/testing-notes.md reading "(64 tests, pre-merge)" long after the suite had passed it.
+// Nothing reported it, because nothing was looking at that shape.
+test('rule 4 catches a bare count with none of the words it used to require', () => {
+  expectRuleFails(4, (root, write) =>
+    write(
+      'README.md',
+      '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n\n' +
+        '83 end-to-end tests, plus 7 smoke tests.\n\n' +
+        // Every other number here is one the runner can produce. Only this one is not, so a red
+        // result can come from nothing else.
+        'The pre-merge layer (64 tests, pre-merge) covers the flows.\n',
+    ),
+  );
+});
+
+// The other half of the same rule. A pattern this broad is one careless character away from
+// flagging every number in the corpus, so it has to stay silent on a count the runner does produce.
+test('rule 4 leaves a bare count alone when the runner can produce it', () => {
+  const root = makeFixture();
+  try {
+    writeFileSync(
+      join(root, 'README.md'),
+      '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n\n' +
+        '83 end-to-end tests, plus 7 smoke tests.\n\n' +
+        'The pre-merge layer (83 tests) covers the flows, 85 tests counting the visual pair.\n',
+      'utf8',
+    );
+    const { byRule, results } = run(root);
+    assert.equal(byRule[4], 'PASS', results.find((r) => r.rule === 4)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

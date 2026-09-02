@@ -361,11 +361,21 @@ function checkTestCounts() {
     [f + v, 'functional + visual'],
   ]);
 
+  // A count with no word beside it. Every other pattern below demands "end-to-end", "Playwright",
+  // "smoke" or the badge form, which is how a bare parenthesised count sat in the testing notes
+  // long after the suite had passed that number: the rule was green because it was not looking at
+  // that shape at all. Named rather than inlined, because this is the one worth finding again.
+  //
+  // Deliberately broad, and safe to be, because a match is only reported when the number is not
+  // one the runner can produce. A document is free to say a count for as long as it is true.
+  const BARE_TEST_COUNT = /\b(\d+)\s+tests?\b/gi;
+
   const PATTERNS = [
     /e2e-(\d+)%20Playwright/g,          // README shields badge
     /\be2e[\s-](\d+)\b/gi,              // "e2e 85", "e2e-83"
     /\b(\d+)\s+(?:functional\s+)?(?:end-to-end|Playwright)\s+tests/gi,
     /\b(\d+)\s+smoke\s+tests/gi,
+    BARE_TEST_COUNT,
   ];
 
   const bad = [];
