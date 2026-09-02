@@ -5,7 +5,7 @@
  * The repo's own argument is that a change should be gated by something that runs, not by a
  * convention someone remembers. This applies that to the docs themselves.
  *
- * Seven rules:
+ * Ten rules:
  *   [1] no dead paths          — every file path mentioned in the docs exists on disk
  *   [2] no state in the router — CLAUDE.md must not hard-code build numbers or point at private/
  *   [3] router stays small     — CLAUDE.md under MAX_ROUTER_LINES
@@ -13,6 +13,9 @@
  *   [5] history is complete    — every archived changelog heading is still in the build log
  *   [6] router does not fork   — CLAUDE.md is identical on every branch
  *   [7] diagrams render        — no HTML in mermaid labels; GitHub strips it and fuses words
+ *   [8] filenames are exact    — skill entry points are SKILL.md; no two tracked paths differ only by case
+ *   [9] runs are pinned        — a documented `playwright test` names its project, not both of them
+ *  [10] config paths resolve:    a path configured in dependabot, wrangler or a workflow still exists
  *
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
@@ -40,22 +43,47 @@ const BUILD_LOG = 'docs/history/BUILD-LOG.md';
  *
  * The skills are in here on purpose. The defect that prompted this checker was three skills routing
  * agents to a CLAUDE.md heading that had been deleted, so the files that *point* at documentation
- * are exactly as worth gating as the documentation itself.
+ * are exactly as worth gating as the documentation itself. Only the skills this repository actually
+ * ships, though — see shippableSkillDocs.
  */
+
+/**
+ * Populated by shippableSkillDocs, reported by rule 1 so the narrowing is never silent. Declared
+ * before SCANNED because SCANNED calls the function that fills it.
+ */
+let SKIPPED_SKILL_DOCS = [];
+
 const SCANNED = [
   ROUTER,
   'README.md',
   'CHANGELOG.md',
-  'docs/DATA_SCHEMA.md',
-  'docs/DESIGN_SYSTEM.md',
-  'docs/APP-REFERENCE.md',
-  'docs/QA-ARCHITECTURE.md',
-  'docs/AGENTIC-QA.md',
-  'docs/SECURITY-NOTES.md',
-  'docs/RUNBOOK.md',
-  'docs/DEVICE-PASS.md',
-  ...skillDocs(),
+  ...topLevelDocs(),
+  ...shippableSkillDocs(),
 ];
+
+/**
+ * Every markdown file directly inside docs/.
+ *
+ * This used to be a hand-written list of eight filenames, and it drifted the way hand-written lists
+ * do: docs/testing-notes.md sat in the repository unscanned for months, pointing at a CLAUDE.md
+ * section that had been deleted, and the gate stayed green because the file was never on the list.
+ * A doc added tomorrow would have been ungated the same way, silently, by default.
+ *
+ * This file already says of a different allowlist that "an allowlist is how a gate stops gating".
+ * It was true here too.
+ *
+ * docs/history/ is deliberately excluded. It is an archive of what past builds did, so it names
+ * files that were correct when written and have since been pruned. Holding a record of the past to
+ * the present state of the filesystem would fail the gate over the archive doing its job. Its own
+ * rule, [5], checks the thing that actually matters about it: that nothing was quietly removed.
+ */
+function topLevelDocs() {
+  const dir = join(ROOT, 'docs');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => `docs/${e.name}`);
+}
 
 /** Every markdown file under .claude/skills, which is where the routing instructions live. */
 function skillDocs(dir = join(ROOT, '.claude', 'skills'), acc = []) {
@@ -66,6 +94,52 @@ function skillDocs(dir = join(ROOT, '.claude', 'skills'), acc = []) {
     else if (entry.name.endsWith('.md')) acc.push(full.slice(ROOT.length + 1).replace(/\\/g, '/'));
   }
   return acc;
+}
+
+/**
+ * Skills that will actually reach somebody who clones this repository.
+ *
+ * A gitignored skill ships to nobody, so holding its links to the same standard as published
+ * documentation fails the gate over a promise this repository never makes. Rule 8 already reasons
+ * about tracked paths; this keeps rule 1 consistent with it instead of having one rule judge the
+ * disk and another judge the repository.
+ *
+ * Untracked-but-not-ignored files are deliberately still scanned. A skill written this morning and
+ * not yet committed is still going to ship, and that is the cheapest possible moment to find a dead
+ * link in it. Only an explicit ignore rule takes a file out of scope.
+ */
+function shippableSkillDocs() {
+  const all = skillDocs();
+  const ignored = gitIgnored(all);
+  SKIPPED_SKILL_DOCS = all.filter((p) => ignored.has(p));
+  return all.filter((p) => !ignored.has(p));
+}
+
+/**
+ * Which of these paths git is told to ignore.
+ *
+ * Fails OPEN. If git is unavailable or answers in a way this cannot parse, every path is treated as
+ * in scope and gets checked. Narrowing a gate's scope on an error is how a gate quietly stops
+ * gating, and this repository has already had one of those.
+ */
+function gitIgnored(paths) {
+  if (!paths.length) return new Set();
+  try {
+    const out = execFileSync('git', ['check-ignore', '--stdin'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: paths.join('\n'),
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    return new Set(out.split('\n').map((l) => l.trim().replace(/\\/g, '/')).filter(Boolean));
+  } catch (err) {
+    // `git check-ignore` exits 1 when none of the given paths are ignored. That is a normal answer.
+    // Any other failure means we could not tell, so we check everything.
+    if (err.status === 1 && typeof err.stdout === 'string') {
+      return new Set(err.stdout.split('\n').map((l) => l.trim().replace(/\\/g, '/')).filter(Boolean));
+    }
+    return new Set();
+  }
 }
 
 const results = [];
@@ -208,7 +282,11 @@ function checkDeadPaths() {
   }
   dead.length
     ? fail(1, `${dead.length} dead path(s):\n      ${dead.join('\n      ')}`)
-    : pass(1, `${present().length} docs, every referenced path resolves`);
+    : pass(1, `${present().length} docs, every referenced path resolves${
+        SKIPPED_SKILL_DOCS.length
+          ? ` (${SKIPPED_SKILL_DOCS.length} gitignored skill doc(s) out of scope: ${SKIPPED_SKILL_DOCS.join(', ')})`
+          : ''
+      }`);
 }
 
 // ---------------------------------------------------------------- [2] no state in the router
@@ -474,6 +552,138 @@ function checkSkillNaming() {
     : pass(8, `${tracked.length} tracked path(s), no case duplicates; every skill entry point is SKILL.md`);
 }
 
+// ---------------------------------------------------------------- [9] documented runs are pinned
+
+/**
+ * The Playwright config declares two projects: `mobile-chromium`, the reviewed suite that gates
+ * every merge, and `generated`, the authoring zone where agent-drafted tests land unreviewed.
+ * `playwright test` with no --project runs BOTH. A documented command without the pin therefore
+ * tells the reader the quarantine is part of the gate: a red draft blocks work it does not gate,
+ * and a green one reads as coverage nobody has reviewed.
+ *
+ * The boundary was already enforced in the two places a machine reads it — the shard command in
+ * .github/workflows/e2e.yml and the badge count in quality/e2e/count-tests.js — and leaked in the
+ * one place a human reads it. That asymmetry is the point of this rule. Prose has no runner to
+ * contradict it, which is also how `cd e2e` survived a directory move in five files at once.
+ *
+ * An invocation passes if it names a --project (naming `generated` on purpose is legitimate, so
+ * any project counts) or a --config, which brings its own projects, as the prod smoke does.
+ *
+ * Commands continued with && or a trailing backslash are joined before the check, so a pin on the
+ * following line still counts. History is not scanned: BUILD-LOG.md records commands as they were
+ * actually run, and rewriting that would be forging the record rather than fixing a defect.
+ */
+function checkDocumentedRunsArePinned() {
+  const offences = [];
+  let seen = 0;
+
+  for (const doc of present()) {
+    const lines = read(doc).split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+      const start = i + 1;
+      let cmd = lines[i];
+      while (/(&&|\\)\s*$/.test(cmd) && i + 1 < lines.length) cmd += ' ' + lines[++i].trim();
+      if (!/\bplaywright test\b/.test(cmd)) continue;
+      seen++;
+      if (!/--project[= ]/.test(cmd) && !/--config[= ]/.test(cmd)) {
+        offences.push(`${doc}:${start}: ${cmd.trim()}`);
+      }
+    }
+  }
+
+  offences.length
+    ? fail(
+        9,
+        `playwright test with no --project also runs the ungated \`generated\` project:\n      ${offences.join('\n      ')}`,
+      )
+    : pass(9, `${seen} documented playwright run(s), every one pinned to a project or a config`);
+}
+
+// ---------------------------------------------------------------- [10] config paths resolve
+
+/**
+ * Configuration that names a path is a link like any other, and it rots in exactly the same way.
+ *
+ * Rule 1 only ever reads documents, so when the suite moved from e2e/ to quality/e2e/ the
+ * `directory: "/e2e"` in .github/dependabot.yml sat outside every gate in this repository.
+ * Dependabot did not report an error either. It rescanned the old path, found no manifest there,
+ * concluded @playwright/test had been removed from the project, and closed its own open bump with
+ * "no longer a dependency". Three weeks of silence that looked identical to having no work to do,
+ * which is the same shape as a workflow that never fires.
+ *
+ * Only INPUT paths are checked, meaning something a run reads. A key that names an OUTPUT, such
+ * as `path:` on upload-artifact or a runner-local cache location, points at something that does not
+ * exist until a job has written it, so including those needs an allowlist, and an allowlist is how a
+ * gate stops gating.
+ *
+ * For Dependabot the directory existing is not enough. A directory that survives while its manifest
+ * moves out from under it fails in precisely the same silent way, so this asks the question
+ * Dependabot itself asks, which is whether the ecosystem's manifest is in there.
+ */
+const CONFIG_INPUT_KEY =
+  /^\s*(?:-\s*)?(working-directory|cache-dependency-path|rules_file_name|pages_build_output_dir)\s*[:=]\s*["']?([^"'\s#]+)/;
+
+/** The manifest each ecosystem looks for inside its `directory`. This is Dependabot's own contract. */
+const ECOSYSTEM_MANIFEST = {
+  npm: 'package.json',
+  'github-actions': '.github/workflows',
+};
+
+const DEPENDABOT = '.github/dependabot.yml';
+
+/** Every workflow file, which is where most of the path-shaped configuration lives. */
+function workflowFiles() {
+  const dir = join(ROOT, '.github', 'workflows');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((n) => /\.ya?ml$/i.test(n))
+    .map((n) => `.github/workflows/${n}`);
+}
+
+function checkConfigPaths() {
+  const dead = [];
+  let seen = 0;
+
+  if (has(DEPENDABOT)) {
+    let ecosystem = null;
+    read(DEPENDABOT).split(/\r?\n/).forEach((line, i) => {
+      const eco = line.match(/^\s*-?\s*package-ecosystem\s*:\s*["']?([\w-]+)/);
+      if (eco) return void (ecosystem = eco[1]);
+      const dir = line.match(/^\s*directory\s*:\s*["']?([^"'\s#]+)/);
+      if (!dir || !ecosystem) return;
+      seen++;
+      // Dependabot writes `directory` repo-relative, with a leading slash. "/" is the repo root.
+      const base = dir[1].replace(/^\/+/, '') || '.';
+      const manifest = ECOSYSTEM_MANIFEST[ecosystem];
+      const target = manifest ? `${base}/${manifest}` : base;
+      if (!has(target)) {
+        dead.push(
+          `${DEPENDABOT}:${i + 1}: ${ecosystem} points at ${dir[1]}, which holds no ${manifest ?? 'such directory'}`,
+        );
+      }
+    });
+  }
+
+  for (const file of ['wrangler.toml', ...workflowFiles()]) {
+    if (!has(file)) continue;
+    read(file).split(/\r?\n/).forEach((line, i) => {
+      const m = line.match(CONFIG_INPUT_KEY);
+      if (!m) return;
+      const raw = m[2];
+      // an expression is resolved by the runner; ~ or a drive letter is not in this repository
+      if (/\$\{\{/.test(raw) || /^[~/]|^[A-Za-z]:/.test(raw) || raw === '.') return;
+      seen++;
+      const rel = raw.replace(/^\.\//, '').replace(/\/+$/, '');
+      if (!has(rel)) dead.push(`${file}:${i + 1}: ${m[1]} points at ${raw}`);
+    });
+  }
+
+  if (!seen) return skip(10, 'no dependabot, wrangler or workflow path to check');
+  dead.length
+    ? fail(10, `${dead.length} configured path(s) that no longer resolve:\n      ${dead.join('\n      ')}`)
+    : pass(10, `${seen} configured input path(s) resolve, across dependabot, wrangler and the workflows`);
+}
+
 // ---------------------------------------------------------------- run
 
 const RULES = [
@@ -485,6 +695,8 @@ const RULES = [
   ['router does not fork', checkRouterDoesNotFork],
   ['diagrams render', checkDiagramsRender],
   ['filenames are exact', checkSkillNaming],
+  ['documented runs are pinned', checkDocumentedRunsArePinned],
+  ['config paths resolve', checkConfigPaths],
 ];
 
 for (const [, fn] of RULES) {

@@ -11,7 +11,7 @@ flowchart TD
         PR["Pull request"] --> E2E["e2e\nvalidate build → 2 shards → merge report\n(required check)"]
         PR --> CFP["Cloudflare builds\na preview deployment"]
         CFP --> SP["smoke-preview\nwait-for-preview → 7 smoke\n+ Lighthouse shift-left (informational)"]
-        PR --> DOCS["docs\ncheck-docs 8 rules + its own 24 tests\n(reports, not required)"]
+        PR --> DOCS["docs\ncheck-docs, every rule tested both ways\n(reports, not required)"]
         E2E -. on failure .-> TRIAGE["ai-triage agent\ncomments a likely cause on the PR\n(helper, via workflow_run)"]
     end
 
@@ -75,6 +75,16 @@ flowchart TD
   makes it a reporter, not a gate. Adding `check docs` to the required checks is a settings change,
   not a code change, and it is the one thing that would make the documentation genuinely gated
   rather than merely checked.
+
+## Why the shapes are what they are
+
+This document says which check runs where. The reasoning behind the shape of each one, why the
+production net is smoke-only and the pre-merge gate is deep, what separates smoke from sanity, and
+which variable each kind of test actually holds still, is in
+[`testing-notes.md`](testing-notes.md).
+
+It is worth reading once before arguing with any threshold in here, because most disagreements about
+a check turn out to be disagreements about which of those two jobs it was meant to do.
 
 ## The one rule
 

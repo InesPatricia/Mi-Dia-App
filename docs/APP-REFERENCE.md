@@ -56,10 +56,10 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
 - Config serves the repo **parent dir (`..`)** over http via `http-server` (so root `index.html` + the
   service worker behave like production) and runs in a **mobile Chromium** viewport (Pixel 5) because
   the app is phone-first.
-- Run (from `quality/e2e/`): `cd e2e && npm test` · HTML report: `npm run test:report` · **concise Markdown
+- Run (from `quality/e2e/`): `npm test` · HTML report: `npm run test:report` · **concise Markdown
   summary: `npm run report`** (runs the suite, writes `quality/e2e/TEST-REPORT.md` — per-suite + per-test
   pass/fail, totals, duration; via `make-report.js`, JSON-reporter-to-file so server logs can't corrupt
-  it) · record new flows: `cd e2e && npm run codegen`. Watch live: `npm run test:watch` (headed) /
+  it) · record new flows: `npm run codegen`. Watch live: `npm run test:watch` (headed) /
   `npm run test:ui`. Shard across CI machines: `--shard=i/n` (see `.github/workflows/e2e.yml`).
 - **Evidence:** config sets `screenshot:'on'`, so every run captures a screenshot of each test's final
   state (pass or fail) — browsable in the HTML report at `quality/e2e/playwright-report/index.html` (open via
@@ -129,7 +129,7 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   opens + writing card ready; switching EN→RO relabels the nav (i18n)). It is **informational only**
   (post-merge, never gates a PR), is **separate from `e2e.yml`** (which tests the local build before
   merge) and from the Cloudflare deploy itself, and is **read-only** (never writes user data). Run on
-  demand from the Actions tab (`workflow_dispatch`) or locally: `cd e2e && npm run wait:deploy &&
+  demand from the Actions tab (`workflow_dispatch`) or locally: `cd quality/e2e && npm run wait:deploy &&
   npm run smoke:prod` (override the target with `PROD_URL=…`). The real-Android device pass remains
   Ines's manual step — this smoke only proves prod is up and the new build is healthy, not native UX.
 - **Pre-merge preview smoke (the GATE):** `.github/workflows/smoke-preview.yml` runs the SAME 7-test

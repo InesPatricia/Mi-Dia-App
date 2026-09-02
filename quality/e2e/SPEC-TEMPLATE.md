@@ -1,4 +1,4 @@
-# Feature spec — <NAME>
+# Feature spec: `<NAME>`
 
 > The **shared contract** between the implementer and the tester. They work in **separate,
 > isolated contexts** (different git worktrees) and meet ONLY here — never in each other's code.
@@ -21,7 +21,7 @@ The tester relies ONLY on these; the implementer guarantees them. Prefer user-fa
 | <e.g. area chip> | `getByTestId('composer-area')` | label is dynamic state → test id |
 | <e.g. a dialog> | `getByRole('dialog', { name: /.../ })` | `role="dialog"` + aria-label |
 | <state to assert> | `body[data-view]`, `.active`, `aria-pressed` | state attrs, not semantic locators |
-| i18n keys (EN values) | <key> = "<EN text>" | tests use the EN strings (default lang) |
+| i18n keys (EN values) | `<key>` = `"<EN text>"` | tests use the EN strings (default lang) |
 
 ## 4. Out of scope
 <what this change explicitly does NOT touch>
