@@ -34,7 +34,15 @@ test.describe('post-deploy smoke (production)', () => {
     });
 
     await gotoApp(page);
-    await page.waitForTimeout(500); // let late assets (fonts/hero) settle for the 404 scan
+    // This test asserts an ABSENCE: that no same-origin request came back 4xx. There is no web
+    // assertion for that, because the thing being asserted is that nothing further will happen,
+    // so the scan has to wait for the network to go quiet. That is what the 500 ms sleep was
+    // approximating; networkidle measures it instead of guessing, and waits no longer than it has to.
+    //
+    // The API marks networkidle DISCOURAGED, and rightly, for deciding that the UI is ready. Every
+    // readiness check below this line is a web assertion for exactly that reason. This one call is
+    // about the request log, not the interface.
+    await page.waitForLoadState('networkidle');
 
     await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
     await expect(page.getByRole('heading', { name: /Mi D/i })).toBeVisible();

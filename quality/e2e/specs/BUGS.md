@@ -192,7 +192,8 @@ running after the generator session. Check for them before blaming a later run.
 
 ## OPEN-002. main and staging have drifted far enough to need reconciling
 
-**Status** OPEN QUESTION, in the sense that the size is known and the decision is not.
+**Status** CLOSED, 2026-09-02. Reconciled. What happened is recorded at the end of this entry,
+including the three predictions here that did not hold.
 
 Measured 2026-08-20, on the merge base at that date:
 
@@ -243,6 +244,36 @@ Two things will land on staging that were never enforced there, and either may g
 contact, which is them working rather than failing. `check-skips.mjs` refuses a `test.skip` that
 carries no reason, and the commit hook now refuses an added em dash.
 
+### What actually happened, 2026-09-02
+
+Reconciled with the `reconcile` skill. Thirty-eight commits, not thirty-seven: both branches moved
+in the two weeks between the measurement and the merge.
+
+The structure arrived as predicted, all of it: the skip checker, the quarantine project and its
+seed, the plan, and this file. `tests/garden.spec.js` survived, and `src/` kept the staging build.
+
+Three things the entry got wrong, all worth keeping because each one is a lesson about predicting a
+merge from a measurement taken earlier.
+
+**Zero conflicts became two.** `git merge-tree` was right on the day it ran and out of date by the
+time the merge happened. `docs/testing-notes.md` conflicted on content and `quality/e2e/specs/README.md`
+on modify against delete. Both resolved from main, by the structure rule.
+
+**Neither of the two predicted first-contact failures happened, and a third one did.** The skip
+checker passes on staging. The commit hook did refuse, but not over an em dash: it refused the
+entire work-in-progress build over thirty emoji, all thirty of which were already sitting unchanged
+in the committed previous build. The versioning law writes every build as a new file, so a per-line
+ratchet has nothing to be new against. That was fixed before the reconcile, on its own branch.
+
+**A previous reconciliation had already lost files, silently.** The modify-against-delete conflict
+was git offering back a file that the merge of 2026-08-16 had dropped inside its own merge commit,
+with nothing reporting it. `src/mi-dia-v172.html` went the same way and was left out deliberately
+this time, since staging has moved well past it. Nothing in the pipeline would have caught either.
+
+The open question at the end of this entry is answered: the merged tree does run. The gated suite is
+green on staging, eighty-five of eighty-five, and the documentation gate passes all ten rules with
+rule 6 green, which is the signal the routers match again.
+
 ---
 
 ## TD-002. Nothing gates markdown that GitHub renders differently from its source
@@ -271,3 +302,56 @@ somewhere. Worth writing only with a test that proves it does not fire on a legi
 
 Whether other rendered defects exist that the source hides. Only two documents have ever been opened
 on GitHub and compared against their source.
+
+---
+
+## TD-003. The production smoke's same-origin 404 scan cannot fail for a missing app asset
+
+**Status** CONFIRMED. Reproduced on demand, on both deployed environments.
+
+`tests-prod/smoke-prod.spec.js` collects every same-origin response with `status() >= 400` and
+asserts the list is empty. On Cloudflare Pages that list cannot fill, because the host answers an
+unknown path with the single-page fallback rather than a 404:
+
+```
+curl -o /dev/null -w "%{http_code} %{size_download}" https://mi-dia-app.pages.dev/definitely-not-here.js
+200 645628
+
+curl -o /dev/null -w "%{http_code} %{size_download}" https://staging.mi-dia-app.pages.dev/definitely-not-here.js
+200 669943
+```
+
+645628 is the byte length of the promoted `index.html`. The host is serving the page, with a 200, in
+place of the asset that is missing.
+
+Confirmed a second way: a `fetch()` for a non-existent same-origin path, injected into the page after
+load and before the scan, does not appear in the collected list. The listener is fine. There is
+nothing for it to collect.
+
+Only Cloudflare's own namespace returns a real status: `/cdn-cgi/nope` answers 404. No application
+asset lives there, so no reachable regression can produce a 4xx.
+
+**Why it still matters.** The failure this was written to catch is real and the consequence is worse
+than a 404: a `<script src="...">` whose target is missing receives HTML with a 200, and the parser
+fails on it. That surfaces as a console error, and the same test does assert that console errors are
+empty, so the failure class is covered. It is covered by a different assertion than the one whose
+name promises it.
+
+**Candidate fixes**, none applied here.
+
+- Assert on `content-type` rather than on status: a request for a `.js` or `.css` path that comes
+  back `text/html` is the actual defect, and it is detectable.
+- Add a `404.html` to the Pages output, which makes the host return a real 404 for unknown paths and
+  restores the assertion as written.
+- Delete the scan and rely on the console-error assertion, saying so, rather than keeping a check
+  that reads as coverage it does not provide.
+
+The first is the smallest and needs no hosting change.
+
+### Not checked
+
+Whether the same fallback applies to every content type, or only to paths without an extension the
+host recognises. Both probes used a `.js` extension. Whether any Pages configuration turns the
+fallback off. Whether the console-error assertion actually fires on an HTML-served script, which
+would settle how much real coverage remains: that needs a build with a deliberately broken asset
+reference, which is a change to the application rather than to the suite.

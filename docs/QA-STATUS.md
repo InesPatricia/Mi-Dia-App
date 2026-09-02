@@ -102,7 +102,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | Phase | Evidence found on disk | State |
 |---|---|---|
 | 0 | not machine-checkable, a merge and a set of measurements leave no single file behind | UNVERIFIABLE |
-| 1 | yes make-report retired; n/a vacuous assertion gone; no fixed waits removed; no count rule widened | PARTIAL |
+| 1 | yes make-report retired; n/a vacuous assertion gone; yes fixed waits removed; no count rule widened | PARTIAL |
 | 2 | no eslint config present; no status check wired into CI | NONE |
 | 3 | no module loader present; no ritual calc tests present; no cycle calc tests present | NONE |
 | 4 | no schema spec present; no import spec present; no integration project declared | NONE |
