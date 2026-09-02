@@ -12,44 +12,35 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 2. Phases 0 and 1 are done.
+**Phase:** 3. Phases 0, 1 and 2 are done.
 
-**Next action:** the lint layer. A flat ESLint config in the e2e folder with the Playwright plugin,
-its rules as errors, and the two checks that are promised but unarmed added to the fast `validate`
-job. Detail below. Pin the rule names from the plugin's own documentation at install time; several
-of them have been renamed across major versions and writing them from memory produces a config that
-silently enforces nothing.
+**Next action:** the unit level, over the pure calc layer. A module loader that runs a module in a
+vm sandbox and hands back its calc surface, then tests for the ritual and cycle calculations. Detail
+below, including the cases that cannot be written yet and why.
 
 **Blocked on:** nothing.
 
-**Not pushed:** phase 1's staging half. The Garden spec fix is committed on `staging` and sits there
-locally, because it is a change to a branch that deploys.
+**Not pushed:** everything since the last push. Five commits on this branch for phase 1, five more
+for phase 2, and one on `staging` for phase 1's other half.
 
-**What phase 1 delivered, on the working branch.** The hand-rolled report script is gone, with its
-npm entry and the paragraph advertising it. Both fixed waits are replaced: `expect.poll` on the
-stored value where the write goes to storage rather than the page, and a load-state wait where the
-assertion is about the request log. Rule 4 of the documentation gate gained `BARE_TEST_COUNT`, which
-catches a count with no word beside it, plus a second test proving it stays quiet on a count the
-runner can produce. The stale figure was removed rather than corrected: that document lives on both
-branches, which report different counts, so any number written in it is wrong on one of them.
+**What phase 2 delivered.** A flat ESLint config in the e2e folder, with the rule names read from
+the installed plugin rather than written from memory. Six Playwright rules as errors: no fixed
+waits, no conditional in a test, every test asserts something, no forced clicks, no page pause, no
+networkidle. Plus `no-undef` and a minimum identifier length with the loop index exempted. Fifty-four
+identifiers renamed across eleven files to make the last of those pass, in four commits split by
+area so each is reviewable.
 
-**And on `staging`.** The Garden spec had three defects in one test: a branch on observed state that
-changed the test's meaning once a month, an assertion that a count was at least zero, and a
-non-retrying count where a web-first assertion belongs. The clock is now pinned to a fixed mid-month
-day, which removes the branch instead of papering over it and turns the future-day count into an
-exact number. Clock control was listed under what this arc leaves out, scoped to streak arithmetic;
-using it for a calendar boundary was raised and approved rather than assumed.
+Two checks that were promised and unarmed are now wired. `qa-status.mjs --check` runs in the fast
+`validate` job, since it needs nothing installed. The lint runs beside the test-count check, which
+is a deviation from the plan's wording and follows the plan's own reasoning: the fast job installs
+nothing by design, and `npx` would fetch an unpinned eslint on every run.
 
-**Two findings from phase 1, recorded in the backlog rather than fixed here.**
-
-TD-003: the production smoke's same-origin 404 scan cannot fail. The host answers an unknown path
-with the single-page fallback, 200 and the whole page, so a missing asset never produces a 4xx. The
-failure class is still covered, by the console-error assertion in the same test rather than by the
-one whose name promises it. Three candidate fixes are written down.
-
-HN-001 was walked into rather than avoided: two Playwright runners competing for one port produced
-two false failures, one of them in a test that had not been touched. The entry describing that trap
-already existed.
+**The finding worth carrying.** Two of the fifty-four renames changed a declaration and missed a
+use. The suite caught both, five and a half minutes in, with a ReferenceError. The lint caught
+neither, because `id-length` is a style rule and cannot see an identifier that does not exist. That
+is why `no-undef` is in the config: reintroducing the same mistake now fails in under a second.
+Enabling it also meant declaring the `globals` package explicitly, which was only present as a
+transitive dependency of eslint and would have taken the rule's usefulness with it on a bump.
 
 **Two ordering rules that cost rework if broken:**
 
@@ -58,9 +49,8 @@ already existed.
   moves anything, or there is nothing to compare against.
 - Phase 7 comes after phase 6, so new specs are written once, in the final shape.
 
-**Known unarmed promise:** `qa-status.mjs --check` is not wired into CI yet. Phase 2 arms it, and it
-is the first thing that phase should do. Until then this file is checked only when somebody runs it
-by hand.
+**No unarmed promises left in this file.** Both checks it named are now in CI, and the lint is
+green.
 
 ---
 
@@ -73,7 +63,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 |---|---|---|---|
 | 0 | Land the status system on main, reconcile, branch, baseline | DONE | `node quality/tools/check-docs.mjs` |
 | 1 | Point defects, and the count rule that missed one | DONE | `node quality/tools/check-docs.mjs` |
-| 2 | Linting, and the status check armed in CI | NOT STARTED | `npx eslint .` inside the e2e folder |
+| 2 | Linting, and the status check armed in CI | DONE | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
 | 4 | Integration level over the persistence boundary | NOT STARTED | `npx playwright test --project=integration` |
 | 5 | Mutation audit: the tool, and the baseline table | NOT STARTED | `node quality/tools/mutate.mjs` |
@@ -96,7 +86,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 |---|---|---|
 | 0 | not machine-checkable, a merge and a set of measurements leave no single file behind | UNVERIFIABLE |
 | 1 | yes make-report retired; n/a vacuous assertion gone; yes fixed waits removed; yes count rule widened | COMPLETE |
-| 2 | no eslint config present; no status check wired into CI | NONE |
+| 2 | yes eslint config present; yes status check wired into CI | COMPLETE |
 | 3 | no module loader present; no ritual calc tests present; no cycle calc tests present | NONE |
 | 4 | no schema spec present; no import spec present; no integration project declared | NONE |
 | 5 | no tool present; no baseline report committed | NONE |

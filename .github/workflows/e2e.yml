@@ -47,6 +47,10 @@ jobs:
       # git, which means its tests need no browser and no key, and they belong with the fast
       # checks for the same reason the scorer self-test does.
       - run: node --test ../tools/check-emoji.test.mjs
+      # docs/QA-STATUS.md says what this arc has finished, and a status nobody re-checks drifts.
+      # This refuses a phase claiming to be done whose files are not in the tree. It reads the
+      # repository and nothing else, so it belongs with the checks that need no install.
+      - run: node ../tools/qa-status.mjs --check
 
   test:
     name: test (shard ${{ matrix.shard }}/2)
@@ -112,6 +116,13 @@ jobs:
       # stale silently. This asks the runner for the real count and fails if the badge disagrees.
       # Runs on shard 1 only: it needs the deps this job already installed, so reusing them costs
       # about two seconds, where a separate job would pay for another checkout and npm ci.
+      # Lint the suite against the rules this repository learned the hard way: no fixed waits, no
+      # conditional in a test, every test asserts something, no forced clicks, no page pause, and
+      # no undefined identifier. It runs here rather than in the fast job because it needs the
+      # install this job already did, and npx would otherwise fetch an unpinned eslint per run.
+      - name: Lint the end-to-end suite
+        if: matrix.shard == 1
+        run: npx eslint .
       - name: Check the README test count has not drifted
         if: matrix.shard == 1
         run: node count-tests.js --check
