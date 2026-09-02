@@ -12,45 +12,47 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 0, nearly done. Both pull requests merged, the working branch is cut, the baseline is
-recorded. Two steps remain and both touch `staging`.
+**Phase:** 0 complete on this machine, not yet pushed. Phase 1 is next.
 
-**Blocked on:** one decision. The plan's own step order was invalidated by its own success, see
-below. Nothing else.
+**Next action:** push `staging`. Two commits are waiting there, the reconciliation and the `v185`
+build, and until they land the reconciliation has not really happened: the preview still serves what
+it served before. Then start phase 1.
 
-**Next action:**
+**Blocked on:** nothing, once that push is made.
 
-1. Decide the order of the two remaining steps, then run them. The plan says commit the `v185`
-   build first and reconcile second. That cannot work now: `.githooks/` is versioned per branch, so
-   `staging` still runs the gate without a build baseline and refuses `v185` over thirty inherited
-   emoji. The fix reaches `staging` through the reconcile. Reversing them is safe, because the
-   reason the commit came first was to stop the build riding along in a merge, and an untracked
-   file cannot be part of a merge commit.
-2. Then: reconcile, remove the em dash from the four comment lines `v185` adds, commit the `v185`
-   build on its own. It is written and structurally valid, div balance 241 of 241 and all three
-   script blocks parse, but it is not committed.
-3. Then phase 1.
+**What phase 0 delivered:**
 
-**Done in phase 0:**
-
-- The status system and the commit gate baseline are on `main`.
+- The status system and the commit gate's build baseline are on `main`.
 - `qa/test-architecture` is cut from `main`. Everything after this happens here.
 - The baseline is in `quality/tools/BASELINE.md`: wall clock, flake rate over 415 executions, spec
   line count, and the number of distinct ways the suite opens one screen.
+- `staging` has been reconciled with `main`, and `v185` is committed there on its own.
+
+**The step order in this phase was wrong, and was corrected.** The plan said commit the build first
+and reconcile second. That could not work: `.githooks/` is versioned per branch, so `staging` ran the
+gate without a build baseline and refused `v185` over thirty inherited emoji. The fix reaches
+`staging` only through the reconcile. Reversed, and the reason the original order existed, keeping
+the build out of a merge, does not apply to an untracked file.
+
+**Two things the reconciliation surfaced, both recorded rather than repaired here.**
+
+The previous reconciliation dropped two files that `main` had, inside its own merge commit, with
+nothing reporting it: `quality/e2e/specs/README.md` and the promoted build it carried. The README is
+restored. Losing the build is defensible, since `staging` has moved well past it, but it was a
+silent choice rather than a stated one.
+
+The one test in the ungated `generated` project fails, and fails the same way on `main`: a
+decorative element above the ritual tick intercepts the second click, so it times out before
+reaching the assertion it was written to make. Its commit calls it red on purpose, which is true,
+but not for the reason the name suggests. Worth a look on its own, and it belongs in the defect
+backlog rather than inside a merge.
 
 **One thing the baseline corrected.** The plan said two of the five ways to open Settings were
 latent strict-mode failures. Measured against the running app, all four Settings locator forms
 resolve to exactly one element. The ambiguity is on Profile, unscoped, which resolves to two
-elements once you are on the Profile screen, and throws when clicked a second time. Triggered on
+elements once you are on the Profile screen and throws when clicked a second time. Triggered on
 demand rather than inferred. Phase 6 has to scope that locator or the refactor introduces the
 failure.
-
-**Why the reconcile is in phase 0 at all:** the anti-skip guard does not exist where the product is
-being built. `main` has
-`quality/tools/check-skips.mjs`, the `generated` authoring zone, and a healer policy that forbids
-skipping on its own authority. `staging` has none of them, and its copy of
-`quality/e2e/.claude/agents/playwright-test-healer.md` still instructs the agent to mark a stubborn
-test as skipped. Both halves of that defence live on one branch only.
 
 **Two ordering rules that cost rework if broken:**
 
