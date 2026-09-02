@@ -12,51 +12,44 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 1. Phase 0 is done and pushed.
+**Phase:** 2. Phases 0 and 1 are done.
 
-**Next action:** the point defects. Retire the hand-rolled report script and its npm entry, replace
-the two fixed waits with conditions, and widen rule 4 of the documentation gate so a bare test count
-cannot slip past it again. Detail below.
+**Next action:** the lint layer. A flat ESLint config in the e2e folder with the Playwright plugin,
+its rules as errors, and the two checks that are promised but unarmed added to the fast `validate`
+job. Detail below. Pin the rule names from the plugin's own documentation at install time; several
+of them have been renamed across major versions and writing them from memory produces a config that
+silently enforces nothing.
 
 **Blocked on:** nothing.
 
-**Phase 0 verified where it runs.** The preview at `staging.mi-dia-app.pages.dev` serves byte for
-byte what is committed, compared against the git blob rather than the working copy, which differs by
-one byte per line on this machine. Both branches list the same skills.
+**Not pushed:** phase 1's staging half. The Garden spec fix is committed on `staging` and sits there
+locally, because it is a change to a branch that deploys.
 
-**What phase 0 delivered:**
+**What phase 1 delivered, on the working branch.** The hand-rolled report script is gone, with its
+npm entry and the paragraph advertising it. Both fixed waits are replaced: `expect.poll` on the
+stored value where the write goes to storage rather than the page, and a load-state wait where the
+assertion is about the request log. Rule 4 of the documentation gate gained `BARE_TEST_COUNT`, which
+catches a count with no word beside it, plus a second test proving it stays quiet on a count the
+runner can produce. The stale figure was removed rather than corrected: that document lives on both
+branches, which report different counts, so any number written in it is wrong on one of them.
 
-- The status system and the commit gate's build baseline are on `main`.
-- `qa/test-architecture` is cut from `main`. Everything after this happens here.
-- The baseline is in `quality/tools/BASELINE.md`: wall clock, flake rate over 415 executions, spec
-  line count, and the number of distinct ways the suite opens one screen.
-- `staging` has been reconciled with `main`, and `v185` is committed there on its own.
+**And on `staging`.** The Garden spec had three defects in one test: a branch on observed state that
+changed the test's meaning once a month, an assertion that a count was at least zero, and a
+non-retrying count where a web-first assertion belongs. The clock is now pinned to a fixed mid-month
+day, which removes the branch instead of papering over it and turns the future-day count into an
+exact number. Clock control was listed under what this arc leaves out, scoped to streak arithmetic;
+using it for a calendar boundary was raised and approved rather than assumed.
 
-**The step order in this phase was wrong, and was corrected.** The plan said commit the build first
-and reconcile second. That could not work: `.githooks/` is versioned per branch, so `staging` ran the
-gate without a build baseline and refused `v185` over thirty inherited emoji. The fix reaches
-`staging` only through the reconcile. Reversed, and the reason the original order existed, keeping
-the build out of a merge, does not apply to an untracked file.
+**Two findings from phase 1, recorded in the backlog rather than fixed here.**
 
-**Two things the reconciliation surfaced, both recorded rather than repaired here.**
+TD-003: the production smoke's same-origin 404 scan cannot fail. The host answers an unknown path
+with the single-page fallback, 200 and the whole page, so a missing asset never produces a 4xx. The
+failure class is still covered, by the console-error assertion in the same test rather than by the
+one whose name promises it. Three candidate fixes are written down.
 
-The previous reconciliation dropped two files that `main` had, inside its own merge commit, with
-nothing reporting it: `quality/e2e/specs/README.md` and the promoted build it carried. The README is
-restored. Losing the build is defensible, since `staging` has moved well past it, but it was a
-silent choice rather than a stated one.
-
-The one test in the ungated `generated` project fails, and fails the same way on `main`: a
-decorative element above the ritual tick intercepts the second click, so it times out before
-reaching the assertion it was written to make. Its commit calls it red on purpose, which is true,
-but not for the reason the name suggests. Worth a look on its own, and it belongs in the defect
-backlog rather than inside a merge.
-
-**One thing the baseline corrected.** The plan said two of the five ways to open Settings were
-latent strict-mode failures. Measured against the running app, all four Settings locator forms
-resolve to exactly one element. The ambiguity is on Profile, unscoped, which resolves to two
-elements once you are on the Profile screen and throws when clicked a second time. Triggered on
-demand rather than inferred. Phase 6 has to scope that locator or the refactor introduces the
-failure.
+HN-001 was walked into rather than avoided: two Playwright runners competing for one port produced
+two false failures, one of them in a test that had not been touched. The entry describing that trap
+already existed.
 
 **Two ordering rules that cost rework if broken:**
 
@@ -65,9 +58,9 @@ failure.
   moves anything, or there is nothing to compare against.
 - Phase 7 comes after phase 6, so new specs are written once, in the final shape.
 
-**Known unarmed promise:** `qa-status.mjs --check` is not wired into CI yet. Phase 2 arms it. Until
-then this file is checked only when somebody runs it by hand. The commit gate's own tests are armed,
-in the fast `validate` job, and confirmed running on the CI runner.
+**Known unarmed promise:** `qa-status.mjs --check` is not wired into CI yet. Phase 2 arms it, and it
+is the first thing that phase should do. Until then this file is checked only when somebody runs it
+by hand.
 
 ---
 
@@ -79,7 +72,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | Phase | Delivers | Status | Proof |
 |---|---|---|---|
 | 0 | Land the status system on main, reconcile, branch, baseline | DONE | `node quality/tools/check-docs.mjs` |
-| 1 | Point defects, and the count rule that missed one | NOT STARTED | `node quality/tools/check-docs.mjs` |
+| 1 | Point defects, and the count rule that missed one | DONE | `node quality/tools/check-docs.mjs` |
 | 2 | Linting, and the status check armed in CI | NOT STARTED | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
 | 4 | Integration level over the persistence boundary | NOT STARTED | `npx playwright test --project=integration` |
