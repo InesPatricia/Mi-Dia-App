@@ -23,13 +23,13 @@ test.describe('post-deploy smoke (production)', () => {
   test('home boots on the Day view, brand shows, no console errors or same-origin 404s', async ({ page }) => {
     const errors = [];
     const badResponses = [];
-    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    page.on('pageerror', (e) => errors.push(e.message));
-    page.on('response', (r) => {
-      const u = new URL(r.url());
+    page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+    page.on('pageerror', (err) => errors.push(err.message));
+    page.on('response', (res) => {
+      const url = new URL(res.url());
       // only same-origin app assets; favicon 404 is benign noise on the host
-      if (u.origin === ORIGIN && r.status() >= 400 && !/favicon/i.test(u.pathname)) {
-        badResponses.push(`${r.status()} ${u.pathname}`);
+      if (url.origin === ORIGIN && res.status() >= 400 && !/favicon/i.test(url.pathname)) {
+        badResponses.push(`${res.status()} ${url.pathname}`);
       }
     });
 
@@ -42,13 +42,14 @@ test.describe('post-deploy smoke (production)', () => {
     // The API marks networkidle DISCOURAGED, and rightly, for deciding that the UI is ready. Every
     // readiness check below this line is a web assertion for exactly that reason. This one call is
     // about the request log, not the interface.
+    // eslint-disable-next-line playwright/no-networkidle -- waits for the request log, not the UI
     await page.waitForLoadState('networkidle');
 
     await expect(page.locator('body')).toHaveAttribute('data-view', 'day');
     await expect(page.getByRole('heading', { name: /Mi D/i })).toBeVisible();
 
     expect(badResponses, badResponses.join('\n')).toEqual([]);
-    const real = errors.filter((e) => !/favicon|ServiceWorker|sw\.js|manifest/i.test(e));
+    const real = errors.filter((text) => !/favicon|ServiceWorker|sw\.js|manifest/i.test(text));
     expect(real, real.join('\n')).toEqual([]);
   });
 
@@ -66,8 +67,8 @@ test.describe('post-deploy smoke (production)', () => {
 
   test('all 7 views render without console errors', async ({ page }) => {
     const errors = [];
-    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+    page.on('pageerror', (err) => errors.push(err.message));
 
     await gotoApp(page);
 
@@ -82,7 +83,7 @@ test.describe('post-deploy smoke (production)', () => {
     await page.getByRole('button', { name: 'Profile', exact: true }).click();
     await expect(page.locator('body')).toHaveAttribute('data-view', 'profil');
 
-    const real = errors.filter((e) => !/favicon|ServiceWorker|sw\.js|manifest/i.test(e));
+    const real = errors.filter((text) => !/favicon|ServiceWorker|sw\.js|manifest/i.test(text));
     expect(real, real.join('\n')).toEqual([]);
   });
 
