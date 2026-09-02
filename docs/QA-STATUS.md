@@ -12,13 +12,17 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 0 complete on this machine, not yet pushed. Phase 1 is next.
+**Phase:** 1. Phase 0 is done and pushed.
 
-**Next action:** push `staging`. Two commits are waiting there, the reconciliation and the `v185`
-build, and until they land the reconciliation has not really happened: the preview still serves what
-it served before. Then start phase 1.
+**Next action:** the point defects. Retire `quality/e2e/make-report.js` and its npm script, replace
+the two fixed waits with conditions, and widen rule 4 of the documentation gate so a bare test count
+cannot slip past it again. Detail below.
 
-**Blocked on:** nothing, once that push is made.
+**Blocked on:** nothing.
+
+**Phase 0 verified where it runs.** The preview at `staging.mi-dia-app.pages.dev` serves byte for
+byte what is committed, compared against the git blob rather than the working copy, which differs by
+one byte per line on this machine. Both branches list the same skills.
 
 **What phase 0 delivered:**
 
@@ -74,7 +78,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 
 | Phase | Delivers | Status | Proof |
 |---|---|---|---|
-| 0 | Land the status system on main, reconcile, branch, baseline | IN PROGRESS | `node quality/tools/check-docs.mjs` |
+| 0 | Land the status system on main, reconcile, branch, baseline | DONE | `node quality/tools/check-docs.mjs` |
 | 1 | Point defects, and the count rule that missed one | NOT STARTED | `node quality/tools/check-docs.mjs` |
 | 2 | Linting, and the status check armed in CI | NOT STARTED | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
