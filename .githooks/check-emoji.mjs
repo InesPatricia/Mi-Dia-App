@@ -143,6 +143,15 @@ function buildVersion(path) {
 
 // The highest-numbered build already committed that sits below this one. Compared as numbers, not
 // as text: sorted as text, v99 lands above v100 and the baseline would walk backwards.
+// Two limits, both closed rather than open, both found by probing for a way through.
+//
+//   The lookup is scoped to the folder the new build lands in, so moving builds to another
+//   directory costs exactly one fully gated commit. Nobody has moved them, and the alternative
+//   is a repository-wide search that would hand a build a baseline from somewhere unrelated.
+//
+//   A version written with leading zeros, v0012 beside v12, parses to the same number, and the
+//   comparison below is strict, so neither can serve as the other's baseline. That name is not a
+//   shape this repository uses, and the result is a gated commit rather than a free pass.
 function previousBuild(path, version) {
   const cut = path.lastIndexOf('/');
   const dir = cut === -1 ? '.' : path.slice(0, cut);

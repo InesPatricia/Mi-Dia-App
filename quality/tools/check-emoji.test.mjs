@@ -84,7 +84,19 @@ test('a new build that introduces an emoji of its own is still refused', () => {
   const { status, out } = check(r.dir);
   assert.equal(status, 1, 'a genuinely new emoji must not ride in behind the baseline');
   assert.match(out, /mi-dia-v185\.html/);
-  assert.match(out, /compared against src\/mi-dia-v184\.html/);
+});
+
+test('the refusal names the build the baseline came from', () => {
+  const r = repo();
+  seedWithBuild(r);
+
+  write(r.dir, 'src/mi-dia-v185.html', `${v184}\n<p>${BUTTERFLY} gradina</p>`);
+  r.git('add', 'src/mi-dia-v185.html');
+
+  // A reader who sees a refusal and cannot tell which comparison produced it reaches for
+  // --no-verify. Kept apart from the refusal above, so that rewording the report cannot fail
+  // the test whose name promises a new emoji is stopped.
+  assert.match(check(r.dir).out, /compared against src\/mi-dia-v184\.html/);
 });
 
 test('a new build that introduces an em dash of its own is still refused', () => {
@@ -161,4 +173,96 @@ test('a merge still carries work authored elsewhere through untouched', () => {
   r.git('add', 'docs/note.md');
 
   assert.equal(check(r.dir).status, 0);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Directions the baseline could fail open, probed one at a time. The claim in the pull request was
+// once "fails closed in every direction I could find", written after four cases. These are the
+// four that were missing, turned into tests so the claim is a list rather than a feeling.
+
+test('a version written with leading zeros finds no predecessor, so it stays gated', () => {
+  const r = repo();
+  const clean = ['<!doctype html>', '<p>no debt</p>'].join('\n');
+  seedWithBuild(r, 'src/mi-dia-v12.html', clean);
+
+  // v0012 parses to 12, which is not strictly below 12, so v12 is refused as a baseline and the
+  // whole file is measured. Closed, not open: a name this repository does not use must not become
+  // a way to inherit a baseline it did not earn.
+  write(r.dir, 'src/mi-dia-v0012.html', `${clean}\n<p>${BUTTERFLY}</p>`);
+  r.git('add', 'src/mi-dia-v0012.html');
+
+  assert.equal(check(r.dir).status, 1);
+});
+
+test('two builds staged in one commit are each measured against the last committed one', () => {
+  const r = repo();
+  const clean = ['<!doctype html>', '<p>no debt</p>'].join('\n');
+  seedWithBuild(r, 'src/mi-dia-v184.html', clean);
+
+  // v185 is not in HEAD, so it cannot serve as v186's baseline. Both fall back to v184, which is
+  // the conservative answer: a mark introduced by v185 cannot launder itself through v186.
+  write(r.dir, 'src/mi-dia-v185.html', `${clean}\n<p>${BUTTERFLY}</p>`);
+  write(r.dir, 'src/mi-dia-v186.html', `${clean}\n<p>${BUTTERFLY}</p>`);
+  r.git('add', 'src/mi-dia-v185.html', 'src/mi-dia-v186.html');
+
+  const { status, out } = check(r.dir);
+  assert.equal(status, 1);
+  assert.match(out, /mi-dia-v185\.html/);
+  assert.match(out, /mi-dia-v186\.html/);
+});
+
+test('a build that moves to another directory finds no predecessor, so it stays gated', () => {
+  const r = repo();
+  const clean = ['<!doctype html>', '<p>no debt</p>'].join('\n');
+  seedWithBuild(r, 'src/mi-dia-v184.html', `${clean}\n<p>${SEEDLING}</p>`);
+
+  // The lookup is scoped to the folder the build lands in. Moving builds to another directory
+  // therefore costs one fully gated commit. That is a known limitation, recorded here rather than
+  // left for somebody to discover at the moment it blocks them.
+  write(r.dir, 'public/mi-dia-v185.html', `${clean}\n<p>${SEEDLING}</p>`);
+  r.git('add', 'public/mi-dia-v185.html');
+
+  assert.equal(check(r.dir).status, 1, 'no baseline in the new folder means no baseline at all');
+});
+
+// ---------------------------------------------------------------------------------------------
+// The gate, not the checker. Everything above runs the checker directly. The thing that actually
+// stands between a mark and the repository is a shell script that runs two other checks first and
+// then hands over to node, and none of its wiring is exercised by calling the checker by hand.
+
+function installRealHooks(dir) {
+  const hooks = path.join(dir, '.githooks');
+  fs.mkdirSync(hooks, { recursive: true });
+  for (const name of ['pre-commit', 'check-emoji.mjs']) {
+    const to = path.join(hooks, name);
+    fs.copyFileSync(path.join(ROOT, '.githooks', name), to);
+    fs.chmodSync(to, 0o755);
+  }
+  execFileSync('git', ['config', 'core.hooksPath', hooks], { cwd: dir, encoding: 'utf8' });
+}
+
+test('through the real hook, a build that only inherits is committed', () => {
+  const r = repo();
+  seedWithBuild(r);
+  installRealHooks(r.dir);
+
+  write(r.dir, 'src/mi-dia-v185.html', `${v184}\n<p>a blameless line</p>`);
+  r.git('add', 'src/mi-dia-v185.html');
+  r.git('commit', '-q', '-m', 'build: v185');
+
+  assert.match(r.git('log', '--oneline', '-1'), /build: v185/);
+});
+
+test('through the real hook, a build that adds a mark leaves HEAD where it was', () => {
+  const r = repo();
+  seedWithBuild(r);
+  installRealHooks(r.dir);
+  const before = r.git('rev-parse', 'HEAD').trim();
+
+  write(r.dir, 'src/mi-dia-v185.html', `${v184}\n<p>${BUTTERFLY} gradina</p>`);
+  r.git('add', 'src/mi-dia-v185.html');
+
+  const attempt = spawnSync('git', ['commit', '-m', 'build: v185'], { cwd: r.dir, encoding: 'utf8' });
+  assert.notEqual(attempt.status, 0, 'the hook has to stop the commit, not just print');
+  assert.equal(r.git('rev-parse', 'HEAD').trim(), before, 'HEAD must not move');
 });
