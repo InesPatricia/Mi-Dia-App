@@ -17,9 +17,9 @@ async function seedStorage(page, entries = {}) {
   // the key is absent. Otherwise a reload would clobber changes the app persisted (e.g. a ritual
   // checked in-app then reloaded to prove persistence). Mirrors real localStorage semantics.
   await page.addInitScript((data) => {
-    for (const [k, v] of Object.entries(data)) {
-      if (localStorage.getItem(k) === null) {
-        localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
+    for (const [key, value] of Object.entries(data)) {
+      if (localStorage.getItem(key) === null) {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
       }
     }
   }, entries);
@@ -38,9 +38,12 @@ async function gotoApp(page, opts = {}) {
     await page.addInitScript(() => {
       try {
         const raw = localStorage.getItem('settings');
-        const s = raw ? JSON.parse(raw) : {};
-        if (s.onboarded !== true) { s.onboarded = true; localStorage.setItem('settings', JSON.stringify(s)); }
-      } catch (e) { /* ignore */ }
+        const settings = raw ? JSON.parse(raw) : {};
+        if (settings.onboarded !== true) {
+          settings.onboarded = true;
+          localStorage.setItem('settings', JSON.stringify(settings));
+        }
+      } catch { /* ignore */ }
     });
   }
   await page.goto('/');
@@ -58,9 +61,9 @@ async function readBlocks(page) {
   return page.evaluate(() => {
     const out = [];
     for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.indexOf('day:') === 0) {
-        try { out.push(...JSON.parse(localStorage.getItem(k))); } catch (e) { /* ignore */ }
+      const key = localStorage.key(i);
+      if (key && key.indexOf('day:') === 0) {
+        try { out.push(...JSON.parse(localStorage.getItem(key))); } catch { /* ignore */ }
       }
     }
     return out;
@@ -75,7 +78,7 @@ async function readBlocks(page) {
  */
 async function readRituals(page) {
   return page.evaluate(() => {
-    try { return JSON.parse(localStorage.getItem('rituals') || '[]'); } catch (e) { return []; }
+    try { return JSON.parse(localStorage.getItem('rituals') || '[]'); } catch { return []; }
   });
 }
 
@@ -87,7 +90,7 @@ async function readRituals(page) {
  */
 async function readSettings(page) {
   return page.evaluate(() => {
-    try { return JSON.parse(localStorage.getItem('settings') || '{}'); } catch (e) { return {}; }
+    try { return JSON.parse(localStorage.getItem('settings') || '{}'); } catch { return {}; }
   });
 }
 
@@ -100,8 +103,8 @@ async function readSettings(page) {
  */
 function ritual(over = {}, logDays = 0) {
   const log = [];
-  const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 1); // start yesterday
-  for (let i = 0; i < logDays; i++) { log.push(keyForLocal(d)); d.setDate(d.getDate() - 1); }
+  const cursor = new Date(); cursor.setHours(0, 0, 0, 0); cursor.setDate(cursor.getDate() - 1); // start yesterday
+  for (let i = 0; i < logDays; i++) { log.push(keyForLocal(cursor)); cursor.setDate(cursor.getDate() - 1); }
   return Object.assign({
     id: 'r_seed_' + Math.random().toString(36).slice(2, 7),
     name: 'Test ritual', identity: '', color: '--sea', icon: 'breath',
@@ -109,16 +112,16 @@ function ritual(over = {}, logDays = 0) {
     freq: 'daily', area: '', createdAt: '2026-01-01', log,
   }, over);
 }
-function keyForLocal(d) {
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function keyForLocal(date) {
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
 /**
  * Storage date key, mirroring the app's keyFor(): "YYYY-MM-DD" (zero-padded).
- * @param {Date} d
+ * @param {Date} date
  */
-function keyFor(d) {
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function keyFor(date) {
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
 }
 
 /**
@@ -127,10 +130,10 @@ function keyFor(d) {
  * @param {number} offset
  */
 function dayKey(offset = 0) {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + offset);
-  return keyFor(d);
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return keyFor(date);
 }
 
 module.exports = { seedStorage, gotoApp, readBlocks, readRituals, readSettings, ritual, keyFor, dayKey };
