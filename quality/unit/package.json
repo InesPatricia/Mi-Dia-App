@@ -1,0 +1,8 @@
+{
+  "name": "mi-dia-unit",
+  "private": true,
+  "description": "The unit level: the pure calc functions of the app's modules, run in a vm sandbox with no browser and no dependencies.",
+  "scripts": {
+    "test": "node --test"
+  }
+}
