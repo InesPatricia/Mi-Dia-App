@@ -145,8 +145,20 @@ The suite grew, so the published count moved. The badge, the README sentence and
 in `docs/APP-REFERENCE.md` were all updated from what the runner reports, which is the check that
 made the drift impossible to miss.
 
-**What is not verified.** The two workflow edits have never run in CI, because this branch is not
-pushed. What was checked instead: the file parses as YAML and the two steps come out of the parser
+**What the first push found, twelve seconds in.** The branch went to CI for the first time and
+`validate build` failed on `qa-status.mjs --check`, which had been armed in phase 2 and had
+therefore never actually run anywhere but a laptop. The derived block embeds the branch name, and on
+a pull request GitHub checks the code out detached at the merge ref, where `rev-parse --abbrev-ref
+HEAD` answers `HEAD`. The check could not pass on a pull request, by construction, and the file's own
+comment already recorded learning that lesson once with a commit hash. Reproduced locally with a
+detached worktree before anything was changed. `--check` now takes that one line from the file it is
+checking and verifies everything the repository can actually produce.
+
+That is the argument for pushing, made better than any argument could: a gate that had been called
+armed for two phases was not able to pass.
+
+**What is still not verified.** The rest of the workflow edits, until the run after this fix. What
+was checked before the push: the file parses as YAML and the two steps come out of the parser
 in the shape they are meant to have; both shard commands were run
 locally exactly as written, both green, and between them they accounted for every test in the two
 gated projects; and the unit step was run from the directory the job defaults to, since it uses a
