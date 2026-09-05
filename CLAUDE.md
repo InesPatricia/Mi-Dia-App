@@ -46,9 +46,11 @@ overwriting one destroys it. A release copies the chosen build to `index.html` a
 → `node .claude/skills/ship/validate.mjs`
 
 **Validation after every edit, before saying it is done.** Div balance must be equal, and every
-`<script>` block must parse. Then run the suite.
+`<script>` block must parse. Then run the levels: `npm test` is the pair of projects the merge gate
+runs, and it is defined in one place so it cannot drift from CI.
 → `node quality/e2e/validate-build.js`
-→ `cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual`
+→ `cd quality/unit && npm test`
+→ `cd quality/e2e && npm test`
 
 **Visual changes get a second gate.** Any change to colour, theme, tokens or layout is reviewed in
 both themes as one grid, because dark-mode legibility bugs do not show up in a single screenshot.

@@ -7,7 +7,7 @@ nothing to a server.
 **Live:** https://mi-dia-app.pages.dev
 
 [![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
-![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)
 ![Stack](https://img.shields.io/badge/Playwright%201.62-Node%2020-blue)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
@@ -57,7 +57,7 @@ and storage.
 
 ## How it is tested
 
-**83 end-to-end tests across 19 specs**, Playwright on mobile Chromium, because the app is
+**85 end-to-end tests across 19 specs**, Playwright on mobile Chromium, because the app is
 phone-first. A desktop viewport tests a layout nobody uses. Plus 7 smoke tests against the live
 site.
 
@@ -359,7 +359,8 @@ nothing to build, which is either refreshing or unsettling depending on your dec
 cd quality/e2e
 npm ci
 npx playwright install --with-deps chromium
-npm test              # the functional suite
+npm test              # everything the merge gate runs: functional + integration
+npm run test:unit     # the unit level (no browser, from ../unit)
 npm run count         # what the runner says the counts are
 npm run validate      # structural check of the single-file build
 npm run test:report   # open the interactive HTML report

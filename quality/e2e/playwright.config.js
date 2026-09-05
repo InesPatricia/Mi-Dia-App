@@ -48,6 +48,22 @@ module.exports = defineConfig({
       testDir: './tests',
       use: { ...devices['Pixel 5'] }, // mobile Chromium, 393x851, isMobile
     },
+    // INTEGRATION LEVEL. The persistence boundary, and nothing above it.
+    //
+    // A separate project rather than a folder inside ./tests, because these answer a different
+    // question and are allowed to be run on their own: does what the app writes match the
+    // documented storage contract, and does it survive a restore. No clicks, no navigation between
+    // views, no assertion about appearance. A browser is still the right host, because the contract
+    // being checked is the one between the application's own code and localStorage, and running
+    // that code anywhere else would be checking a copy of it.
+    //
+    // Same device as the gated project on purpose: the app boots a phone-first layout and the boot
+    // path is what writes the first-run keys these tests read.
+    {
+      name: 'integration',
+      testDir: './tests-integration',
+      use: { ...devices['Pixel 5'] },
+    },
     // AUTHORING ZONE. Agent-drafted tests land here and gate nothing.
     //
     // This exists because a trust boundary that is only written down is not a boundary. The

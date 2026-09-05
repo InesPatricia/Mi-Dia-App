@@ -21,7 +21,7 @@ test.describe('smoke', () => {
     await expect(page.getByRole('heading', { name: /Mi D/i })).toBeVisible();
 
     // Should boot with no real console/page errors (ignore SW/network noise from the file host)
-    const real = errors.filter((e) => !/favicon|ServiceWorker|sw\.js/i.test(e));
+    const real = errors.filter((text) => !/favicon|ServiceWorker|sw\.js/i.test(text));
     expect(real, real.join('\n')).toEqual([]);
   });
 

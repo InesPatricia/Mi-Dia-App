@@ -73,7 +73,7 @@ test.describe('rituals', () => {
     await page.locator('#rsSeg button[data-cue="after"]').click();
     await page.locator('#rsSave').click();
     const rits = await readRituals(page);
-    const fresh = rits.find((r) => r.name === 'Play guitar');
+    const fresh = rits.find((rit) => rit.name === 'Play guitar');
     expect(fresh).toBeTruthy();
     expect(fresh.cue.type).toBe('after');
     expect(fresh.cue.value).toBe('r_anchor');
@@ -105,18 +105,23 @@ test.describe('rituals', () => {
     const dl = await Promise.all([
       page.waitForEvent('download'),
       page.evaluate(() => window.__miExport && window.__miExport()),
-    ]).then(([d]) => d);
+    ]).then(([download]) => download);
     const fs = require('fs');
-    const p = await dl.path();
-    const dump = JSON.parse(fs.readFileSync(p, 'utf8'));
+    const downloadPath = await dl.path();
+    const dump = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
     expect(dump.data.rituals).toBeTruthy();
     expect(JSON.parse(dump.data.rituals)[0].name).toBe('Gratitude');
     // wipe + import restores
     await page.evaluate(() => localStorage.removeItem('rituals'));
-    await page.locator('#importFile').setInputFiles(p);
-    await page.waitForTimeout(600);
-    const rits = await readRituals(page);
-    expect(rits.some((r) => r.name === 'Gratitude')).toBe(true);
+    await page.locator('#importFile').setInputFiles(downloadPath);
+
+    // The import is asynchronous and writes to storage, not to the DOM, so there is nothing on
+    // the page to assert against and no web-first assertion to inherit the waiting from. Poll the
+    // stored value instead of sleeping: a fixed wait is a guess that is either too short on a
+    // loaded machine or wasted on every run that did not need it.
+    await expect
+      .poll(async () => (await readRituals(page)).map((rit) => rit.name))
+      .toContain('Gratitude');
   });
 
   test('i18n: switching to Romanian relabels the section header', async ({ page }) => {
@@ -142,7 +147,7 @@ test.describe('rituals', () => {
     await expect(card(page, 'Remove me')).toHaveCount(0);
     await expect(card(page, 'Keep me')).toBeVisible();
     const rits = await readRituals(page);
-    expect(rits.map((r) => r.name)).toEqual(['Keep me']);
+    expect(rits.map((rit) => rit.name)).toEqual(['Keep me']);
   });
 
   test('edit mode: tapping a card opens the sheet prefilled and saves in place', async ({ page }) => {

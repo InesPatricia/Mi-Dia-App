@@ -9,13 +9,13 @@
 const { test, expect } = require('@playwright/test');
 const { gotoApp } = require('./helpers');
 
-// Accessible name (EN) of each petal -> the view id suffix it activates (#view-<v>).
+// Accessible name (EN) of each petal -> the view id suffix it activates (#view-<viewId>).
 const PETALS = [
-  { name: 'Journal', v: 'journal' },
-  { name: 'Respiro', v: 'calm' },
-  { name: 'Calendar', v: 'cal' },
-  { name: 'Progress', v: 'stats' },
-  { name: 'Projects', v: 'proj' },
+  { name: 'Journal', viewId: 'journal' },
+  { name: 'Respiro', viewId: 'calm' },
+  { name: 'Calendar', viewId: 'cal' },
+  { name: 'Progress', viewId: 'stats' },
+  { name: 'Projects', viewId: 'proj' },
 ];
 
 test.describe('navigation', () => {
@@ -23,10 +23,10 @@ test.describe('navigation', () => {
     await gotoApp(page);
     // The flower lives inside #view-day, so it is only visible on the Day view —
     // return Home (bottom bar) between petals to reach the next one.
-    for (const { name, v } of PETALS) {
+    for (const { name, viewId } of PETALS) {
       // Tapping a petal should switch to its view
       await page.getByRole('button', { name, exact: true }).click();
-      await expect(page.locator('body')).toHaveAttribute('data-view', v);
+      await expect(page.locator('body')).toHaveAttribute('data-view', viewId);
       // Tapping Home should return to the Day view
       await page.getByRole('button', { name: 'Home', exact: true }).click();
       await expect(page.locator('body')).toHaveAttribute('data-view', 'day');

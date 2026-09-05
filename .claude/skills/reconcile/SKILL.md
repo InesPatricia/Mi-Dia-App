@@ -93,7 +93,8 @@ conflict with the real one at exactly the wrong moment.
    ```bash
    node .claude/skills/ship/validate.mjs
    node quality/tools/check-docs.mjs
-   cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual
+   cd quality/unit && npm test
+   cd quality/e2e && npm test
    ```
    Rule 6 turning green is the signal that the reconciliation actually worked: it means the router
    is identical again. If it is still red, the merge is not finished.
