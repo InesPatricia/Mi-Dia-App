@@ -12,9 +12,16 @@
 //   A policy in a prompt is a preference. This file is the rule.
 //
 // WHAT IT CHECKS
-//   Only the GATED zone: quality/e2e/tests/ and quality/e2e/tests-prod/. The `generated` project in
+//   Only the GATED zone: everything a merge depends on. That is four directories now, not two, and
+//   the list below is the thing to update when a fifth arrives. The `generated` project in
 //   tests-generated/ is the authoring zone, where drafts are expected to be broken, half-finished
 //   and skipped. Applying this rule there would make the quarantine useless.
+//
+//   The list went stale once already, which is the reason it is called out here. tests-integration/
+//   was added to the merge-blocking command in phase 4 of the QA arc and not added here, so for the
+//   length of that change a skipped test in the newest gated directory was invisible to the one
+//   check written to see it. A gate whose scope is a hand-written list is a gate that drifts behind
+//   the thing it guards.
 //
 // WHAT IT ALLOWS
 //   Disabling a test, on purpose, in the open. Put a justification comment on the line before:
@@ -43,12 +50,24 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const GATED_DIRS = [
   path.join('quality', 'e2e', 'tests'),
   path.join('quality', 'e2e', 'tests-prod'),
+  path.join('quality', 'e2e', 'tests-integration'),
+  path.join('quality', 'unit'),
 ];
 
+// Two runners, two vocabularies, one rule.
+//
 // `test.only` is already refused in CI by forbidOnly in playwright.config.js, but only in CI, and
 // only for `test.only`. It is listed here so a local run catches it too, and so the message is the
-// same one in both places.
-const DISABLERS = /\b(?:test|describe)\.(skip|fixme|only)\s*\(/;
+// same one in both places. `it` and `todo` are node:test's spellings, which arrived with the unit
+// level: `todo` there marks a test that reports as passing while running nothing, which is the same
+// silent loss of coverage under a friendlier name.
+const DISABLERS = /\b(?:test|describe|it)\.(skip|fixme|only|todo)\s*\(/;
+
+// node:test also disables through an options object, `test('name', { skip: true }, fn)`, which the
+// pattern above cannot see. Anything but `false` counts, since `{ skip: 'reason' }` is the common
+// form. Kept narrow, to one object with no nesting, because a broad version starts matching
+// ordinary fixtures.
+const DISABLING_OPTION = /\{[^{}]*\b(skip|todo|only)\s*:\s*(?!false\b)[^,}]+/;
 
 // A justification is a comment naming a reason. It may sit on the marker's own line or the one
 // above it, which is where a person writing prose naturally puts it.
@@ -61,7 +80,10 @@ function specFiles(dir) {
   return fs.readdirSync(abs, { withFileTypes: true }).flatMap((entry) => {
     const rel = path.join(dir, entry.name);
     if (entry.isDirectory()) return specFiles(rel);
-    return entry.name.endsWith('.spec.js') ? [rel] : [];
+    // Two suffixes, because the unit level is node:test and names its files .test.mjs. Matching
+    // only .spec.js would have added quality/unit to the list above and still read none of it,
+    // which is the quietest way to widen a gate without widening what it sees.
+    return /\.(spec\.js|test\.mjs)$/.test(entry.name) ? [rel] : [];
   });
 }
 
@@ -71,7 +93,7 @@ for (const dir of GATED_DIRS) {
   for (const rel of specFiles(dir)) {
     const lines = fs.readFileSync(path.join(ROOT, rel), 'utf8').split(/\r?\n/);
     lines.forEach((line, i) => {
-      const found = line.match(DISABLERS);
+      const found = line.match(DISABLERS) ?? line.match(DISABLING_OPTION);
       if (!found) return;
 
       // `test.skip(condition, reason)` called INSIDE a test body is Playwright's conditional-skip
@@ -84,7 +106,7 @@ for (const dir of GATED_DIRS) {
       violations.push({
         file: rel.replace(/\\/g, '/'),
         line: i + 1,
-        marker: `${found[0].replace(/\s*\($/, '')}`,
+        marker: found[0].replace(/\s*\($/, '').trim(),
         why: reason ? `justification too short (${reason[1].trim().length}/${MIN_REASON} chars)` : 'no justification comment',
       });
     });
