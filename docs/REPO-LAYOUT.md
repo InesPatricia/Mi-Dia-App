@@ -67,6 +67,7 @@ one place, split by **the question it answers** rather than by the technology th
 
 | Subsystem | The question it answers |
 |---|---|
+| `quality/unit/` | is the arithmetic right? |
 | `quality/e2e/` | does the feature work? |
 | `quality/tools/` | do the gates themselves work? |
 | `quality/evals/` | does the AI part of the loop produce good results? |
@@ -82,10 +83,18 @@ Inside `quality/e2e/`, the same idea applies one level down:
 | Directory | What it is |
 |---|---|
 | `tests/` | the reviewed suite that gates every merge |
+| `tests-integration/` | the persistence boundary: what the app writes, and what a backup file does to it |
 | `tests-generated/` | the quarantine where agent-drafted tests land, gating nothing |
 | `tests-prod/` | the post-deploy smoke, run against a live URL under its own config |
 
-Three directories because they answer three different questions, and none of them ever run together.
+Four directories because they answer four different questions. Two of them gate a merge and run
+together, in one command that names both projects; the other two never join them, because the
+quarantine must not block a merge and the production smoke needs a live URL.
+
+An earlier version of this section said three directories that never run together. That sentence
+survived the change that made it wrong, because nothing checks a claim written in prose. It is worth
+knowing that this is the one kind of rot the documentation gate cannot see.
+
 The full account of the agent half is in [`AGENTIC-QA.md`](AGENTIC-QA.md).
 
 ## Two things called a spec

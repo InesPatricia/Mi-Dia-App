@@ -12,35 +12,147 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 3. Phases 0, 1 and 2 are done.
+**Phase:** 5. Phases 0 through 4 are done.
 
-**Next action:** the unit level, over the pure calc layer. A module loader that runs a module in a
-vm sandbox and hands back its calc surface, then tests for the ritual and cycle calculations. Detail
-below, including the cases that cannot be written yet and why.
+**Next action:** the mutation audit. A tool and a committed baseline report, recorded **before** the
+phase 6 refactor moves anything, because the whole value of the report is the comparison afterwards.
+Detail below, and it now carries two requirements learned by running the audit by hand twice.
 
 **Blocked on:** nothing.
 
-**Not pushed:** everything since the last push. Five commits on this branch for phase 1, five more
-for phase 2, and one on `staging` for phase 1's other half.
+**Not pushed:** everything since the last push. Ten commits on this branch, five for phase 1 and
+five for phase 2. Phases 3 and 4 are in the working tree and not committed. One commit on `staging`
+carries phase 1's other half.
 
-**What phase 2 delivered.** A flat ESLint config in the e2e folder, with the rule names read from
-the installed plugin rather than written from memory. Six Playwright rules as errors: no fixed
-waits, no conditional in a test, every test asserts something, no forced clicks, no page pause, no
-networkidle. Plus `no-undef` and a minimum identifier length with the loop index exempted. Fifty-four
-identifiers renamed across eleven files to make the last of those pass, in four commits split by
-area so each is reviewable.
+**What phase 4 delivered.** A Playwright project named `integration` with its own directory,
+`quality/e2e/tests-integration/`, holding `storage-schema.spec.js` for what the app writes and
+`backup-import.spec.js` for what a file can do to it. No clicks and no navigation between views. A
+reload is used where a reload is the thing being tested.
 
-Two checks that were promised and unarmed are now wired. `qa-status.mjs --check` runs in the fast
-`validate` job, since it needs nothing installed. The lint runs beside the test-count check, which
-is a deviation from the plan's wording and follows the plan's own reasoning: the fast job installs
-nothing by design, and `npx` would fetch an unpinned eslint on every run.
+Three things were wired up so the level is not decorative. The lint now covers the new directory,
+which took one line and was verified by breaking a rule inside it. `count-tests.js` reports the
+level, because a file that calls itself the single source of truth for how many tests exist cannot
+be blind to a whole level. And the CI shard command names both gated projects, since the flag is
+variadic and the authoring zone still has to stay out.
 
-**The finding worth carrying.** Two of the fifty-four renames changed a declaration and missed a
-use. The suite caught both, five and a half minutes in, with a ReferenceError. The lint caught
-neither, because `id-length` is a style rule and cannot see an identifier that does not exist. That
-is why `no-undef` is in the config: reintroducing the same mistake now fails in under a second.
-Enabling it also meant declaring the `globals` package explicitly, which was only present as a
-transitive dependency of eslint and would have taken the rule's usefulness with it on a bump.
+**The open item from phase 3 is half closed.** The unit level now runs in the fast `validate` job.
+The command is `node --test` with no path argument, from inside the folder: a directory positional
+works on Node 20 and does not on Node 24, and a glob needs a runner new enough to expand one, while
+searching the working directory needs neither. Node 20 is what CI pins, and the whole unit level was
+run on a real Node 20, fetched with `npx node@20`, rather than argued from the documentation.
+
+**Still open, with the reason measured rather than assumed:** `quality/unit` is not linted. The only
+ESLint install in this repository sits in `quality/e2e/node_modules`, and ESLint refuses to lint a
+file above its config's directory. Tried and rejected: passing `../unit` as a path, passing it with
+an explicit `--config`, and adding a `files: ['../unit/**/*.mjs']` block, which reports every file
+as ignored. Closing this needs an ESLint install whose config sits at or above `quality/`, which is
+a change to how this repository installs tooling and belongs in its own decision.
+
+**Two findings, both recorded in `quality/e2e/specs/BUGS.md` rather than fixed here.**
+
+- **BUG-003, now closed.** `docs/DATA_SCHEMA.md`, the file the router sends you to before touching
+  persistence, named three keys the application has never written and got all three of their shapes
+  wrong. It said `blocks`, `cats` and `journal`; the app writes `day:<date>`, `areas` and
+  `journal:<date>`, and it also writes four keys the document did not mention. Corrected from the
+  source, with the markers given a table of their own. The **Since** values did not move: every one
+  of those keys is already in the earliest build in the repository.
+
+  **The document is now the contract, not a description of one.** The integration spec parses the
+  key column out of it and fails if the app writes anything with no row, so this drift cannot repeat
+  quietly. That is what finally satisfies the phase's own sentence, "check the documented shape",
+  which could not be done while the document disagreed with the application.
+- **BUG-004.** A backup file whose values are not strings restores nothing and reports "Import
+  successful (0 entries)". The `version` field that could have caught it is written by the export
+  and never read by the import.
+
+**The finding worth carrying.** Seven mutations were applied to the promoted build, one at a time,
+each reverted after the run. Five were caught on the first pass. Neither of the two misses was a
+gap in the tests, and that distinction is the lesson:
+
+- One anchor, `daysCache=null;`, occurs twelve times in the build, so the replacement landed on the
+  first occurrence and modelled nothing at all. A mutation that reports itself as uncaught when it
+  was never applied is worse than no mutation, because it sends the next person to rewrite a test
+  that was already correct.
+- The other was an **equivalent mutation**. Removing the first-run seed guard changes no observable
+  behaviour, because the seeding block is protected twice, by the marker and by a check that the
+  cache is empty. Both have to go before anything is different. Rewritten as a two-part mutation, it
+  was caught.
+
+Phase 5 has to handle both: refuse an anchor that is not unique, and give an equivalent mutation a
+verdict of its own rather than counting it as a hole in the suite.
+
+**Three defects this arc introduced, found by reviewing the unpushed work rather than by any check.**
+All three are fixed here, and the pattern in them is the same: a change widened what the pipeline
+does, and the things that describe the pipeline stayed where they were.
+
+- **A gate went blind on the zone it was meant to guard.** `quality/tools/check-skips.mjs` carried a
+  hand-written list of gated directories. Phase 4 made `tests-integration/` merge-blocking and
+  phase 3 added `quality/unit/`, and neither was added to that list, so a skipped test in the two
+  newest gated directories was invisible to the one check written to see it. Its file filter only
+  matched the Playwright spec suffix too, so listing the unit directory without widening the filter
+  would have read none of it. Both fixed, and the pattern now covers node:test's spellings, `it` and
+  `todo`, and the `{ skip: true }` options object. Verified by planting a disabled test in each zone in each
+  spelling and watching every one go red, and by planting a properly justified one and watching it
+  pass.
+- **The local command stopped matching the gate.** `npm test` ran one project while CI ran two, so a
+  developer could get a green the merge gate would not agree with. It now runs the same pair, proved
+  by comparing what each selects rather than by reading the strings, and `test:functional`,
+  `test:integration` and `test:unit` name the levels individually.
+- **Two documents were made false and nothing noticed.** `docs/REPO-LAYOUT.md` said three
+  directories that never run together; there are four and two of them run together. Its subsystem
+  table was also missing `quality/unit/`, which retires the item phase 8 had for it.
+  `docs/RUNBOOK.md` gave a reproduction command for a failed shard that ran only one of the two
+  projects the shard runs.
+
+**The lesson worth carrying from those three:** a gate whose scope is a hand-written list drifts
+behind the thing it guards, and prose is the one kind of claim the documentation gate cannot check.
+Rule 9 reads documented commands but not the npm scripts they now point at, which is the same shape
+of gap, still open.
+
+**Two defects in the fixes themselves, both found by breaking them.** The parser that made
+`DATA_SCHEMA.md` executable first read every table row in the section, and a markdown section runs
+to the next level-two heading, so it swept in the settings field table as though `lang` and `theme`
+were storage keys: the documented set was larger than the document. And restoring a mutated file
+with `git checkout` discarded the uncommitted correction it was supposed to protect, which had to be
+rewritten. A mutation harness restores from its own copy, never from git, and its anchors have to
+tolerate CRLF or they match nothing and report themselves as misses.
+
+`quality/unit` now has a `package.json` whose only script is the test run, so the level has a home
+and one way to run it. The ESLint question stays where it was.
+
+**BUG-001 got its answer, and it is not a fix in this worktree.** The highest-value thing in the
+backlog is a confirmed high-severity defect in the application: a class-name collision that makes a
+ritual tick untappable after the first tap, reachable by anyone in two taps. It was reproduced on
+demand against the promoted build before anything was touched, using the test that has been sitting
+red by design in the quarantine since August.
+
+All three candidate fixes recorded for it were then applied one at a time and measured. All three
+turn that test green, so working is not what separates them. The one to take scopes the overlay rule
+to the single element it was written for, because it removes the class of defect instead of this
+instance of it, and it is also the smallest diff.
+
+**The better fix was the one nobody could verify, which turned out to be the real finding.** The
+celebration overlay it touches had no automated coverage anywhere. That is now written, in the spec
+that owns the interaction which raises it: hidden while the day is unfinished, raised when the last
+open slot is ticked, and clearing itself. Both cases were broken on purpose. With the fix applied
+they stay green and the quarantined test goes green in the same run.
+
+The fix itself belongs on `staging`, as a new build. This branch is reserved for tests, gates and
+tooling, the promoted build here is well behind staging, and editing a promoted file in place would
+break the versioning law. The full verdict, with the table of candidates, is in the BUG-001 entry.
+
+The suite grew, so the published count moved. The badge, the README sentence and the coverage line
+in `docs/APP-REFERENCE.md` were all updated from what the runner reports, which is the check that
+made the drift impossible to miss.
+
+**What is not verified.** The two workflow edits have never run in CI, because this branch is not
+pushed. What was checked instead: the file parses as YAML and the two steps come out of the parser
+in the shape they are meant to have; both shard commands were run
+locally exactly as written, both green, and between them they accounted for every test in the two
+gated projects; and the unit step was run from the directory the job defaults to, since it uses a
+relative `cd` rather than a step-level working directory, which GitHub's syntax reference does not
+say how to resolve against an existing default. None of that is the same as watching the job go
+green, and the first push has to look.
 
 **Two ordering rules that cost rework if broken:**
 
@@ -48,9 +160,6 @@ transitive dependency of eslint and would have taken the rule's usefulness with 
   tests stop carrying arithmetic, and the mutation baseline has to be recorded before the refactor
   moves anything, or there is nothing to compare against.
 - Phase 7 comes after phase 6, so new specs are written once, in the final shape.
-
-**No unarmed promises left in this file.** Both checks it named are now in CI, and the lint is
-green.
 
 ---
 
@@ -64,8 +173,8 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 0 | Land the status system on main, reconcile, branch, baseline | DONE | `node quality/tools/check-docs.mjs` |
 | 1 | Point defects, and the count rule that missed one | DONE | `node quality/tools/check-docs.mjs` |
 | 2 | Linting, and the status check armed in CI | DONE | `npx eslint .` inside the e2e folder |
-| 3 | Unit level over the pure calc layer | NOT STARTED | `node --test quality/unit/` |
-| 4 | Integration level over the persistence boundary | NOT STARTED | `npx playwright test --project=integration` |
+| 3 | Unit level over the pure calc layer | DONE | `node --test` inside the unit folder |
+| 4 | Integration level over the persistence boundary | DONE | `npx playwright test --project=integration` |
 | 5 | Mutation audit: the tool, and the baseline table | NOT STARTED | `node quality/tools/mutate.mjs` |
 | 6 | Page objects, fixtures, shared strings, renames | NOT STARTED | `npx playwright test --project=mobile-chromium` |
 | 7 | Offline, keyboard and focus trap, aria contract | NOT STARTED | `node quality/e2e/count-tests.js --check` |
@@ -87,8 +196,8 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 0 | not machine-checkable, a merge and a set of measurements leave no single file behind | UNVERIFIABLE |
 | 1 | yes make-report retired; n/a vacuous assertion gone; yes fixed waits removed; yes count rule widened | COMPLETE |
 | 2 | yes eslint config present; yes status check wired into CI | COMPLETE |
-| 3 | no module loader present; no ritual calc tests present; no cycle calc tests present | NONE |
-| 4 | no schema spec present; no import spec present; no integration project declared | NONE |
+| 3 | yes module loader present; yes ritual calc tests present; yes cycle calc tests present | COMPLETE |
+| 4 | yes schema spec present; yes import spec present; yes integration project declared | COMPLETE |
 | 5 | no tool present; no baseline report committed | NONE |
 | 6 | no pages present; no components present; no fixtures present; no strings present | NONE |
 | 7 | no offline spec present; no keyboard spec present; no aria contract present; no pixel baselines retired | NONE |
@@ -170,33 +279,67 @@ today is the first of the month. And a non-retrying count where a web-first asse
 
 ### Phase 3. Unit level
 
-```
-quality/unit/
-  load-module.mjs        runs a module in a vm sandbox and returns its _calc surface
-  ritual-calc.test.mjs
-  cycle-calc.test.mjs
-```
+Done. Four files, in `quality/unit/`: the loader `load-module.mjs`, the calc tests
+`ritual-calc.test.mjs` and `cycle-calc.test.mjs`, and `load-module.test.mjs` for the loader itself,
+which the plan did not ask for.
 
-The seam already exists and is declared: `src/modules/ritual.js` marks its calc block as pure and
-exports it for exactly this. Verified that nothing in that block touches the DOM, storage or any host
-global, so the sandbox needs only stubs. If a module turns out to do work at definition time, fall
-back to evaluating the calc surface in the page and say so rather than quietly changing approach.
+The seam already existed and was declared: `src/modules/ritual.js` and `src/modules/cycle.js` both
+mark a calc block as pure and export it for exactly this. The plan said the sandbox would need
+stubs. It needs none: both modules load in a vm context whose global object starts empty, and that
+is now checked on every run instead of having been read once.
 
-Cases that cannot be written today: a streak crossing a daylight-saving change, a log of four hundred
-days, a duplicated day in the log, a future date in the log, and a frequency with an empty day list,
-where the behaviour is undefined nowhere and undocumented everywhere.
+**Three deviations from what this section originally said, and why.**
+
+1. **The proof command changed** from `node --test quality/unit/` to `cd quality/unit && node
+   --test`. The first form does not work: on Node 24 a positional argument is a file to run, not a
+   directory to search, so it exits with MODULE_NOT_FOUND before running anything. A glob argument
+   works there and needs a Node new enough to accept one, and naming the files explicitly means a
+   file added later silently never runs. Running the runner with no argument from inside the folder
+   depends on none of that, and it is the same shape as the phase 2 proof beside it.
+2. **A fourth file was added** for the loader. `plainCopy` is the kind of helper that fails by
+   silently doing nothing, and it did: its first version copied a sandbox array with `map`, which
+   builds the result through the source array's own constructor and therefore returned another
+   sandbox value. Every check in `quality/tools` ships with its own test file for this reason and
+   the loader is no different.
+3. **The tests pin the timezone to UTC.** Every function here works in local midnight, so the
+   result should not depend on whether it ran on a laptop at UTC+2 or on a runner at UTC. The pin
+   also keeps the daylight-saving case below genuinely open rather than half answered, since UTC has
+   no transition to cross.
+
+Cases that still cannot be written: a streak crossing a daylight-saving change, a log of four
+hundred days, a duplicated day in the log, a future date in the log, and a frequency with an empty
+day list, where the behaviour is undefined nowhere and undocumented everywhere.
+
+Two things the unit level does not have yet, both named in **Now**: it is not in CI, and it is not
+linted.
 
 ### Phase 4. Integration level
 
-```
-quality/e2e/tests-integration/
-  storage-schema.spec.js    write through the module API, read storage, check the documented shape
-  backup-import.spec.js     malformed JSON, an older version key, a value that is not an array
-```
+Done. A Playwright project named `integration` with its own directory,
+`quality/e2e/tests-integration/`, holding `storage-schema.spec.js` and `backup-import.spec.js`. No
+clicks, no navigation between views, no assertion about appearance. The workflow's shard command
+names it beside the gated project, so the authoring zone still stays out of a merge.
 
-A Playwright project named `integration` with its own test directory. No clicks, no navigation, no
-assertions about appearance. Add it by name to the workflow command, which currently pins the gated
-project explicitly so the ungated authoring zone cannot sneak into a merge.
+**Three deviations from what this section originally said, and why.**
+
+1. **"Write through the module API" is not possible.** There is no module API to write through. The
+   build inlines every module inside the application's single closure, so `Ritual`, `Cycle` and
+   `Store` are all a ReferenceError from the page, measured rather than assumed. The writes this
+   level exercises are therefore the ones the application makes on its own: the first-run seed, a
+   reload, and the backup import, which is reached by setting the hidden file input the import
+   button targets. That is still the persistence boundary and it is still not a user journey.
+2. **"Check the documented shape" ran into a document that is wrong.** See BUG-003. The specs assert
+   the measured contract and name the divergence in a comment that points at the entry, because a
+   spec asserting the document would be red against a correct application. Correcting
+   `docs/DATA_SCHEMA.md` is its own change and has not been made.
+3. **"An older version key" turned out to be a case with nothing to assert,** because the import
+   never reads the version. Kept as a test anyway, and renamed to say so: the field looks like a
+   migration hook and is not one, which is worth pinning before somebody plans a schema change
+   around it.
+
+Two additions the section did not ask for, both because the level would otherwise be invisible to
+the checks that already exist: the ESLint config now covers `tests-integration`, and
+`count-tests.js` reports the level beside the other four.
 
 ### Phase 5. Mutation audit
 
@@ -214,6 +357,20 @@ here, before the refactor.** Its whole value is the before-and-after comparison.
 
 Manual run, not a required check. Its failure means the tests are weaker than assumed, which is
 information rather than a reason to block a merge.
+
+**Two requirements this arc has already paid for**, both from running the audit by hand in phases 3
+and 4, and both about the same thing: the tool must never report a hole in the suite that is not
+there.
+
+- **Refuse an anchor that is not unique, and refuse one that does not match.** A replacement of the
+  first occurrence lands wherever that happens to be, and a multi-line anchor matches nothing at all
+  in a file with CRLF endings. Both failures look exactly like a mutation nothing caught. Every
+  mutation has to report whether it was actually applied, and the applied text has to be checked,
+  not assumed.
+- **An equivalent mutation is not an uncaught one.** Some code is guarded twice, and removing one
+  guard changes no observable behaviour. That is a fact about the code, not a gap in the tests, and
+  it needs a verdict of its own in the report. Two of the three first-pass misses across those two
+  phases were of these kinds, and neither meant what it appeared to mean.
 
 ### Phase 6. E2E architecture
 
@@ -269,7 +426,8 @@ enforces that.
   "Four levels", which is what the status tool probes for.
 - `docs/testing-notes.md` gains the same four levels beside its existing smoke and sanity discussion.
 - `README.md` gains the architecture note in its testing section.
-- `docs/REPO-LAYOUT.md` gains a row for the unit directory.
+- `docs/REPO-LAYOUT.md` gains a row for the unit directory. Done already, in phase 4, because the
+  same section had been made wrong by the integration level and both belonged in one edit.
 - A published page for a reader outside the repository. Lead with the incidents, not the diagram: the
   gate that ran green and enforced nothing, the pixel baselines invalidated silently, the package
   install that hung for ninety-eight minutes on a required check, the repair agent that was allowed

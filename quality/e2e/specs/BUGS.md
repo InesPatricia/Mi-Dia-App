@@ -91,13 +91,35 @@ since `toggleBloom`, `closeBloom` and `bloomAction` are live handlers in that ar
 The general lesson: a measurement can be correct and its explanation still wrong. Reading the CSS
 settled it; inferring from coordinates did not.
 
-### Candidate fixes, none of them applied or verified
+### Candidate fixes, measured 2026-09-05
 
-- Rename the ritual module's pulse class so it cannot collide, for example `r-celebrate`. Smallest
-  blast radius, since only the ritual module uses it.
-- Scope the overlay rule to the element it was written for, instead of leaving `.celebrate` global.
-- Have the specific rule reset what it does not want to inherit. Least attractive, because it leaves
-  the collision in place and depends on remembering it forever.
+Still present in the promoted build, reproduced on demand before anything was tried. Each candidate
+was then applied to that build on its own, the quarantined test run against it, and the build
+restored. **All three turn scenario 1.2 green**, so "does it work" does not separate them. What
+separates them is what each one leaves behind.
+
+| Candidate | 1.2 green | What it leaves behind |
+|---|---|---|
+| F1, rename the ritual pulse class to `r-celebrate` | yes | the global `.celebrate` rule keeps carrying layout, so the next element to take that name falls in the same hole |
+| F2, scope the overlay rule to `#celebrate` | yes | nothing. The class name stops carrying layout at all |
+| F3, reset what the specific rule inherits | yes | the collision, plus a rule that works only while somebody remembers why it is there |
+
+**Take F2.** It removes the class of defect rather than this instance of it, and it is also the
+smallest diff of the three: two selectors, no JavaScript. The one element that rule was written for
+already carries `id="celebrate"`, so the scoping costs nothing.
+
+**F2 needed coverage first, and now has it.** The celebration overlay had no automated test
+anywhere, which meant the better fix was the one nobody could verify. `tests/slot-interactions.spec.js`
+now covers it: hidden while the day is unfinished, raised when the last open slot is ticked, and
+clearing itself afterwards. Both cases were broken on purpose and watched go red. With F2 applied,
+they stay green and the quarantined test turns green in the same run.
+
+### Not fixed here, and where it belongs
+
+This branch is `qa/test-architecture`, which the router reserves for tests, gates and tooling rather
+than application changes. The fix is a new build on `staging`, which is at v185 while the build
+promoted in this worktree is v172. Editing the promoted file in place would break the versioning
+law, and cutting a v173 here would fork the numbering against staging.
 
 Do NOT "fix" this in the test. Retrying, forcing the click, adding a wait, or softening the assertion
 all turn a real defect into a green tick.
@@ -111,7 +133,27 @@ never reaches that function.
 ### Not checked
 
 - Whether it reproduces on a real Android device. Headless Chromium at phone viewport is not a phone.
-- Whether the same collision affects any other element that takes the `celebrate` class.
+- Whether the same collision affects any other element that takes the `celebrate` class. Only one
+  element in the build carries it as markup, and it is the overlay, but that was read rather than
+  exercised.
+- What F2 does to the confetti, which is created as children of the overlay. The tests assert that
+  the overlay appears and clears, not that sixty coloured squares fall correctly.
+- Whether it reproduces with a real finger on a real device, which is the only place `pointer-events`
+  and hit-testing behave for certain.
+
+### Checked, with one loose end
+
+The whole gated suite was run against the build with F2 applied, both projects, and it passed. Two
+navigation cases needed a retry and were reported flaky. They are not obviously related: F2 changes
+which selector owns the overlay's positioning, and those two are about petal routing and the bottom
+bar.
+
+That run also reported a wall clock of over eight hours for a suite that normally takes minutes,
+which says the machine was not in a normal state for it, so the flake is more likely about the run
+than about the change. Re-running the navigation spec three times over on the restored build gave
+fifteen of fifteen with no retries. Recorded rather than dismissed: the phase 0 baseline measured no
+flake at all across four hundred and fifteen executions, so two is a change from a known number and
+the next full run should be watched.
 
 ---
 
@@ -355,3 +397,181 @@ host recognises. Both probes used a `.js` extension. Whether any Pages configura
 fallback off. Whether the console-error assertion actually fires on an HTML-served script, which
 would settle how much real coverage remains: that needs a build with a deliberately broken asset
 reference, which is a change to the application rather than to the suite.
+
+---
+
+## BUG-003. The schema document names three keys the application has never written
+
+**Status** CLOSED, 2026-09-03. The document is corrected and the integration level now reads it, so
+the same drift cannot repeat silently. What changed, and what the fix itself turned up, is at the
+end of this entry. Everything above that section is left as it was written, because the measurement
+is the useful part and editing it after the fact would hide how the defect was found.
+
+Was: CONFIRMED. Reproduced on demand, against the promoted build and against the build in
+progress on `staging`.
+**Severity** High for a reader, none for a user. Nothing is broken at runtime. What is broken is the
+document `CLAUDE.md` routes you to before touching persistence, which means anybody who trusts it
+writes code against keys that do not exist.
+**Found by** Writing the integration level, phase 4 of the QA arc, which was asked to check the
+documented shape and could not.
+
+### What the document says, and what the app does
+
+`docs/DATA_SCHEMA.md` calls itself "the complete persistence contract" and lists `blocks`, `cats`
+and `journal` as storage keys since v23. None of the three has ever been a key.
+
+| Documented | Actually written | Note |
+|---|---|---|
+| `blocks` | `day:YYYY-MM-DD` | one key per day, not one collection |
+| `cats` | `areas` | `CATS` is an in-memory index rebuilt from `areas` by `rebuildCats()`, never stored |
+| `journal` | `journal:YYYY-MM-DD` | one key per day |
+
+All three shapes are wrong too, each in its own way.
+
+| Documented shape | What is actually stored |
+|---|---|
+| `cats`: `{ id, label, color }` | an `areas` entry is `{ id, emoji, color, soft, ink, defMin }`, with no `label` |
+| `blocks`: `[{ id, title, cat, time, dur, tags[], done, date }]` | `addBlock` builds `{ id, title, cat, time, dur, tags, done }`. No block has ever carried a `date`; the date is the key |
+| `journal`: `{ text, mood, event }` | `saveJournal` writes `{ text, mood, event, emotion }` |
+
+The missing `emotion` is the most interesting of the three, because the document did keep up once:
+it records that the older `comp` field was dropped in v52. `emotion` arrived with the emotion wheel
+in the v90 to v97 arc and was never added.
+
+Keys the document does not mention anywhere: `shortcuts`, `calmlog:YYYY-MM-DD` (a per-day list of
+`{ id, ts }`), `proj:<id>`, `activeTimer`, and the first-run markers `sc_default3_v117`,
+`mig_clear_4f_v2`, `mig_tags_v2`, `mig_tags_v3`. The migration flags `mig_proj_v1` and `mig_proj_v2`
+appear in prose but not in the table.
+
+**The Since column is not part of the defect.** Every one of `areas`, `shortcuts`, `day:`,
+`calmlog:` and `proj:` is present in `mi-dia-v22.html`, the earliest numbered build in this
+repository, so the document's v23 is right about their age and wrong only about their names.
+
+**A trap for the next reader.** `docs/history/BUILD-LOG.md` carries "dropdown Arie reparat
+(`cats`->`areas`)" in the v151 to v153 entry, which reads like a storage key rename that the
+document simply missed. It is not one. That entry is about the area dropdown, and no build in this
+repository has ever written a `cats` key.
+
+### Evidence
+
+No build in this repository has ever written a `cats` key, across the whole history:
+
+```
+git log --all --oneline -S'Store.set("cats"' -- '*.html'      no commits
+git log --all --oneline -S'Store.set("areas"' -- '*.html'     back to the first commit
+```
+
+The age of each undocumented key was read the same way, then confirmed by looking inside the
+earliest numbered build rather than trusting a commit date, since this history was rewritten when
+the repository was made public:
+
+```
+git show c46c20f:mi-dia-v22.html | grep -c 'Store.set("shortcuts"'    1
+```
+
+**A note on method, because one of these greps is misleading.** Enumerating keys with
+`grep 'Store.set("<literal>'` undercounts: `calmlog:` is written through a computed key inside
+`logCalm`, so a literal search says it is exported and never written, which is false. The key list
+below was taken from a real boot and from the export's own key list, not from grep alone.
+
+A first run leaves exactly these keys, read out of `localStorage` after boot:
+
+```
+areas  mig_clear_4f_v2  mig_proj_v1  mig_proj_v2  mig_tags_v2  mig_tags_v3
+projects  rit_seeded_v1  rituals  sc_default3_v117  settings  shortcuts  tags
+```
+
+That list is now asserted by `quality/e2e/tests-integration/storage-schema.spec.js`, so a key added
+without a decision goes red. The list in that file is the measured one, with a comment pointing
+here, because a test that asserted the document would be red against a correct application.
+
+### Not checked
+
+- Whether `intent:`, `tags`, `projects`, `settings`, `cycle` and `rituals` match their documented
+  shapes. Only the three wrong names and the three shapes above were compared field by field.
+- Whether the `mig_*` markers are all still doing something, or whether some describe a migration
+  no living install still needs.
+- Whether the commit dates survived the history rewrite that made this repository public. The
+  ordering was used as evidence and the dates were not.
+
+### Checked, and clean
+
+No other document repeats the wrong names: `grep -rn` across `docs/`, `README.md`, `CLAUDE.md` and
+`quality/` finds them only in `DATA_SCHEMA.md` itself, in the build-log line quoted above, and in
+the files that describe this defect.
+
+### What was done, 2026-09-03
+
+The three names and the three shapes were corrected, and the keys the document never mentioned were
+added with the shapes measured from the source: `shortcuts`, `calmlog:YYYY-MM-DD`, `proj:<project
+id>` and `activeTimer`. The markers got a table of their own. The **Since** values did not move.
+
+Then the part that matters more than the correction: the document became the contract instead of a
+description of one. `quality/e2e/tests-integration/storage-schema.spec.js` parses the key column out
+of the two tables and fails if the application writes anything that is not in them. A key added
+without a row now turns the suite red, which is the only arrangement in which this defect cannot
+come back the same way.
+
+Broken on purpose, five ways, each caught with its own message: a documented key loses its row, a
+documented marker loses its row, the app writes a key nobody documented, the heading is renamed so
+the parser cannot find the table, and the table body is emptied while the heading stays.
+
+**The fix had a defect of its own, found by the fourth of those.** The first parser collected every
+pipe-row in the section, and a markdown section runs to the next level-two heading, so it swept in
+the field table under `### settings` as though `lang` and `theme` were storage keys. The documented
+set was quietly larger than the document. Emptying the key table on purpose is what exposed it: the
+check still passed, on rows that had nothing to do with keys. It now reads the first contiguous
+table only, and refuses to run on a section it cannot parse.
+
+**And a process note worth more than the fix.** While breaking the gate, a `git checkout --` was
+used to restore the document and discarded every uncommitted correction in it, which then had to be
+rewritten from scratch. The restore in a mutation harness has to come from a copy the harness itself
+holds. The same script also carried anchors with a literal newline, which match nothing in a CRLF
+file and report themselves as mutations nothing caught, which is the same trap phase 3 hit.
+
+---
+
+## BUG-004. A backup whose values are not strings restores nothing, quietly
+
+**Status** CONFIRMED. Reproduced on demand.
+**Severity** Medium. It needs a file the app did not produce, and when it happens the user is told
+the import succeeded.
+**Found by** The integration level, writing the malformed-input cases for backup import.
+
+### What happens
+
+`importData` writes only the values that are already strings:
+
+```js
+for(const k of Object.keys(data)){ if(typeof data[k]==="string"){ await Store.set(k, data[k]); n++; } }
+```
+
+The store holds strings, so a genuine export always satisfies this. A file that has been through any
+tool that parses and re-serialises JSON does not: its `tags` is an array, not a string containing an
+array. Every key is skipped, the store is untouched, and the toast reports "Import successful (0
+entries)", which reads as success.
+
+The `version` field that could have caught this is written by the export and never read by the
+import. It looks like a migration hook and is not one.
+
+### Evidence
+
+`quality/e2e/tests-integration/backup-import.spec.js` pins both halves: a dump with an array value
+imports nothing and reports zero, and a dump claiming `version: 0` is imported anyway.
+
+### Candidate fixes, none applied
+
+- Serialise a non-string value instead of skipping it, so `{"tags": ["a"]}` restores as
+  `'["a"]'`. Smallest change, and it makes a hand-written backup work.
+- Refuse the file when nothing was written, rather than reporting a successful import of nothing.
+- Read `version` and refuse a dump the running build does not know how to read. Largest change and
+  the only one that also covers a future schema change.
+
+The second is the smallest honest fix: it does not guess what the user meant, and it stops the
+message that says the opposite of what happened.
+
+### Not checked
+
+- Whether any real tool produces such a file. This was constructed, not found in the wild.
+- What happens to a value that is a string but not the JSON the key expects. The import writes it
+  through, and the loader for that key is what decides, which is a different question from this one.
