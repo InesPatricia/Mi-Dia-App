@@ -43,6 +43,12 @@ below carries two requirements this arc has already paid for.
   already recorded in `quality/e2e/specs/BUGS.md`: BUG-001, a class-name collision that makes a
   ritual tick untappable after one tap, and BUG-004, a backup import that restores nothing and
   reports success.
+- **Expect one red on the reconcile after this merges.** `staging` still carries the narrow rule 4,
+  with no bare-count pattern, and its copy of `docs/testing-notes.md` still states a hardcoded test
+  count. Both were measured across the two worktrees, not predicted. When the widened rule arrives
+  there it will report that number, which is the gate working on first contact rather than a new
+  defect. The fix is the same one this branch made: delete the figure and point at the runner, since
+  that file lives on branches that legitimately report different counts.
 
 **Two ordering rules that cost rework if broken:**
 
