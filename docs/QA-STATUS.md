@@ -12,159 +12,37 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 5. Phases 0 through 4 are done.
+**Phase:** 5. Phases 0 through 4 are done and green in CI.
 
-**Next action:** the mutation audit. A tool and a committed baseline report, recorded **before** the
-phase 6 refactor moves anything, because the whole value of the report is the comparison afterwards.
-Detail below, and it now carries two requirements learned by running the audit by hand twice.
+**Branch state:** everything is pushed. Pull request 54 opens `qa/test-architecture` against `main`
+with every check green, and it is waiting for a merge, which is Ines's alone. Phase 5 can start on
+this branch either way. If the merge lands first, bring `main` in before starting.
+
+**Next action:** the mutation audit. A tool and a committed report, recorded **before** phase 6
+moves anything, because the whole value of the report is the comparison afterwards. The phase detail
+below carries two requirements this arc has already paid for.
 
 **Blocked on:** nothing.
 
-**Not pushed:** everything since the last push. Ten commits on this branch, five for phase 1 and
-five for phase 2. Phases 3 and 4 are in the working tree and not committed. One commit on `staging`
-carries phase 1's other half.
+**Open items, none of them blocking:**
 
-**What phase 4 delivered.** A Playwright project named `integration` with its own directory,
-`quality/e2e/tests-integration/`, holding `storage-schema.spec.js` for what the app writes and
-`backup-import.spec.js` for what a file can do to it. No clicks and no navigation between views. A
-reload is used where a reload is the thing being tested.
-
-Three things were wired up so the level is not decorative. The lint now covers the new directory,
-which took one line and was verified by breaking a rule inside it. `count-tests.js` reports the
-level, because a file that calls itself the single source of truth for how many tests exist cannot
-be blind to a whole level. And the CI shard command names both gated projects, since the flag is
-variadic and the authoring zone still has to stay out.
-
-**The open item from phase 3 is half closed.** The unit level now runs in the fast `validate` job.
-The command is `node --test` with no path argument, from inside the folder: a directory positional
-works on Node 20 and does not on Node 24, and a glob needs a runner new enough to expand one, while
-searching the working directory needs neither. Node 20 is what CI pins, and the whole unit level was
-run on a real Node 20, fetched with `npx node@20`, rather than argued from the documentation.
-
-**Still open, with the reason measured rather than assumed:** `quality/unit` is not linted. The only
-ESLint install in this repository sits in `quality/e2e/node_modules`, and ESLint refuses to lint a
-file above its config's directory. Tried and rejected: passing `../unit` as a path, passing it with
-an explicit `--config`, and adding a `files: ['../unit/**/*.mjs']` block, which reports every file
-as ignored. Closing this needs an ESLint install whose config sits at or above `quality/`, which is
-a change to how this repository installs tooling and belongs in its own decision.
-
-**Two findings, both recorded in `quality/e2e/specs/BUGS.md` rather than fixed here.**
-
-- **BUG-003, now closed.** `docs/DATA_SCHEMA.md`, the file the router sends you to before touching
-  persistence, named three keys the application has never written and got all three of their shapes
-  wrong. It said `blocks`, `cats` and `journal`; the app writes `day:<date>`, `areas` and
-  `journal:<date>`, and it also writes four keys the document did not mention. Corrected from the
-  source, with the markers given a table of their own. The **Since** values did not move: every one
-  of those keys is already in the earliest build in the repository.
-
-  **The document is now the contract, not a description of one.** The integration spec parses the
-  key column out of it and fails if the app writes anything with no row, so this drift cannot repeat
-  quietly. That is what finally satisfies the phase's own sentence, "check the documented shape",
-  which could not be done while the document disagreed with the application.
-- **BUG-004.** A backup file whose values are not strings restores nothing and reports "Import
-  successful (0 entries)". The `version` field that could have caught it is written by the export
-  and never read by the import.
-
-**The finding worth carrying.** Seven mutations were applied to the promoted build, one at a time,
-each reverted after the run. Five were caught on the first pass. Neither of the two misses was a
-gap in the tests, and that distinction is the lesson:
-
-- One anchor, `daysCache=null;`, occurs twelve times in the build, so the replacement landed on the
-  first occurrence and modelled nothing at all. A mutation that reports itself as uncaught when it
-  was never applied is worse than no mutation, because it sends the next person to rewrite a test
-  that was already correct.
-- The other was an **equivalent mutation**. Removing the first-run seed guard changes no observable
-  behaviour, because the seeding block is protected twice, by the marker and by a check that the
-  cache is empty. Both have to go before anything is different. Rewritten as a two-part mutation, it
-  was caught.
-
-Phase 5 has to handle both: refuse an anchor that is not unique, and give an equivalent mutation a
-verdict of its own rather than counting it as a hole in the suite.
-
-**Three defects this arc introduced, found by reviewing the unpushed work rather than by any check.**
-All three are fixed here, and the pattern in them is the same: a change widened what the pipeline
-does, and the things that describe the pipeline stayed where they were.
-
-- **A gate went blind on the zone it was meant to guard.** `quality/tools/check-skips.mjs` carried a
-  hand-written list of gated directories. Phase 4 made `tests-integration/` merge-blocking and
-  phase 3 added `quality/unit/`, and neither was added to that list, so a skipped test in the two
-  newest gated directories was invisible to the one check written to see it. Its file filter only
-  matched the Playwright spec suffix too, so listing the unit directory without widening the filter
-  would have read none of it. Both fixed, and the pattern now covers node:test's spellings, `it` and
-  `todo`, and the `{ skip: true }` options object. Verified by planting a disabled test in each zone in each
-  spelling and watching every one go red, and by planting a properly justified one and watching it
-  pass.
-- **The local command stopped matching the gate.** `npm test` ran one project while CI ran two, so a
-  developer could get a green the merge gate would not agree with. It now runs the same pair, proved
-  by comparing what each selects rather than by reading the strings, and `test:functional`,
-  `test:integration` and `test:unit` name the levels individually.
-- **Two documents were made false and nothing noticed.** `docs/REPO-LAYOUT.md` said three
-  directories that never run together; there are four and two of them run together. Its subsystem
-  table was also missing `quality/unit/`, which retires the item phase 8 had for it.
-  `docs/RUNBOOK.md` gave a reproduction command for a failed shard that ran only one of the two
-  projects the shard runs.
-
-**The lesson worth carrying from those three:** a gate whose scope is a hand-written list drifts
-behind the thing it guards, and prose is the one kind of claim the documentation gate cannot check.
-Rule 9 reads documented commands but not the npm scripts they now point at, which is the same shape
-of gap, still open.
-
-**Two defects in the fixes themselves, both found by breaking them.** The parser that made
-`DATA_SCHEMA.md` executable first read every table row in the section, and a markdown section runs
-to the next level-two heading, so it swept in the settings field table as though `lang` and `theme`
-were storage keys: the documented set was larger than the document. And restoring a mutated file
-with `git checkout` discarded the uncommitted correction it was supposed to protect, which had to be
-rewritten. A mutation harness restores from its own copy, never from git, and its anchors have to
-tolerate CRLF or they match nothing and report themselves as misses.
-
-`quality/unit` now has a `package.json` whose only script is the test run, so the level has a home
-and one way to run it. The ESLint question stays where it was.
-
-**BUG-001 got its answer, and it is not a fix in this worktree.** The highest-value thing in the
-backlog is a confirmed high-severity defect in the application: a class-name collision that makes a
-ritual tick untappable after the first tap, reachable by anyone in two taps. It was reproduced on
-demand against the promoted build before anything was touched, using the test that has been sitting
-red by design in the quarantine since August.
-
-All three candidate fixes recorded for it were then applied one at a time and measured. All three
-turn that test green, so working is not what separates them. The one to take scopes the overlay rule
-to the single element it was written for, because it removes the class of defect instead of this
-instance of it, and it is also the smallest diff.
-
-**The better fix was the one nobody could verify, which turned out to be the real finding.** The
-celebration overlay it touches had no automated coverage anywhere. That is now written, in the spec
-that owns the interaction which raises it: hidden while the day is unfinished, raised when the last
-open slot is ticked, and clearing itself. Both cases were broken on purpose. With the fix applied
-they stay green and the quarantined test goes green in the same run.
-
-The fix itself belongs on `staging`, as a new build. This branch is reserved for tests, gates and
-tooling, the promoted build here is well behind staging, and editing a promoted file in place would
-break the versioning law. The full verdict, with the table of candidates, is in the BUG-001 entry.
-
-The suite grew, so the published count moved. The badge, the README sentence and the coverage line
-in `docs/APP-REFERENCE.md` were all updated from what the runner reports, which is the check that
-made the drift impossible to miss.
-
-**What the first push found, twelve seconds in.** The branch went to CI for the first time and
-`validate build` failed on `qa-status.mjs --check`, which had been armed in phase 2 and had
-therefore never actually run anywhere but a laptop. The derived block embeds the branch name, and on
-a pull request GitHub checks the code out detached at the merge ref, where `rev-parse --abbrev-ref
-HEAD` answers `HEAD`. The check could not pass on a pull request, by construction, and the file's own
-comment already recorded learning that lesson once with a commit hash. Reproduced locally with a
-detached worktree before anything was changed. `--check` now takes that one line from the file it is
-checking and verifies everything the repository can actually produce.
-
-That is the argument for pushing, made better than any argument could: a gate that had been called
-armed for two phases was not able to pass.
-
-**What is still not verified.** The rest of the workflow edits, until the run after this fix. What
-was checked before the push: the file parses as YAML and the two steps come out of the parser
-in the shape they are meant to have; both shard commands were run
-locally exactly as written, both green, and between them they accounted for every test in the two
-gated projects; and the unit step was run from the directory the job defaults to, since it uses a
-relative `cd` rather than a step-level working directory, which GitHub's syntax reference does not
-say how to resolve against an existing default. None of that is the same as watching the job go
-green, and the first push has to look.
+- `quality/unit` is not linted. ESLint refuses files above its config's directory and the only
+  install sits in `quality/e2e`. Closing it needs an install whose config sits at or above
+  `quality/`, which is a change to how this repository installs tooling, not a one-line fix.
+- The workflow repeats the project list that the `test` script in `quality/e2e/package.json` already
+  defines. Having the shard command call that script deletes the duplication rather than guarding it.
+- Four checks that can block a merge have no test file of their own: `quality/tools/qa-status.mjs`,
+  `quality/tools/check-skips.mjs`, `quality/e2e/count-tests.js` and `quality/e2e/validate-build.js`.
+  The sentence in `docs/REPO-LAYOUT.md` that says every checker ships with one is not true, and the
+  honest end state is to write them rather than to narrow the sentence.
+- Rule 9 of the documentation gate reads commands written in documents but not the npm scripts those
+  commands now point at.
+- `quality/tools/verify-live.mjs` could compare the required-check list in `docs/RUNBOOK.md` against
+  what GitHub actually enforces. Confirmed reachable through `gh`.
+- Two product defects are waiting for a session on `staging`, both with a verdict and the evidence
+  already recorded in `quality/e2e/specs/BUGS.md`: BUG-001, a class-name collision that makes a
+  ritual tick untappable after one tap, and BUG-004, a backup import that restores nothing and
+  reports success.
 
 **Two ordering rules that cost rework if broken:**
 
@@ -172,6 +50,32 @@ green, and the first push has to look.
   tests stop carrying arithmetic, and the mutation baseline has to be recorded before the refactor
   moves anything, or there is nothing to compare against.
 - Phase 7 comes after phase 6, so new specs are written once, in the final shape.
+
+---
+
+## Findings carried forward
+
+Each of these cost a session to learn, and each applies to work that has not been done yet.
+
+1. **A gate that is armed is not a gate that has run.** `qa-status.mjs --check` was wired into CI in
+   phase 2 and failed twelve seconds into the first push, two phases later. It embedded the branch
+   name in a block it then compared byte for byte, and a pull request is checked out detached, where
+   `rev-parse --abbrev-ref HEAD` answers `HEAD`. It could not pass on a pull request by construction,
+   and nothing local could have found it. Push earlier than feels necessary.
+2. **A hand-written list drifts behind the thing it describes.** In one arc: the skip checker's
+   directory list, the npm script's project list, the schema document's key table, and a sentence in
+   the repository layout. Where a list can be derived, derive it. Where it cannot, keep it in one
+   place and make it fail closed.
+3. **Prose is the one claim the documentation gate cannot check.** Rule 1 catches a path that no
+   longer resolves. Nothing catches a sentence that says three directories when there are four.
+4. **A mutation that did not apply looks exactly like a mutation nothing caught.** Anchors have to be
+   unique and have to be verified as applied. A multi-line anchor matches nothing in a CRLF file, and
+   a replacement of the first occurrence lands wherever that happens to be.
+5. **An equivalent mutation is not an uncaught one.** Code guarded twice does not change behaviour
+   when one guard is removed. That is a fact about the code, not a hole in the suite, and it needs a
+   verdict of its own.
+6. **A mutation harness restores from its own copy, never from git.** A `git checkout --` used to
+   undo a mutation discarded a document's uncommitted correction, which then had to be rewritten.
 
 ---
 
@@ -188,7 +92,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 3 | Unit level over the pure calc layer | DONE | `node --test` inside the unit folder |
 | 4 | Integration level over the persistence boundary | DONE | `npx playwright test --project=integration` |
 | 5 | Mutation audit: the tool, and the baseline table | NOT STARTED | `node quality/tools/mutate.mjs` |
-| 6 | Page objects, fixtures, shared strings, renames | NOT STARTED | `npx playwright test --project=mobile-chromium` |
+| 6 | Page objects, fixtures, shared strings, renames | NOT STARTED | `npm test` inside the e2e folder |
 | 7 | Offline, keyboard and focus trap, aria contract | NOT STARTED | `node quality/e2e/count-tests.js --check` |
 | 8 | Documentation, and the published page | NOT STARTED | `node quality/tools/check-docs.mjs` |
 
@@ -322,8 +226,13 @@ Cases that still cannot be written: a streak crossing a daylight-saving change, 
 hundred days, a duplicated day in the log, a future date in the log, and a frequency with an empty
 day list, where the behaviour is undefined nowhere and undocumented everywhere.
 
-Two things the unit level does not have yet, both named in **Now**: it is not in CI, and it is not
-linted.
+It runs in the fast `validate` job, as `cd ../unit && node --test`. No path argument, because a
+directory positional works on Node 20 and not on Node 24, and a glob needs a runner new enough to
+expand one. A relative `cd` rather than a step-level working directory, because the job already
+carries a default and GitHub's syntax reference does not say how the two combine. Both halves were
+run on a real Node 20 before being trusted, and the step has since run green in CI.
+
+It is still not linted, for the reason named in **Now**.
 
 ### Phase 4. Integration level
 
@@ -340,10 +249,11 @@ names it beside the gated project, so the authoring zone still stays out of a me
    level exercises are therefore the ones the application makes on its own: the first-run seed, a
    reload, and the backup import, which is reached by setting the hidden file input the import
    button targets. That is still the persistence boundary and it is still not a user journey.
-2. **"Check the documented shape" ran into a document that is wrong.** See BUG-003. The specs assert
-   the measured contract and name the divergence in a comment that points at the entry, because a
-   spec asserting the document would be red against a correct application. Correcting
-   `docs/DATA_SCHEMA.md` is its own change and has not been made.
+2. **"Check the documented shape" ran into a document that was wrong.** See BUG-003, now closed.
+   `docs/DATA_SCHEMA.md` named three keys the application had never written, got all three shapes
+   wrong and omitted four more. It is corrected, and the spec now parses its key table rather than
+   keeping a second copy, so a key written without a row turns the suite red. That is what finally
+   satisfies this section's own sentence.
 3. **"An older version key" turned out to be a case with nothing to assert,** because the import
    never reads the version. Kept as a test anyway, and renamed to say so: the field looks like a
    migration hook and is not one, which is worth pinning before somebody plans a schema change
