@@ -51,6 +51,21 @@ jobs:
       # This refuses a phase claiming to be done whose files are not in the tree. It reads the
       # repository and nothing else, so it belongs with the checks that need no install.
       - run: node ../tools/qa-status.mjs --check
+      # The unit level: the pure calc functions, run in a vm sandbox with no browser and no
+      # install. It belongs in the fast job for exactly that reason, and it is the level that has
+      # to fail first when a streak or a cycle phase is computed wrongly, because the end-to-end
+      # suite would take minutes to reach the same conclusion through a screen.
+      #
+      # No path argument on purpose. A directory positional works on Node 20 and does not on
+      # Node 24, where it is read as a file to run; a glob needs a runner new enough to expand one.
+      # Searching the working directory needs neither, and it picks up a file added later, which a
+      # hand-written list would not.
+      #
+      # `cd` rather than a step-level working-directory, because this job already carries a default
+      # working directory and GitHub's syntax reference does not say whether a step-level one
+      # replaces it or resolves inside it. A relative cd means the answer does not matter.
+      - name: Run the unit level
+        run: cd ../unit && node --test
 
   test:
     name: test (shard ${{ matrix.shard }}/2)
@@ -135,12 +150,17 @@ jobs:
       # @visual is filtered by the config (grepInvert), not by a flag here, so the same rule holds
       # for every entry point. It stays off until Linux baselines exist; the visual-baselines
       # workflow generates them, and enabling this gate is the commit that adds them.
-      # --project is load-bearing. The config declares a second project, `generated`, which is the
+      # --project is load-bearing. The config declares a project named `generated`, which is the
       # authoring zone for agent-drafted tests. Those gate nothing and nobody has reviewed them, so
       # a red one must never block a merge and a green one must never be mistaken for coverage.
-      # Naming the gated project here is what keeps that true no matter what lands in the zone.
+      # Naming the gated projects here is what keeps that true no matter what lands in the zone.
+      #
+      # `integration` is named alongside it because it gates too: it is the persistence boundary,
+      # and a merge that changes what the app writes to storage has to go red here. The flag is
+      # variadic, so repeating it selects both projects and leaves the authoring zone out. Shards
+      # split the combined list of tests, not the projects.
       - name: Run shard ${{ matrix.shard }} of 2
-        run: npx playwright test --project=mobile-chromium --shard=${{ matrix.shard }}/2
+        run: npx playwright test --project=mobile-chromium --project=integration --shard=${{ matrix.shard }}/2
       - name: Upload blob report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

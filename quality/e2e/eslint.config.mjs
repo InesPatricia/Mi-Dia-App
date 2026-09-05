@@ -12,7 +12,10 @@ import globals from 'globals';
 export default defineConfig([
   globalIgnores(['node_modules/**', 'playwright-report/**', 'test-results/**', 'blob-report/**', 'all-blob-reports/**']),
   {
-    files: ['tests/**/*.js', 'tests-prod/**/*.js', 'tests-generated/**/*.js'],
+    // Every directory that holds tests, including the ones that gate nothing. A rule that stops at
+    // the reviewed suite would have let the integration level land unlinted, which is how a folder
+    // acquires its own habits and then argues it always had them.
+    files: ['tests/**/*.js', 'tests-prod/**/*.js', 'tests-generated/**/*.js', 'tests-integration/**/*.js'],
     plugins: { playwright },
     languageOptions: {
       ecmaVersion: 2023,
