@@ -65,7 +65,7 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   `npm run test:report`); raw PNGs land in `quality/e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
-- Current coverage (**85 tests across 20 specs** — 83 functional + 2 `@visual`): **rituals** (`ritual.spec.js`,
+- Current coverage (**87 tests across 20 specs**, 85 functional plus 2 `@visual`): **rituals** (`ritual.spec.js`,
   v155/v156 — the Home section + check/streak, "check marks TODAY not the viewed day", the creation sheet
   suggestion-chip / written + habit-stacking `cue.type`, never-miss-twice, the Progress history block +
   tappable-cell backfill, backup export/import roundtrip incl. `rituals`, RO relabel, **v156: Edit-mode
