@@ -575,3 +575,108 @@ message that says the opposite of what happened.
 - Whether any real tool produces such a file. This was constructed, not found in the wild.
 - What happens to a value that is a string but not the JSON the key expects. The import writes it
   through, and the loader for that key is what decides, which is a different question from this one.
+
+---
+
+## TD-004. The first run has no end-to-end coverage, and the mutation audit is what found it
+
+**Status** CONFIRMED. Reproduced on demand by the phase 5 mutation audit, and reproducible with one
+command.
+
+**Found by** `node quality/tools/mutate.mjs`, mutant `seed-writes-nothing`. Full result in
+`quality/tools/MUTATION-REPORT.md`.
+
+### What it is
+
+`seedDefaults` in `src/modules/ritual.js` is what gives a brand new user their two default rituals
+on first launch. Make it return before it writes anything, and the entire functional suite still
+passes. Only the integration level goes red, on four of its fourteen tests.
+
+This is test debt rather than a product defect. The application is fine. The suite cannot see it.
+
+### Root cause
+
+Every ritual test seeds its own data, and its spec says so in its own header comment:
+`quality/e2e/tests/ritual.spec.js` opens with "the section only renders when rituals exist, so every
+test seeds them". `seedStorage` writes a `rituals` key through `addInitScript` before the page loads,
+so the application boots with rituals already present and the seed path is never taken.
+
+The onboarding spec is the only place that boots a genuinely fresh user, with
+`gotoApp(page, { onboarded: false })`, and it asserts the onboarding overlay rather than what was
+seeded behind it. Nothing in `quality/e2e/tests/` mentions `rit_seeded_v1`.
+
+### Why it matters
+
+The first run is the one experience every user has exactly once, and it is the only one that cannot
+be retried. It is also the only path where the application, rather than a test, decides what is in
+storage.
+
+### Candidate fixes, none applied
+
+- One end-to-end test that loads with an empty store and asserts the two default rituals appear on
+  Home. Smallest, and it closes the visible half.
+- Reach for it in phase 7 instead, alongside the offline and keyboard specs, so it is written once
+  in the page-object shape rather than migrated a week later.
+
+The second is the better fit for the arc, which is why this is recorded rather than fixed here.
+
+### Not checked
+
+- Whether the same blindness covers the other first-run writers. The mutation touched the ritual
+  seed alone, so nothing here says what the suite would notice if the day plan, the settings default
+  or the onboarding flag stopped being written.
+- Whether the integration level's four failures are all about the seed. They were read as a set, not
+  one at a time.
+
+---
+
+## TD-005. The cycle phase is on screen and only the unit level would notice if it were wrong
+
+**Status** CONFIRMED. Reproduced on demand by the phase 5 mutation audit.
+
+**Found by** `node quality/tools/mutate.mjs`, mutant `cycle-phase-off-by-one`. Full result in
+`quality/tools/MUTATION-REPORT.md`.
+
+### What it is
+
+`phaseForDay` in `src/modules/cycle.js` decides which phase a day belongs to, and its first branch
+is `if (d <= avgBleed(cfg))`. Change it to `<` and the last bleeding day reports as follicular
+instead of menstrual. The unit level goes red on one test. The integration level and the whole
+functional suite stay green.
+
+This is test debt rather than a product defect. The boundary in the shipped build is correct.
+
+### Why it is not simply the unit level's job
+
+The phase is user-visible. The build carries a label for each one, `ph_menstruala` and its siblings,
+and the Rhythm lens in the Calendar is built around them. A defect here would be seen by a user and
+by no test above the unit level.
+
+### Root cause
+
+`quality/e2e/tests/cycle.spec.js` covers the opt-in and nothing beyond it: that the cycle chrome is
+absent while the feature is off, that the switch turns it on, and that the Rhythm lens and the setup
+button then appear. It never logs a period, so no day ever has a phase to assert.
+
+That is a defensible place for the spec to have stopped, since the feature is off by default and the
+opt-in is the risky part. It does mean the arithmetic behind the feature reaches the screen untested
+by anything that drives a browser.
+
+### Candidate fixes, none applied
+
+- One end-to-end test that enables the cycle, logs a period, and asserts the phase label shown for a
+  known day. Smallest, and it puts the boundary in front of a browser level.
+- Leave it to the unit level on purpose and write that decision down here, so the next reader of the
+  audit does not re-derive it. Cheapest and honest, but it leaves a user-visible value with no
+  coverage anywhere near the user.
+
+The first is preferable and belongs in phase 7, next to the other new specs, so it is written once
+in the page-object shape.
+
+### Not checked
+
+- Whether the other cycle calc functions behave the same way. Only one boundary in one function was
+  mutated. `nextPeriodStart`, `flowerOpen` and `history` were not, so the generalisation to "the
+  browser levels are blind to all cycle arithmetic" is likely and unmeasured.
+- Whether the phase label actually renders on the day a test would assert. That was read from the
+  build's i18n table and from the spec, not driven in a browser.

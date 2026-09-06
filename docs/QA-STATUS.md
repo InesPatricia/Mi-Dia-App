@@ -12,15 +12,22 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 5. Phases 0 through 4 are done and green in CI.
+**Phase:** 6. Phases 0 through 5 are done.
 
-**Branch state:** everything is pushed. Pull request 54 opens `qa/test-architecture` against `main`
-with every check green, and it is waiting for a merge, which is Ines's alone. Phase 5 can start on
-this branch either way. If the merge lands first, bring `main` in before starting.
+**Branch state:** pull request 54 is merged, so everything through phase 4 is on `main`. This branch
+and `origin/main` differ by that merge commit and by nothing else: `git diff 247e1a6 origin/main` is
+empty, so phase 5 was built on exactly the content `main` carries and no merge was needed to start
+it.
 
-**Next action:** the mutation audit. A tool and a committed report, recorded **before** phase 6
-moves anything, because the whole value of the report is the comparison afterwards. The phase detail
-below carries two requirements this arc has already paid for.
+Phase 5 itself is **in the working tree and not committed**. Committing, pushing and opening the
+pull request were not asked for and are Ines's call. Four files are involved:
+`quality/tools/mutate.mjs`, `quality/tools/mutate.test.mjs`,
+`quality/tools/MUTATION-REPORT.md`, and one probe added to `quality/tools/qa-status.mjs`.
+
+**Next action:** phase 6, the end-to-end architecture. The baseline it will be measured against is
+recorded, which was the whole point of doing phase 5 first. Re-run `node quality/tools/mutate.mjs`
+after the refactor and compare: a mutant caught before and not caught after means the refactor
+swallowed an assertion.
 
 **Blocked on:** nothing.
 
@@ -37,6 +44,17 @@ below carries two requirements this arc has already paid for.
   honest end state is to write them rather than to narrow the sentence.
 - Rule 9 of the documentation gate reads commands written in documents but not the npm scripts those
   commands now point at.
+- **Two coverage holes the mutation audit found, both recorded in `quality/e2e/specs/BUGS.md`.**
+  TD-004: the write that gives a new user their two default rituals can be removed entirely and the
+  whole functional suite still passes, because every ritual spec seeds its own data. TD-005: the
+  cycle phase boundary can move by a day and only the unit level notices, although the phase is on
+  screen. Both are the shape of case phase 7 is for.
+- **`quality/tools/mutate.test.mjs` is deliberately not wired into CI**, which is a departure from
+  every other checker in that folder. It asserts the audit's anchors against the promoted build in
+  `public/`, so a future build promotion would turn a required check red over a report rather than
+  over the release. That would make half the audit a merge gate, which the decisions table below
+  rejected on purpose. A stale anchor still stops the audit loudly at run time, where it belongs. If
+  that trade is wrong, amend the decision rather than quietly wiring it up.
 - `quality/tools/verify-live.mjs` could compare the required-check list in `docs/RUNBOOK.md` against
   what GitHub actually enforces. Confirmed reachable through `gh`.
 - Two product defects are waiting for a session on `staging`, both with a verdict and the evidence
@@ -97,7 +115,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 2 | Linting, and the status check armed in CI | DONE | `npx eslint .` inside the e2e folder |
 | 3 | Unit level over the pure calc layer | DONE | `node --test` inside the unit folder |
 | 4 | Integration level over the persistence boundary | DONE | `npx playwright test --project=integration` |
-| 5 | Mutation audit: the tool, and the baseline table | NOT STARTED | `node quality/tools/mutate.mjs` |
+| 5 | Mutation audit: the tool, and the baseline table | DONE | `node quality/tools/mutate.mjs` |
 | 6 | Page objects, fixtures, shared strings, renames | NOT STARTED | `npm test` inside the e2e folder |
 | 7 | Offline, keyboard and focus trap, aria contract | NOT STARTED | `node quality/e2e/count-tests.js --check` |
 | 8 | Documentation, and the published page | NOT STARTED | `node quality/tools/check-docs.mjs` |
@@ -120,7 +138,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 2 | yes eslint config present; yes status check wired into CI | COMPLETE |
 | 3 | yes module loader present; yes ritual calc tests present; yes cycle calc tests present | COMPLETE |
 | 4 | yes schema spec present; yes import spec present; yes integration project declared | COMPLETE |
-| 5 | no tool present; no baseline report committed | NONE |
+| 5 | yes tool present; yes baseline report committed; yes tool has its own tests | COMPLETE |
 | 6 | no pages present; no components present; no fixtures present; no strings present | NONE |
 | 7 | no offline spec present; no keyboard spec present; no aria contract present; no pixel baselines retired | NONE |
 | 8 | no architecture doc carries the four levels | NONE |
@@ -271,34 +289,71 @@ the checks that already exist: the ESLint config now covers `tests-integration`,
 
 ### Phase 5. Mutation audit
 
-```
-quality/tools/mutate.mjs
-quality/tools/MUTATION-REPORT.md
-```
+Done. Three files: the harness `quality/tools/mutate.mjs`, its own tests
+`quality/tools/mutate.test.mjs`, and the committed baseline `quality/tools/MUTATION-REPORT.md`. One
+probe was added to `quality/tools/qa-status.mjs` so a later session cannot drop the test file
+silently.
 
-Apply known mutations to the build and assert that each produces at least one red test, recording
-which one. Suggested set: due-today always false, streak always zero, done-check ignoring today, and
-the seed helper writing nothing.
+Six mutants across two modules, run against three levels plus a control run. **One survived, and it
+was put there to.** The results worth carrying forward are in the report, and two of them are holes
+rather than reassurances:
 
-The output column that matters is the last one: mutations nothing caught. **Record the baseline
-here, before the refactor.** Its whole value is the before-and-after comparison.
+- The end-to-end suite catches all three ritual arithmetic defects through the same two tests. The
+  unit level catches them in about a second; the functional suite needs six minutes to say the same
+  thing through a screen. That is the measurement behind invariant 5.
+- **The first-run seed can be removed entirely and every functional test still passes.** Only the
+  integration level notices, because every ritual spec writes its own `rituals` key before the page
+  loads, so nothing in `quality/e2e/tests/` ever boots a user who has none. Recorded as TD-004 in
+  `quality/e2e/specs/BUGS.md`.
+- **Both browser levels are blind to the cycle phase arithmetic.** `cycle-phase-off-by-one` moves
+  the menstrual boundary by a day and only the unit level notices, although the phase is on screen.
+  Recorded as TD-005.
+- `streak-guard-bound` survived every level and the verdict is **equivalent, not a gap**: it is the
+  safety bound of a loop that breaks within a handful of iterations, so no reachable input can tell
+  3999 from 4000. It is in the catalogue precisely so the report's hardest column exists on a real
+  case, since finding 5 demands that verdict and no run had ever produced one.
 
-Manual run, not a required check. Its failure means the tests are weaker than assumed, which is
-information rather than a reason to block a merge.
+**Five deviations from what this section originally said, and why.**
 
-**Two requirements this arc has already paid for**, both from running the audit by hand in phases 3
-and 4, and both about the same thing: the tool must never report a hole in the suite that is not
-there.
+1. **The mutation goes into two files, not "the build".** The unit level loads
+   `src/modules/ritual.js` in a sandbox and the browser levels serve `public/index.html`, which are
+   two copies of the same code. Mutating one of them would have each level answering about a
+   different program while the report filed both answers in one row. That the calc block is
+   byte-identical in both is asserted against the real tree rather than assumed.
+2. **A control run was added.** Not asked for, and the audit is worthless without it: a red level
+   says nothing about a mutant if the suite was already failing beforehand. The tool refuses to
+   continue unless every level it was asked to run is green first.
+3. **"Done-check ignoring today" became an off-by-one, and two mutants were added.** `isDone`
+   returning a flat false is caught by the same two tests as the other arithmetic mutants and
+   teaches nothing they do not. Changing `>= 0` to `> 0` covers the asked-for case, since a log
+   holding only today puts today at index 0, and it is closer to the shape a real edit takes. The
+   suggested set also sampled one module, which is a hole a report cannot caveat its way out of, so
+   `cycle-phase-off-by-one` covers a second one. `streak-guard-bound` is there to make the SURVIVED
+   column exist on a real case rather than only in the harness's own tests.
+4. **Retries are pinned to 0 during the audit.** A retry absorbs a transient failure, and here a
+   failure is the signal being measured. The suite's measured flake rate over 415 executions is 0,
+   so nothing is hidden by turning them off.
+5. **The tool ships with a test file that is not in CI.** See the open items above. Wiring it into
+   the required job would make a build promotion fail a merge gate over this report, which
+   contradicts the decision that the audit is a manual run. Raised rather than done.
 
-- **Refuse an anchor that is not unique, and refuse one that does not match.** A replacement of the
-  first occurrence lands wherever that happens to be, and a multi-line anchor matches nothing at all
-  in a file with CRLF endings. Both failures look exactly like a mutation nothing caught. Every
-  mutation has to report whether it was actually applied, and the applied text has to be checked,
-  not assumed.
-- **An equivalent mutation is not an uncaught one.** Some code is guarded twice, and removing one
-  guard changes no observable behaviour. That is a fact about the code, not a gap in the tests, and
-  it needs a verdict of its own in the report. Two of the three first-pass misses across those two
-  phases were of these kinds, and neither meant what it appeared to mean.
+**The two requirements this arc had already paid for**, both from running the audit by hand in
+phases 3 and 4, are both implemented and both were broken on purpose and watched to fail:
+
+- **An anchor that is not unique, or that does not match, is refused.** A replacement of the first
+  occurrence lands wherever that happens to be, and a multi-line anchor matches nothing at all in a
+  file with CRLF endings, which the harness now translates rather than misses. Every file is read
+  back after writing, so an application that did not happen cannot be read as a mutation nothing
+  caught.
+- **An equivalent mutation is not an uncaught one.** The tool reports SURVIVED and stops there; the
+  verdict is a person's, written into the report under Verdicts. Exercised on a real case:
+  `streak-guard-bound` survived every level and the written verdict is that it is equivalent.
+
+Whether each mutation was really applied is settled by observation rather than by trust. The three
+arithmetic mutants turned two levels red on the same edit. `seed-writes-nothing` turned the
+integration level red while the end-to-end level stayed green, on the same mutated `public/index.html`
+inside the same staging, which is what proves the served build carried the defect and the functional
+suite ran against it without noticing.
 
 ### Phase 6. E2E architecture
 
