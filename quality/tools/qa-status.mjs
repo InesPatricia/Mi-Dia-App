@@ -108,6 +108,11 @@ const PHASES = [
     probes: [
       ['tool present', () => exists('quality/tools/mutate.mjs')],
       ['baseline report committed', () => exists('quality/tools/MUTATION-REPORT.md')],
+      // Added while building the phase. Every other checker in quality/tools ships with its own
+      // test file, and this one has more reason to than most: its failure mode is reporting a hole
+      // in the suite that is not there. A probe for the file is the cheapest way to keep that from
+      // being dropped later.
+      ['tool has its own tests', () => exists('quality/tools/mutate.test.mjs')],
     ],
   },
   {
