@@ -54,6 +54,13 @@ flowchart TD
   after it was found never to fire, but it was never added to the required list, so it ran green
   and stopped nothing. Verify this list against the branch-protection settings, not against the
   existence of a workflow file — a workflow and a rule that enforces it are two different things.
+
+  Two steps were added to the `e2e` workflow after phase 6, and they sit on opposite sides of this
+  line on purpose. **The type check is a gate**: `npx tsc --noEmit` runs inside the `test` job,
+  which is required, so a typo in the page object layer stops a merge. **The mutation net is not**:
+  `node quality/tools/mutate.mjs --net` runs with `continue-on-error`, because the decisions table
+  in `QA-STATUS.md` rejected making the audit a required check on the grounds that its failure is
+  information rather than a reason to block. Same workflow, different jobs to do.
 - **Nets (green):** `smoke-prod` re-checks the live site after deploy; `verify-live` opens the
   published README in a real browser and asks the live site which paths it actually serves;
   `zap-baseline` scans weekly. They report and, where budgets apply, fail only on hard regressions —

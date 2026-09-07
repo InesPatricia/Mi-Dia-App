@@ -1,41 +1,44 @@
-// Persistence + i18n: data survives a reload (localStorage via the Store layer), the
-// language switch re-labels the whole UI (including the i18n aria-labels added in v126),
-// and the backup export produces a download.
-const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./helpers');
-
-const PH_EN = 'What do you want to do today?';
+// Persistence + i18n: data survives a reload (localStorage via the Store layer), the language
+// switch re-labels the whole UI (including the i18n aria-labels added in v126), and the backup
+// export produces a download.
+//
+// Migrated to the page object layer. The Profile-then-Settings pair here was the fifth spelling of
+// that navigation in the suite, and it is now the same call as the other four.
+//
+// The Romanian copy stays written out in the i18n test rather than moving to a strings module. That
+// module holds text where the text is the thing under test, and here it is: the test is about which
+// language's words are on screen, so naming both of them in the test is the point rather than
+// duplication.
+const { test, expect } = require('../fixtures/app.fixture');
 
 test.describe('persistence', () => {
-  test('a created slot survives a page reload', async ({ page }) => {
-    await gotoApp(page);
+  test('a created slot survives a page reload', async ({ app, page }) => {
+    await app.launch();
 
     // create a slot via the fast path (type a title + Enter)
-    const title = page.getByPlaceholder(PH_EN);
-    await title.fill('Persisted task');
-    await title.press('Enter');
+    await app.day.titleField.fill('Persisted task');
+    await app.day.titleField.press('Enter');
     // the new slot is on the Day list
-    await expect(page.locator('#list').getByText('Persisted task')).toBeVisible();
+    await expect(app.day.list.getByText('Persisted task')).toBeVisible();
 
     // reload the page (forces a fresh render from localStorage)
     await page.reload();
     await page.waitForFunction(() => document.body.hasAttribute('data-view'));
 
     // re-rendered from localStorage, no re-entry needed
-    await expect(page.locator('#list').getByText('Persisted task')).toBeVisible();
+    await expect(app.day.list.getByText('Persisted task')).toBeVisible();
   });
 
-  test('the backup export produces a JSON download', async ({ page }) => {
-    await gotoApp(page);
+  test('the backup export produces a JSON download', async ({ app, page }) => {
+    await app.launch();
 
     // open Profile -> Settings where the backup controls live
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
-    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await app.openSettings();
 
     // tapping Export should trigger a file download
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.getByRole('button', { name: /export/i }).click(),
+      app.profile.exportButton.click(),
     ]);
     // the download is a timestamped backup JSON
     expect(download.suggestedFilename()).toMatch(/^mi-dia-backup-.*\.json$/);
@@ -43,22 +46,22 @@ test.describe('persistence', () => {
 });
 
 test.describe('i18n', () => {
-  test('switching to Romanian re-labels the UI and the accessible names', async ({ page }) => {
-    await gotoApp(page);
+  test('switching to Romanian re-labels the UI and the accessible names', async ({ app, page }) => {
+    await app.launch();
 
     // EN baseline
-    await expect(page.getByRole('button', { name: 'Journal', exact: true })).toBeVisible();
-    await expect(page.getByPlaceholder(PH_EN)).toBeVisible();
+    await expect(app.day.petal('Journal')).toBeVisible();
+    await expect(app.day.titleField).toBeVisible();
 
     // switch the UI language to Romanian
-    await page.getByRole('button', { name: 'RO', exact: true }).click();
+    await app.languageButton('RO').click();
 
     // visible text + the petal's aria-label both follow the language (v126 a11y fix)
     await expect(page.getByPlaceholder('Ce vrei')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Jurnal', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Journal', exact: true })).toHaveCount(0);
+    await expect(app.day.petal('Jurnal')).toBeVisible();
+    await expect(app.day.petal('Journal')).toHaveCount(0);
 
     // and the switcher reflects the active language
-    await expect(page.getByRole('button', { name: 'RO', exact: true })).toHaveClass(/sel/);
+    await expect(app.languageButton('RO')).toHaveClass(/sel/);
   });
 });

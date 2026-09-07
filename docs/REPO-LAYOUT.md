@@ -75,8 +75,15 @@ one place, split by **the question it answers** rather than by the technology th
 | `quality/security/` | which risks are accepted, and which are new? |
 
 `quality/tools/` is the row worth pointing at when somebody asks what is unusual here. It holds the
-checkers, and every one of them ships with its own test file. A gate is a claim that something is
-true, and a gate nobody has watched fail is an untested claim wearing the costume of a check.
+checkers, and the standard is that each one ships with its own test file. A gate is a claim that
+something is true, and a gate nobody has watched fail is an untested claim wearing the costume of a
+check.
+
+**The standard is not yet met, and saying so is the point of writing it down.** Measured rather than
+remembered: `check-docs.mjs` and `mutate.mjs` have test files. `qa-status.mjs`, `check-skips.mjs`,
+`ai-triage.mjs`, `verify-live.mjs` and the two summary scripts do not. This sentence used to claim
+all of them did, which is the kind of prose rot the documentation gate cannot see. The open items in
+`QA-STATUS.md` carry the fix, which is to write the missing tests rather than to narrow the claim.
 
 Inside `quality/e2e/`, the same idea applies one level down:
 
@@ -94,6 +101,21 @@ quarantine must not block a merge and the production smoke needs a live URL.
 An earlier version of this section said three directories that never run together. That sentence
 survived the change that made it wrong, because nothing checks a claim written in prose. It is worth
 knowing that this is the one kind of rot the documentation gate cannot see.
+
+Beside them sit four directories that hold **no tests at all**, added by phase 6 of the QA arc. They
+are the reason a spec can be read as a sentence about behaviour rather than as a list of selectors.
+
+| Directory | What it is |
+|---|---|
+| `pages/` | one object per screen: locators and actions, never an assertion |
+| `components/` | the same, for things that are raised over a screen rather than being one |
+| `fixtures/` | `app.fixture.js`, the `test` and `expect` every spec requires instead of Playwright directly |
+| `strings/` | copy asserted as text, which is a much smaller set than it sounds; the file says why |
+
+A page object never asserting is not a convention here, it is a lint rule: `eslint.config.mjs`
+refuses a call to `expect` anywhere under `pages/` or `components/`. The whole harness is also type
+checked, through `jsconfig.json` and `npx tsc --noEmit`, because a layer whose every locator is a
+property reached by name turns a typo into `undefined` rather than into an error.
 
 The full account of the agent half is in [`AGENTIC-QA.md`](AGENTIC-QA.md).
 

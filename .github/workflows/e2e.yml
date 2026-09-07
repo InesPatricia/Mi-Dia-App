@@ -66,6 +66,23 @@ jobs:
       # replaces it or resolves inside it. A relative cd means the answer does not matter.
       - name: Run the unit level
         run: cd ../unit && node --test
+      # The mutation net. Every mutant, the unit level only, compared against what each one declares
+      # in the catalogue. Ten seconds, no browser, no install, which is why it can run here while
+      # the full audit stays a manual forty-five minutes.
+      #
+      # continue-on-error on purpose. The decisions table in docs/QA-STATUS.md rejected making the
+      # audit a REQUIRED CHECK, on the grounds that its failure is information rather than a reason
+      # to block a merge. That reasoning still holds, and it is also this repository's own
+      # distinction: gates block, nets observe. This is a net. What it adds over a purely manual run
+      # is that it says out loud when the unit level stops catching what it used to.
+      #
+      # LAST in the job, deliberately. It edits tracked files and restores them in a finally. If it
+      # ever died between those two, a following step would fail for a reason that has nothing to do
+      # with the change under review, and it is not continue-on-error that would save that step. With
+      # nothing after it, the blast radius of that failure is the net itself.
+      - name: Mutation net (unit level, observing)
+        continue-on-error: true
+        run: node ../tools/mutate.mjs --net
 
   test:
     name: test (shard ${{ matrix.shard }}/2)
@@ -83,6 +100,15 @@ jobs:
           cache: npm
           cache-dependency-path: quality/e2e/package-lock.json
       - run: npm ci
+      # Type-check the harness before anything downloads a browser, so a typo in the page object
+      # layer fails in under a minute rather than after a 150 MB install and a full test run.
+      #
+      # Here rather than in the fast validate job, because it needs node_modules and validate
+      # deliberately installs nothing. Shard 1 only, the same way the lint and the count check are
+      # run once, since the answer cannot differ between shards.
+      - name: Type-check the test harness
+        if: matrix.shard == 1
+        run: npx tsc --noEmit -p jsconfig.json
       # Cache the downloaded browser (~150 MB) keyed by the exact Playwright version, so we only
       # re-download it when that version changes. Read the version AFTER npm ci so it's resolvable.
       - name: Resolve Playwright version

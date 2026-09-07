@@ -26,7 +26,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { applyMutation, MutationError, withMutant, MUTANTS, renderResults, parseTap, isPartialRun } from './mutate.mjs';
+import { applyMutation, MutationError, withMutant, MUTANTS, renderResults, parseTap, isPartialRun, compareToExpectation } from './mutate.mjs';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -285,6 +285,42 @@ test('isPartialRun is false only when every mutant runs through every level', ()
   const every = ['unit', 'integration', 'e2e'];
 
   assert.equal(isPartialRun({ only: undefined, levels: every }, every), false);
+});
+
+/* ── The net: comparing a unit run against what each mutant declares ─────────────────────── */
+
+const declared = [{ id: 'a', unit: 'red' }, { id: 'b', unit: 'green' }];
+const ran = (aRed, bRed) => [
+  { id: 'a', levels: { unit: { red: aRed, failed: [] } } },
+  { id: 'b', levels: { unit: { red: bRed, failed: [] } } },
+];
+
+test('compareToExpectation is silent when every mutant behaves as declared', () => {
+  assert.deepEqual(compareToExpectation(ran(true, false), declared), []);
+});
+
+test('compareToExpectation reports a mutant that stopped being caught', () => {
+  // Unit coverage was lost. The expensive direction, and the one a manual run finds months late.
+  assert.deepEqual(compareToExpectation(ran(false, false), declared), [
+    { id: 'a', expected: 'red', actual: 'green' },
+  ]);
+});
+
+test('compareToExpectation reports a mutant that started being caught', () => {
+  // The application changed under it. Easier to miss than the other direction, because a suite
+  // catching more looks like good news until somebody asks what changed.
+  assert.deepEqual(compareToExpectation(ran(true, true), declared), [
+    { id: 'b', expected: 'green', actual: 'red' },
+  ]);
+});
+
+test('every mutant in the catalogue declares what the unit level does with it', () => {
+  // Without this, a mutant added later is silently exempt from the net: its expectation is
+  // undefined, and undefined never matches, so it would report drift on every run until somebody
+  // muted it. Fail here instead, where the fix is to write the one word down.
+  for (const mutant of MUTANTS) {
+    assert.ok(['red', 'green'].includes(mutant.unit), `${mutant.id} declares unit: ${mutant.unit}`);
+  }
 });
 
 /* ── The report ──────────────────────────────────────────────────────────────────────────── */

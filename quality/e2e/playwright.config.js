@@ -3,8 +3,31 @@
 // app's index.html (= the promoted build) + service worker behave like production, and the
 // suite runs in a mobile Chromium viewport because the app is phone-first (~412px layout).
 const { defineConfig, devices } = require('@playwright/test');
+const { resolveServeDir } = require('./serve-build');
 
 const PORT = 5173;
+
+// WHICH BUILD IS UNDER TEST.
+//   Nothing set: public/, the promoted build. That is the default and it is what every existing
+//   command does.
+//
+//   MI_BUILD=src/mi-dia-v173.html: that candidate, assembled the way a promotion would assemble it,
+//   into a temporary directory. It is what lets `/ship` refuse a build BEFORE promoting it rather
+//   than after, which is OPEN-001 in specs/BUGS.md.
+//
+//   The line is printed rather than kept quiet, because the failure this guards against is a green
+//   run that tested a different file than the one somebody meant to gate. It goes to stderr on
+//   purpose: the json reporter writes its document to stdout when no output file is set, and a
+//   stray line there would corrupt it.
+//
+//   Once per run, not once per worker. Playwright loads this config in every worker process, so the
+//   first version printed the line six times under six workers and buried the run's own output.
+//   TEST_WORKER_INDEX is set only inside a worker, which the installed types document; the main
+//   process does not have it.
+const SERVE = resolveServeDir();
+if (process.env.TEST_WORKER_INDEX === undefined) {
+  process.stderr.write(`playwright: serving ${SERVE.label}\n`);
+}
 
 module.exports = defineConfig({
   testDir: './tests',
@@ -83,7 +106,7 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: `npx http-server ../../public -p ${PORT} -c-1 --silent`,
+    command: `npx http-server "${SERVE.dir}" -p ${PORT} -c-1 --silent`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

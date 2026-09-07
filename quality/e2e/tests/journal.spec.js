@@ -1,83 +1,75 @@
 // Journal + Stare (mood) tests for the redesigned journal (v125+).
-// Locators: mood discs carry i18n aria-labels (EN mood names), so getByRole by name,
-// scoped to #mood. The permission-pause / emotion-wheel chips are dynamic generated
-// content with no stable name -> reached structurally within their containers. The free
-// text area is found by its placeholder. State (selection, low-mood pause) is asserted on
-// class / visibility.
-const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./helpers');
-
-const PH_JOURNAL = 'Write freely'; // start of the EN ph_journal placeholder
-
-// open the Journal view from the flower
-async function openJournal(page) {
-  await page.getByRole('button', { name: 'Journal', exact: true }).click();
-  await expect(page.locator('body')).toHaveAttribute('data-view', 'journal');
-}
+// Locators: mood discs carry i18n aria-labels (EN mood names), so getByRole by name, scoped to the
+// mood band. The permission-pause / emotion-wheel chips are dynamic generated content with no
+// stable name, so they are reached structurally within their containers. The free text area is
+// found by its placeholder. State (selection, low-mood pause) is asserted on class / visibility.
+//
+// Migrated to the page object layer. The local openJournal helper asserted the view had changed,
+// which a page object may not do; that assertion is now in the one test where the navigation is
+// part of what is being checked, and the other three simply navigate.
+const { test, expect } = require('../fixtures/app.fixture');
 
 test.describe('journal + mood', () => {
-  test('selecting a mood updates the mood word and (high mood) shows no pause', async ({ page }) => {
-    await gotoApp(page);
-    await openJournal(page);
+  test('selecting a mood updates the mood word and (high mood) shows no pause', async ({ app }) => {
+    await app.launch();
+    await app.day.tapPetal('Journal');
+    await expect(app.view).toHaveAttribute('data-view', 'journal');
 
     // pick the "Clear" mood disc
-    const mood = page.locator('#mood');
-    await mood.getByRole('button', { name: 'Clear', exact: true }).click();
+    await app.journal.moodOption('Clear').click();
 
     // the mood word + selected-disc state both reflect the choice
-    await expect(page.locator('#moodWord')).toHaveText('Clear');
-    await expect(mood.getByRole('button', { name: 'Clear', exact: true })).toHaveClass(/sel/);
+    await expect(app.journal.moodWord).toHaveText('Clear');
+    await expect(app.journal.moodOption('Clear')).toHaveClass(/sel/);
     // "Clear" (mood 5) is not a low mood -> the permission pause stays hidden
-    await expect(page.locator('#permPause')).toBeHidden();
+    await expect(app.journal.permissionPause).toBeHidden();
   });
 
-  test('a low mood reveals the permission pause + emotion-wheel drilldown', async ({ page }) => {
-    await gotoApp(page);
-    await openJournal(page);
+  test('a low mood reveals the permission pause + emotion-wheel drilldown', async ({ app }) => {
+    await app.launch();
+    await app.day.tapPetal('Journal');
 
     // pick a low mood ("Rainy")
-    await page.locator('#mood').getByRole('button', { name: 'Rainy', exact: true }).click();
+    await app.journal.moodOption('Rainy').click();
 
     // the permission pause appears with a "one breath" link
-    const pause = page.locator('#permPause');
-    await expect(pause).toBeVisible();
-    await expect(page.getByRole('button', { name: /breath|respira/i })).toBeVisible();
+    await expect(app.journal.permissionPause).toBeVisible();
+    await expect(app.journal.breathLink).toBeVisible();
 
     // drill down: pick the first emotion core -> sub-emotions appear -> pick the first
-    await page.locator('#ppCores button').first().click();
-    const subs = page.locator('#ppSubs');
-    await expect(subs).toBeVisible();
-    await subs.locator('button').first().click();
+    await app.journal.coreEmotions.first().click();
+    await expect(app.journal.subEmotionList).toBeVisible();
+    await app.journal.subEmotions.first().click();
 
     // the chosen emotion chip is shown
-    await expect(page.locator('#ppChosen')).toBeVisible();
+    await expect(app.journal.chosenEmotion).toBeVisible();
   });
 
-  test('journal text + mood autosave and survive a reload', async ({ page }) => {
-    await gotoApp(page);
-    await openJournal(page);
+  test('journal text + mood autosave and survive a reload', async ({ app, page }) => {
+    await app.launch();
+    await app.day.tapPetal('Journal');
 
     // set a mood + write some text
-    await page.locator('#mood').getByRole('button', { name: 'Fair', exact: true }).click();
-    await page.getByPlaceholder(PH_JOURNAL).fill('Reflection entry 123');
+    await app.journal.moodOption('Fair').click();
+    await app.journal.textField.fill('Reflection entry 123');
 
     // navigating away flushes the debounced save; then reload from storage
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await app.goHome();
     await page.reload();
     await page.waitForFunction(() => document.body.hasAttribute('data-view'));
-    await openJournal(page);
+    await app.day.tapPetal('Journal');
 
     // text + selected mood are restored from storage
-    await expect(page.getByPlaceholder(PH_JOURNAL)).toHaveValue('Reflection entry 123');
-    await expect(page.locator('#mood').getByRole('button', { name: 'Fair', exact: true })).toHaveClass(/sel/);
+    await expect(app.journal.textField).toHaveValue('Reflection entry 123');
+    await expect(app.journal.moodOption('Fair')).toHaveClass(/sel/);
   });
 
-  test('export buttons are available', async ({ page }) => {
-    await gotoApp(page);
-    await openJournal(page);
-    // both export buttons are present
-    // the buttons carry an emoji prefix ("📄 Word") -> substring match, not exact
-    await expect(page.getByRole('button', { name: 'Word' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'PDF' })).toBeVisible();
+  test('export buttons are available', async ({ app }) => {
+    await app.launch();
+    await app.day.tapPetal('Journal');
+    // both export buttons are present. Each label carries an icon character before its word, so
+    // the lookup is a substring match rather than an exact one.
+    await expect(app.journal.exportButton('Word')).toBeVisible();
+    await expect(app.journal.exportButton('PDF')).toBeVisible();
   });
 });

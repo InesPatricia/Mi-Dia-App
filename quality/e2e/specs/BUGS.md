@@ -680,3 +680,120 @@ in the page-object shape.
   browser levels are blind to all cycle arithmetic" is likely and unmeasured.
 - Whether the phase label actually renders on the day a test would assert. That was read from the
   build's i18n table and from the spec, not driven in a browser.
+
+---
+
+## FLAKE-001. One respiro failure in 425 executions, not reproduced since
+
+**Status** UNCONFIRMED. Observed once, in one configuration. Fifty-six further executions, including
+under three times the worker contention, did not reproduce it.
+
+**Found by** the flake re-measurement after the phase 6 migration:
+
+```
+cd quality/e2e
+npx playwright test --project=mobile-chromium --retries=0 --repeat-each=5
+```
+
+### What happened
+
+424 of 425 executions passed in 31.2 minutes. The one failure was
+`tests/respiro.spec.js`, "opening an exercise shows the player, and it can be closed".
+
+The error text was lost: the run was backgrounded through `tail`, so only the summary survived. That
+is a mistake in how the measurement was captured rather than a property of the defect, and the next
+run of this kind should keep the whole output.
+
+### What was tried, and did not reproduce it
+
+| Attempt | Result |
+|---|---|
+| the same test alone, `--repeat-each=20`, default workers | 20 passed |
+| the whole respiro spec, `--repeat-each=12 --workers=6` | 36 passed |
+
+### The hypothesis, which is a hypothesis
+
+The phase 6 migration removed a synchronisation point from this test. The version before it called a
+local `openRespiro` helper that asserted `data-view` had become `calm` before touching the exercise
+grid. That assertion now lives only in the first test of the file, on the argument that the next
+web-first assertion inherits the waiting.
+
+If the Respiro view renders its grid after the view switch, a click on the first card could race
+that render, and the element could detach between being resolved and being clicked. That would
+appear under load and not in isolation, which matches what was seen.
+
+**It has not been restored, on purpose.** A bug that cannot be triggered on demand is a bug that has
+not been found, and changing the test on a hypothesis would produce a green run that proves nothing
+and a story that sounds settled. The honest state is: one failure, one plausible mechanism, no
+reproduction.
+
+### What would settle it
+
+Re-run the full `--repeat-each=5` measurement keeping the complete output, and read the error. If it
+is a detached element on the grid click, the fix is to restore the view assertion in this test and
+to say so where the migration removed it. If it is something else, this entry is what stops the
+wrong fix from being applied.
+
+### Not checked
+
+- Whether the same shape exists in the other specs that lost a helper-level assertion in the
+  migration. The journal, calendar, projects and progress specs all did.
+- Whether it reproduces on the CI runner, which is Linux with two workers per shard rather than one
+  Windows machine.
+
+---
+
+## BUG-005. Four elements are below 3:1 contrast in the light theme
+
+**Status** CONFIRMED. Measured on demand, reproducible with one command.
+
+**Found by** `quality/e2e/tests/theme-contrast.spec.js` on its first run, which is the check written
+to replace the pixel baselines phase 7 retires.
+
+### What it is
+
+| Element | Ratio | What it is |
+|---|---|---|
+| `.ro` | 2.44:1 | the rotating daily phrase, which is body text a user reads |
+| `.durlbl` | 2.68:1 | the composer's "Duration" label |
+| `.sc-edit-btn` | 2.67:1 | the shortcuts edit toggle, icon only |
+| `.phrase-dc` | 2.19:1 | the drop cap of the daily phrase, a gilt decorative initial |
+
+WCAG AA asks 4.5:1 for body text and 3:1 for large text. All four are below 3:1, so all four are
+below even the threshold that applies to large text. The dark theme has none.
+
+### Evidence
+
+```
+cd quality/e2e
+npx playwright test theme-contrast.spec.js --project=mobile-chromium
+```
+
+The four are recorded as accepted debt in that spec, so it is green today. Anything new below the
+floor fails, and so does any of these four getting worse. Both directions were triggered on purpose
+and both fail with the offending element named.
+
+### How much of this is a defect
+
+Not equally. `.ro` and `.durlbl` are text a user is meant to read, and 2.4 is low by any standard.
+`.phrase-dc` is a decorative initial whose letter is also the first letter of the phrase beside it,
+so nothing is lost if it is hard to read; it may be a deliberate choice worth keeping. The edit
+toggle is an icon, where the argument is about affordance rather than reading.
+
+That judgement is a design decision and not one this branch should make. What is recorded here is
+the measurement.
+
+### Not fixed here, and where it belongs
+
+This is `qa/test-architecture`, which is for tests, gates and tooling. The fix is colour, which is a
+new build on `staging`. The promoted build here is v172 and staging is well ahead of it, so the
+values above should be re-measured on the current staging build before anything is changed.
+
+### Not checked
+
+- Only the Day view, and only at launch. Other screens, and states reached by interaction, are not
+  measured. The walk is per view and running it elsewhere is a matter of navigating first.
+- Text over an image, a gradient or a backdrop filter is skipped, because there is no single
+  background colour to compare against. Anything unreadable there is invisible to this check.
+- Ancestor opacity is not accounted for. An element whose parent is half transparent will measure
+  better than it looks.

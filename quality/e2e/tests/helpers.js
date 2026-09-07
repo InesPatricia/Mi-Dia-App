@@ -4,6 +4,37 @@
 // (always the case in a plain browser), so we can seed/inspect state directly.
 // seedStorage writes localStorage BEFORE the page loads, via addInitScript, so the
 // app boots into a known state (language, day blocks, settings...).
+//
+// THE TYPEDEFS BELOW ARE NOT THE SCHEMA.
+//   docs/DATA_SCHEMA.md is the schema, and tests-integration/storage-schema.spec.js parses its key
+//   table so a key written without a row turns the suite red. These describe only the fields this
+//   harness reads back, so the type checker can catch `block.titel` at the call site instead of
+//   letting it be undefined at runtime.
+//
+//   They are CLOSED, with no index signature, and that was a correction rather than the first
+//   draft. The open version allowed any property name, which meant the typo it was written to catch
+//   went through it silently. It was found the way everything in this arc gets found: by writing the
+//   typo on purpose and watching nothing go red. Closing them cost zero errors on the suite as it
+//   stands, so the fields listed are exactly the fields the harness reads.
+//
+//   The cost of closed is that a spec reading a field not listed here fails the type check. That is
+//   the intended behaviour: the answer is to add the field deliberately, having looked at
+//   DATA_SCHEMA.md, rather than to discover at runtime that it was undefined.
+
+/**
+ * A slot in the day plan, as the harness reads it back.
+ * @typedef {{ id: string, title: string, cat: string, time: string, dur: number, done: boolean, date: string, tags?: string[] }} Block
+ */
+
+/**
+ * A ritual, as the harness reads it back.
+ * @typedef {{ id: string, name: string, log: string[], cue: { type: string, value: string }, freq?: string, identity?: string }} Ritual
+ */
+
+/**
+ * The settings object, as the harness reads it back.
+ * @typedef {{ onboarded?: boolean, identity?: string, theme?: string, lang?: string }} Settings
+ */
 
 /**
  * Seed localStorage before the app loads. Keys mirror the data model in CLAUDE.md
@@ -55,7 +86,7 @@ async function gotoApp(page, opts = {}) {
  * Read all day-plan blocks the app has persisted to localStorage (across every "day:" key).
  * Lets tests assert on the stored data model (e.g. dur/cat/time) rather than only the DOM.
  * @param {import('@playwright/test').Page} page
- * @returns {Promise<Array<object>>}
+ * @returns {Promise<Block[]>}
  */
 async function readBlocks(page) {
   return page.evaluate(() => {
@@ -74,7 +105,7 @@ async function readBlocks(page) {
  * Read the rituals the app has persisted (localStorage "rituals" JSON array).
  * Lets tests assert on the ritual data model (log, cue, streak-derivation) directly.
  * @param {import('@playwright/test').Page} page
- * @returns {Promise<Array<object>>}
+ * @returns {Promise<Ritual[]>}
  */
 async function readRituals(page) {
   return page.evaluate(() => {
@@ -86,7 +117,7 @@ async function readRituals(page) {
  * Read the settings object (localStorage "settings" JSON). Handy for asserting
  * settings.onboarded / settings.identity after onboarding flows.
  * @param {import('@playwright/test').Page} page
- * @returns {Promise<object>}
+ * @returns {Promise<Settings>}
  */
 async function readSettings(page) {
   return page.evaluate(() => {
