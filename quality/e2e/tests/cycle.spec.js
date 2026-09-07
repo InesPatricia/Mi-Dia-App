@@ -1,48 +1,43 @@
-// Cycle (opt-in) tests: OFF by default (no cycle chrome), and enabling the Settings
-// switch surfaces the Rhythm lens + "Ritmul meu" access in the Calendar.
-const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./helpers');
-
-const openCalendar = async (page) => {
-  await page.getByRole('button', { name: 'Calendar', exact: true }).click();
-  await expect(page.locator('body')).toHaveAttribute('data-view', 'cal');
-};
-const openSettings = async (page) => {
-  await page.getByRole('button', { name: 'Profile', exact: true }).click();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-};
+// Cycle (opt-in) tests: OFF by default (no cycle chrome), and enabling the Settings switch
+// surfaces the Rhythm lens and the cycle setup access in the Calendar.
+//
+// Migrated to the page object layer. Both local helpers are gone: openSettings was one of the five
+// ways this suite used to reach that screen, and openCalendar asserted the view had changed, which
+// a page object may not do. That assertion now sits in the spec, once, where a reader can see which
+// step it belongs to.
+const { test, expect } = require('../fixtures/app.fixture');
 
 test.describe('cycle (opt-in)', () => {
-  test('is OFF by default — no cycle chrome in the Calendar', async ({ page }) => {
-    await gotoApp(page);
-    await openCalendar(page);
+  test('is OFF by default, so the Calendar shows no cycle chrome', async ({ app }) => {
+    await app.launch();
+    await app.day.tapPetal('Calendar');
+    await expect(app.view).toHaveAttribute('data-view', 'cal');
 
-    // only Plan + Mood lenses (no Rhythm), and the "Ritmul meu" access is hidden
-    await expect(page.locator('#calLensWrap').getByRole('button', { name: 'Rhythm', exact: true })).toHaveCount(0);
-    await expect(page.locator('#cycleSetupBtn')).toBeHidden();
+    // only Plan + Mood lenses, and the cycle setup access is hidden
+    await expect(app.calendar.lens('Rhythm')).toHaveCount(0);
+    await expect(app.calendar.cycleSetup).toBeHidden();
 
     // and the Settings opt-in switch is off
-    await openSettings(page);
-    await expect(page.getByRole('switch')).not.toBeChecked();
+    await app.openSettings();
+    await expect(app.profile.cycleSwitch).not.toBeChecked();
   });
 
-  test('enabling the switch surfaces the Rhythm lens + access', async ({ page }) => {
-    await gotoApp(page);
-    await openSettings(page);
+  test('enabling the switch surfaces the Rhythm lens + access', async ({ app }) => {
+    await app.launch();
+    await app.openSettings();
 
     // toggle the opt-in switch on
-    const sw = page.getByRole('switch');
-    await sw.click();
-    await expect(sw).toBeChecked();
+    await app.profile.cycleSwitch.click();
+    await expect(app.profile.cycleSwitch).toBeChecked();
 
-    // back to the Calendar -> the Rhythm lens now exists; selecting it reveals access
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
-    await openCalendar(page);
+    // back to the Calendar, which is reached through the flower on the Day screen
+    await app.goHome();
+    await app.day.tapPetal('Calendar');
+    await expect(app.view).toHaveAttribute('data-view', 'cal');
 
-    // the Rhythm lens now exists; selecting it reveals the "Ritmul meu" access
-    const rhythm = page.locator('#calLensWrap').getByRole('button', { name: 'Rhythm', exact: true });
-    await expect(rhythm).toBeVisible();
-    await rhythm.click();
-    await expect(page.locator('#cycleSetupBtn')).toBeVisible();
+    // the Rhythm lens now exists; selecting it reveals the cycle setup access
+    await expect(app.calendar.lens('Rhythm')).toBeVisible();
+    await app.calendar.lens('Rhythm').click();
+    await expect(app.calendar.cycleSetup).toBeVisible();
   });
 });

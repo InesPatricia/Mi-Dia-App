@@ -1,64 +1,61 @@
-// Focus timer (Day-header overlay) and a full backup export -> import roundtrip.
-const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./helpers');
-
-const PH = 'What do you want to do today?';
-const block = (page, title) => page.locator('.block', { hasText: title });
+// Focus timer (Day-header overlay) and a full backup export then import roundtrip.
+//
+// Migrated to the page object layer. The two Profile-then-Settings pairs it carried, written a
+// third way again, are now one call. The focus timer became a component rather than a page,
+// because it is raised over whatever is showing and the app's data-view does not change while it
+// is up.
+const { test, expect } = require('../fixtures/app.fixture');
 
 test.describe('focus timer', () => {
-  test('the Focus button opens the timer overlay; a preset sets the time; it closes', async ({ page }) => {
-    await gotoApp(page);
+  test('the Focus button opens the timer overlay; a preset sets the time; it closes', async ({ app }) => {
+    await app.launch();
 
     // the Focus button opens the timer overlay at the default time
-    await page.locator('#focusBtn').click();
-    const overlay = page.locator('#focusOverlay');
-    await expect(overlay).toHaveClass(/show/);
-    await expect(page.locator('#tTime')).toHaveText('25:00'); // default
+    await app.focusTimer.open();
+    await expect(app.focusTimer.overlay).toHaveClass(/show/);
+    await expect(app.focusTimer.time).toHaveText('25:00'); // default
 
     // tapping the 45-minute preset updates the displayed time
     // presets are [15, 25, 45, 60] -> index 2 = 45
-    await page.locator('#tPresets button').nth(2).click();
-    await expect(page.locator('#tTime')).toHaveText('45:00');
+    await app.focusTimer.preset(2).click();
+    await expect(app.focusTimer.time).toHaveText('45:00');
 
     // closing the overlay hides it again
-    await page.locator('#focusClose').click();
-    await expect(overlay).not.toHaveClass(/show/);
+    await app.focusTimer.close();
+    await expect(app.focusTimer.overlay).not.toHaveClass(/show/);
   });
 });
 
 test.describe('backup roundtrip', () => {
-  test('export then re-import restores a deleted slot', async ({ page }) => {
-    await gotoApp(page);
+  test('export then re-import restores a deleted slot', async ({ app, page }) => {
+    await app.launch();
 
     // 1) create a slot
-    const title = page.getByPlaceholder(PH);
-    await title.fill('Roundtrip task');
-    await title.press('Enter');
-    await expect(page.locator('#list').getByText('Roundtrip task')).toBeVisible();
+    await app.day.titleField.fill('Roundtrip task');
+    await app.day.titleField.press('Enter');
+    await expect(app.day.list.getByText('Roundtrip task')).toBeVisible();
 
     // 2) export -> capture the downloaded backup file
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
-    await page.locator('#profMode').getByRole('button', { name: 'Settings', exact: true }).click();
+    await app.openSettings();
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.getByRole('button', { name: /export/i }).click(),
+      app.profile.exportButton.click(),
     ]);
     const backupPath = await download.path();
 
-    // 3) delete the slot back on the Day view
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
-    const del = block(page, 'Roundtrip task').locator('.del');
+    // 3) delete the slot back on the Day view. The delete is a deliberate two-tap confirm.
+    await app.goHome();
+    const del = app.day.blockDelete('Roundtrip task');
     await del.click();
     await del.click();
-    await expect(page.locator('#list').getByText('Roundtrip task')).toHaveCount(0);
+    await expect(app.day.list.getByText('Roundtrip task')).toHaveCount(0);
 
-    // 4) import the backup (hidden file input) -> importData re-renders the day
-    await page.getByRole('button', { name: 'Profile', exact: true }).click();
-    await page.locator('#profMode').getByRole('button', { name: 'Settings', exact: true }).click();
-    await page.locator('#importFile').setInputFiles(backupPath);
+    // 4) import the backup through the hidden file input -> importData re-renders the day
+    await app.openSettings();
+    await app.profile.importInput.setInputFiles(backupPath);
 
     // 5) back to the Day view -> the slot is restored from the backup
-    await page.getByRole('button', { name: 'Home', exact: true }).click();
-    await expect(page.locator('#list').getByText('Roundtrip task')).toBeVisible();
+    await app.goHome();
+    await expect(app.day.list.getByText('Roundtrip task')).toBeVisible();
   });
 });

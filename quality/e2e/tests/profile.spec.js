@@ -1,58 +1,55 @@
-// Profile tests: the Profile/Settings segmented view, the name field feeding the
-// greeting, and seeded daily intentions surfacing in "Intenții recente".
-const { test, expect } = require('@playwright/test');
-const { gotoApp, seedStorage, dayKey } = require('./helpers');
-
-async function openProfile(page) {
-  await page.getByRole('button', { name: 'Profile', exact: true }).click();
-  await expect(page.locator('body')).toHaveAttribute('data-view', 'profil');
-}
-// the segment shares the name "Profile" with the bottom bar -> scope to #profMode
-const seg = (page, name) => page.locator('#profMode').getByRole('button', { name, exact: true });
+// Profile tests: the Profile/Settings segmented view, the name field feeding the greeting, and
+// seeded daily intentions surfacing in "recent intentions".
+//
+// First spec migrated to the page object layer. The two local helpers it used to carry, openProfile
+// and seg, are now AppPage.openProfile and ProfilePage.segment, where every other spec can reach
+// them. openProfile also used to assert the view had changed; that assertion has moved into the one
+// test that is actually about navigation, because a helper that asserts hides which line failed.
+const { test, expect } = require('../fixtures/app.fixture');
+const { dayKey } = require('./helpers');
 
 test.describe('profile', () => {
-  test('the Profile/Settings segment swaps the panels', async ({ page }) => {
-    await gotoApp(page);
-    await openProfile(page);
+  test('the Profile/Settings segment swaps the panels', async ({ app }) => {
+    await app.launch();
+    await app.openProfile();
+    await expect(app.view).toHaveAttribute('data-view', 'profil');
 
     // default segment = the overview panel
-    await expect(page.locator('#prof-overview')).toBeVisible();
-    await expect(page.locator('#prof-settings')).toBeHidden();
+    await expect(app.profile.overviewPanel).toBeVisible();
+    await expect(app.profile.settingsPanel).toBeHidden();
 
     // selecting Settings swaps to the settings panel
-    await seg(page, 'Settings').click();
-    await expect(page.locator('#prof-settings')).toBeVisible();
-    await expect(page.locator('#prof-overview')).toBeHidden();
+    await app.profile.openSettings();
+    await expect(app.profile.settingsPanel).toBeVisible();
+    await expect(app.profile.overviewPanel).toBeHidden();
 
     // selecting Profile swaps back to the overview
-    await seg(page, 'Profile').click();
-    await expect(page.locator('#prof-overview')).toBeVisible();
+    await app.profile.openOverview();
+    await expect(app.profile.overviewPanel).toBeVisible();
   });
 
-  test('setting a name updates the greeting', async ({ page }) => {
-    await gotoApp(page);
-    await openProfile(page);
+  test('setting a name updates the greeting', async ({ app }) => {
+    await app.launch();
+    await app.openProfile();
 
     // type a name in the Settings name field
-    await seg(page, 'Settings').click();
-    await page.getByPlaceholder('e.g. Ines').fill('Ines');
+    await app.profile.openSettings();
+    await app.profile.nameField.fill('Ines');
 
     // back on the overview the greeting includes the name
-    await seg(page, 'Profile').click();
-    await expect(page.locator('#pfHello')).toContainText('Ines');
+    await app.profile.openOverview();
+    await expect(app.profile.greeting).toContainText('Ines');
   });
 
-  test('seeded daily intentions appear in "recent intentions"', async ({ page }) => {
-    await seedStorage(page, {
+  test('seeded daily intentions appear in "recent intentions"', async ({ app }) => {
+    await app.launch({
       ['intent:' + dayKey(0)]: 'Be present',
       ['intent:' + dayKey(-1)]: 'Move gently',
     });
-    await gotoApp(page);
-    await openProfile(page);
+    await app.openProfile();
 
     // both seeded intentions surface in the "recent intentions" list
-    const recent = page.locator('#pfRecent');
-    await expect(recent).toContainText('Be present');
-    await expect(recent).toContainText('Move gently');
+    await expect(app.profile.recentIntentions).toContainText('Be present');
+    await expect(app.profile.recentIntentions).toContainText('Move gently');
   });
 });

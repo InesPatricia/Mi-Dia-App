@@ -44,6 +44,8 @@
 //   node quality/tools/mutate.mjs --only <id>     one mutant
 //   node quality/tools/mutate.mjs --levels unit,integration   a subset, comma separated
 //   node quality/tools/mutate.mjs --restore       put back the files a killed run left mutated
+//   node quality/tools/mutate.mjs --net           the unit level only, compared against what each
+//                                                 mutant declares. About ten seconds. Runs in CI.
 //
 //   A full run is long. The end-to-end level is roughly 8 minutes per mutant on the machine in
 //   quality/tools/BASELINE.md, and it runs once per mutant plus once clean.
@@ -137,6 +139,7 @@ const BOTH_CYCLE = [CYCLE_MODULE, BUILD];
 export const MUTANTS = [
   {
     id: 'due-today-false',
+    unit: 'red',
     what: 'dueToday always answers false, so no ritual is ever due',
     files: BOTH,
     anchor: '  function dueToday(r, date){',
@@ -144,6 +147,7 @@ export const MUTANTS = [
   },
   {
     id: 'streak-zero',
+    unit: 'red',
     what: 'streakOf always answers zero, so a streak never accumulates',
     files: BOTH,
     anchor: '  function streakOf(r, today){',
@@ -151,6 +155,7 @@ export const MUTANTS = [
   },
   {
     id: 'done-off-by-one',
+    unit: 'red',
     what: 'isDone uses > 0 instead of >= 0, so the first day in the log never counts as done',
     files: BOTH,
     anchor: 'r.log.indexOf(dkey(date)) >= 0',
@@ -158,6 +163,7 @@ export const MUTANTS = [
   },
   {
     id: 'seed-writes-nothing',
+    unit: 'green',
     what: 'seedDefaults returns before writing, so a first run starts with no rituals',
     files: BOTH,
     anchor: '  async function seedDefaults(){',
@@ -168,6 +174,7 @@ export const MUTANTS = [
   // measure" section, which is a hole to close rather than a caveat to keep.
   {
     id: 'cycle-phase-off-by-one',
+    unit: 'red',
     what: 'phaseForDay uses < instead of <=, so the last bleeding day reads as follicular',
     files: BOTH_CYCLE,
     anchor: "    if (d <= avgBleed(cfg)) return 'menstruala';",
@@ -181,6 +188,7 @@ export const MUTANTS = [
   // failing, and it is what makes the distinction legible to the next reader.
   {
     id: 'streak-guard-bound',
+    unit: 'green',
     what: 'streakOf walks 3999 days instead of 4000, a safety bound no reachable input reaches',
     files: BOTH,
     anchor: '    while(guard++ < 4000){',
@@ -411,17 +419,43 @@ export function isPartialRun(args, everyLevelId) {
   return Boolean(args.only) || args.levels.length !== everyLevelId.length;
 }
 
+/**
+ * Compare a unit-level run against what each mutant declares it expects.
+ *
+ * This is what makes `--net` worth running. A run that only prints cannot tell anyone that
+ * something changed, and a report nobody reads is the same as no report. Every mutant carries a
+ * `unit` field saying whether the unit level catches it, so a difference is a fact rather than an
+ * impression.
+ *
+ * It reports both directions on purpose. A mutant that stops being caught means unit coverage was
+ * lost. One that starts being caught means the application's behaviour changed under it, which is
+ * the more interesting of the two and the easier to miss.
+ *
+ * @returns {Array<{id: string, expected: string, actual: string}>} empty when nothing moved
+ */
+export function compareToExpectation(results, mutants) {
+  const declared = new Map(mutants.map((mutant) => [mutant.id, mutant.unit]));
+  return results.flatMap((result) => {
+    const expected = declared.get(result.id);
+    const actual = result.levels.unit?.red ? 'red' : 'green';
+    return expected === actual ? [] : [{ id: result.id, expected, actual }];
+  });
+}
+
 function parseArgs(argv) {
   const has = (flag) => argv.includes(flag);
   const value = (flag) => {
     const at = argv.indexOf(flag);
     return at === -1 ? undefined : argv[at + 1];
   };
+  const net = has('--net');
   return {
     dryRun: has('--dry-run'),
     restore: has('--restore'),
+    net,
     only: value('--only'),
-    levels: (value('--levels') ?? 'unit,integration,e2e').split(',').map((one) => one.trim()).filter(Boolean),
+    // --net is the unit level and nothing else, which is what makes it a minute rather than an hour.
+    levels: net ? ['unit'] : (value('--levels') ?? 'unit,integration,e2e').split(',').map((one) => one.trim()).filter(Boolean),
   };
 }
 
@@ -506,6 +540,27 @@ async function main() {
       '',
       renderDetail(results),
     ].join('\n');
+
+    // The net. Every mutant, the unit level only, compared against what each one declares. Roughly
+    // ten seconds, no browser, no install, so it can run on every pull request where the full audit
+    // never could. It is an observation rather than a gate: the decisions table rejected making the
+    // audit a required check because its failure is information, and this respects that. The
+    // workflow runs it with continue-on-error, which is the repository's own word for a net.
+    if (args.net) {
+      const drift = compareToExpectation(results, mutants);
+      if (!drift.length) {
+        console.log(`\nmutate: the unit level catches exactly what it is expected to, across ${results.length} mutants. OK`);
+        return 0;
+      }
+      console.error('\nmutate: the unit level no longer behaves as recorded.\n');
+      for (const one of drift) {
+        console.error(`  ${one.id}: expected ${one.expected}, got ${one.actual}`);
+      }
+      console.error('\nA mutant that stopped being caught means unit coverage was lost.');
+      console.error('One that started being caught means the application changed under it.');
+      console.error('Neither is settled by this command. Run the full audit and update the report.\n');
+      return 1;
+    }
 
     if (isPartialRun(args, Object.keys(LEVELS))) {
       console.log(`\n${body}\n`);

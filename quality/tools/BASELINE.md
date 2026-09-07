@@ -34,6 +34,12 @@ is the one to compare future local runs against; the two are not interchangeable
 
 **0 of 415.** No test failed, and no retry was consumed although one was available.
 
+> **Superseded as a description of the suite, kept as the phase 0 measurement.** The same run after
+> the phase 6 migration reported **424 of 425**, one failure in `respiro.spec.js`. The number below
+> is what the suite did before eighteen specs were rewritten, which is exactly what a baseline is
+> for, and it is not what the suite does now. The failure is FLAKE-001 in
+> `quality/e2e/specs/BUGS.md`, unconfirmed and not reproduced in fifty-six further executions.
+
 That is a real result, and it is also a small sample. Five repetitions on one machine cannot see a
 flake that needs a slower runner, a cold cache, or a different core count. It is a floor, not a
 guarantee, and the honest reading is that the suite has no flake this measurement can reach.

@@ -12,24 +12,131 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** 6. Phases 0 through 5 are done.
+**Phase:** 7. Phases 0 through 6 are done. Phases 0 through 5 are on `main`; phase 6 and the three
+decisions below are committed on `qa/test-architecture` and waiting in a pull request.
 
-**Branch state:** pull request 54 is merged, so everything through phase 4 is on `main`. This branch
-and `origin/main` differ by that merge commit and by nothing else: `git diff 247e1a6 origin/main` is
-empty, so phase 5 was built on exactly the content `main` carries and no merge was needed to start
-it.
+**Next action, in order:**
 
-Phase 5 itself is **in the working tree and not committed**. Committing, pushing and opening the
-pull request were not asked for and are Ines's call. Four files are involved:
-`quality/tools/mutate.mjs`, `quality/tools/mutate.test.mjs`,
-`quality/tools/MUTATION-REPORT.md`, and one probe added to `quality/tools/qa-status.mjs`.
+1. **Phase 7.** Three specs, listed in the phase detail below: offline, keyboard and focus trap, and
+   the aria contract that replaces the screenshot spec. Playwright 1.62 has `toMatchAriaSnapshot`,
+   confirmed present in the installed types, so the aria contract has a first-class API rather than
+   a hand-rolled one. Expect some keyboard cases to fail on the first run; record them and fix them
+   in a separate change, not as a side effect.
+2. **Retire `quality/e2e/tests/visual.spec.js`** as part of that, along with the `@visual` filter in
+   the config and the baseline-generating workflow. It is the one spec still importing Playwright
+   directly rather than the fixture, which is what makes the exception visible.
+3. **Two coverage holes the mutation audit found are phase 7 work:** TD-004, the first run has no
+   end-to-end coverage, and TD-005, the cycle phase is on screen and only the unit level would
+   notice if it were wrong.
 
-**Next action:** phase 6, the end-to-end architecture. The baseline it will be measured against is
-recorded, which was the whole point of doing phase 5 first. Re-run `node quality/tools/mutate.mjs`
-after the refactor and compare: a mutant caught before and not caught after means the refactor
-swallowed an assertion.
+**Waiting on a session that is not this branch:** BUG-005, four elements below 3:1 contrast in the
+light theme, and BUG-001 and BUG-004 before it. All are application changes, which means a build on
+`staging`, and the build promoted here is v172 while staging is well ahead of it. Re-measure there
+before changing anything.
+
+**Not resolved and not to be papered over:** FLAKE-001. One failure in 425 executions, in
+`respiro.spec.js`, not reproduced in 56 further runs including under three times the contention. A
+plausible mechanism is written down. It has not been acted on, because a defect that cannot be
+triggered on demand has not been found.
+
+**Every functional spec is migrated.** Eighteen of the nineteen files in `quality/e2e/tests/` now
+go through the page object layer; the nineteenth is the screenshot spec, deliberately left alone
+because phase 7 retires it.
+
+The layer, in `quality/e2e/`:
+
+| Where | What |
+|---|---|
+| `pages/` | `app.page.js`, `day.page.js`, `profile.page.js`, `calendar.page.js`, `journal.page.js`, `respiro.page.js`, `progress.page.js`, `projects.page.js` |
+| `components/` | `focus-timer.js`, `bloom-menu.js`, `intention-modal.js`, `shortcuts.js`, `celebration.js`, `onboarding.js`, `rituals.js` |
+| `fixtures/` | `app.fixture.js` |
+| `strings/` | `en.js` |
+
+The five ways of reaching the settings screen that phase 0 counted are one call,
+`AppPage.openSettings`. A sixth turned up during the migration, in the onboarding spec, which went
+by `data-` attributes rather than by accessible name and so was invisible to the count.
+
+**The mutation audit was re-run on the migrated suite and the result is byte-identical to the
+baseline**, including which tests fail under each mutant, not only how many. The refactor swallowed
+no assertion that any of the six defects can reach. That comparison is the reason phase 5 came
+first, and it is written up under "After the refactor" in `quality/tools/MUTATION-REPORT.md`.
 
 **Blocked on:** nothing.
+
+**Three decisions taken after phase 6, in the order they were recommended.** They are not phase 7
+and they are not part of it; they are recorded here so nobody looks for them in a phase that has a
+different purpose.
+
+**Decision A. A build is now testable before it is promoted.** `quality/e2e/serve-build.js` chooses
+what the web server serves. Nothing set means `public/`, the promoted build, which is what every
+existing command already did. `MI_BUILD=src/mi-dia-vNN.html` serves that candidate instead,
+assembled the way a promotion would assemble it, so `/ship` can refuse a build before it becomes
+production rather than after. That was OPEN-001.
+
+Why it needed more than a path swap: `sw.js` names its cache after the promoted version, so serving
+a candidate beside the old name would test a combination production will never have. The candidate
+copy has its cache name rewritten, using the same pattern the release validator matches on so there
+is one spelling of that rule rather than two. It fails closed on a missing file, a name that is not
+a build, and a worker with no cache name, because a quiet fallback here produces the one outcome
+worth avoiding: a green run against a different file than the one somebody meant to gate. Every run
+now prints which build it served.
+
+**Decision B. Readability is checked instead of pixels.** `quality/e2e/tests/theme-contrast.spec.js`
+walks every visible line of text on the Day view in both themes, computes its contrast against its
+own background, and refuses anything under 3:1.
+
+Why this rather than keeping screenshots: phase 7 retires the pixel baselines, and after that
+nothing automated looks at how the app renders. The baselines were retired for a good reason, since
+they were generated on one machine, excluded from CI, and went about thirty builds silently
+invalidated by a Playwright bump. But the defect class that actually shipped here is narrower than
+"it looks different" and is the reason the `theme-qa` skill exists: dark-mode legibility. Invisible
+titles, a date band whose text matched its own box. That is computable, does not depend on the
+operating system or the font stack, and so can run in CI where a screenshot could not.
+
+The threshold is 3:1 rather than the 4.5:1 that WCAG AA asks for body text. It is a floor rather
+than a target, and raising it is a ratchet for its own change, with the failures it produces read
+one at a time. Setting it high today and muting the noise tomorrow is how a gate stops gating. Text
+over an image, a gradient or a backdrop filter is skipped rather than guessed at, and the test
+asserts it found something to measure, so a green result cannot mean the walk broke.
+
+**Decision C. The mutation audit gained a net.** `node quality/tools/mutate.mjs --net` runs every
+mutant at the unit level only, about ten seconds, and compares each result against a `unit: 'red'`
+or `unit: 'green'` field the mutant now declares beside itself. It runs on every pull request with
+`continue-on-error`.
+
+This does not reopen the decision below. That decision rejected making the audit a **required
+check**, because its failure is information rather than a reason to block a merge, and that
+reasoning still holds. This is the other half of this repository's own distinction: gates block,
+nets observe. What it adds over a purely manual run is that it says out loud when the unit level
+stops catching what it used to, in either direction. A mutant that stops being caught means
+coverage was lost; one that starts being caught means the application changed under it, which is
+the easier of the two to miss. Both were triggered on purpose and both report.
+
+It runs last in its job, because it edits tracked files and restores them in a finally, and a step
+after it would otherwise be able to fail for a reason unrelated to the change under review.
+
+**Three additions after phase 6, none of them in the original plan:**
+
+- **The harness is type-checked.** `quality/e2e/jsconfig.json` turns on `checkJs` over the harness
+  only, and `npx tsc --noEmit` runs on shard 1 of the e2e workflow, before any browser downloads.
+  It exists because phase 6 moved risk out of the specs and into a layer whose every locator is a
+  property reached by name, where a typo evaluates to `undefined` and fails deep inside a test with
+  a message about the test. Four typos were written on purpose and all four are now errors at the
+  call site.
+- **Composite page object actions carry `test.step`.** Only the composite ones: a single-click
+  action already appears in the trace with its own locator, and wrapping it adds nesting without
+  adding a fact. Verified by reading the step titles out of a real trace file rather than by
+  trusting that the API does what it says.
+- **`addSlot` became two branchless methods.** Wrapping it in a step made the lint see the branch it
+  had inherited from the spec, and the rule was right: a step reporting the same thing on both paths
+  hides the one fact worth having. Every call site passed either nothing or both fields, so the
+  branch was carrying nothing.
+
+One recommendation was **withdrawn after measuring it**: that `quality/e2e/strings/en.js` was under-used against
+sixty-eight hardcoded literals in the specs. Most of those are locator names, which that module's
+own charter excludes, and most of the rest are values the tests type in themselves. The genuine
+remainder is a handful of single-use strings, where a module buys indirection and no deduplication.
+The count and the reasoning are now written into the file so the next reader does not repeat it.
 
 **Open items, none of them blocking:**
 
@@ -100,6 +207,24 @@ Each of these cost a session to learn, and each applies to work that has not bee
    verdict of its own.
 6. **A mutation harness restores from its own copy, never from git.** A `git checkout --` used to
    undo a mutation discarded a document's uncommitted correction, which then had to be rewritten.
+7. **A string replace that matched nothing still reports success.** Three times in one session: an
+   anchor written with `\n` against a file with CRLF endings, a `</head>` inserted into a build that
+   has no `</head>`, and a tail that had already been eaten by an earlier bad replace. Every one of
+   them printed the word the script was told to print. **Verify the effect, never the intention:**
+   read the file back and assert the text is there. The second of those nearly shipped a check that
+   could not fail, because the deliberate break was written into a file the edit never touched.
+8. **A check that allows anything cannot catch a typo.** The type definitions for stored data were
+   written open, with an index signature, so that extra fields would be permitted. That also
+   permitted misspelled ones, which was the entire reason for writing them. Closing them cost zero
+   errors on the existing suite. **An escape hatch added before anything needs it is a hole.**
+9. **Wrapping code in a construct the linter understands can reveal what it was hiding.** Putting
+   `test.step` around a page object action made `no-conditional-in-test` see a branch that had been
+   invisible while it sat in a plain method. The rule was right and the branch was removable. A rule
+   that only fires in one shape is worth pointing at the other shapes.
+10. **A shell string with backticks in it is code the shell runs.** Twice in one session a comment
+    lost its text and a template literal lost its argument, because the content went through a
+    double-quoted bash string. Anything with quotes or backticks goes through a file edit, not
+    through `node -e` inside a shell.
 
 ---
 
@@ -116,7 +241,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 3 | Unit level over the pure calc layer | DONE | `node --test` inside the unit folder |
 | 4 | Integration level over the persistence boundary | DONE | `npx playwright test --project=integration` |
 | 5 | Mutation audit: the tool, and the baseline table | DONE | `node quality/tools/mutate.mjs` |
-| 6 | Page objects, fixtures, shared strings, renames | NOT STARTED | `npm test` inside the e2e folder |
+| 6 | Page objects, fixtures, shared strings, renames | DONE | `npm test` inside the e2e folder |
 | 7 | Offline, keyboard and focus trap, aria contract | NOT STARTED | `node quality/e2e/count-tests.js --check` |
 | 8 | Documentation, and the published page | NOT STARTED | `node quality/tools/check-docs.mjs` |
 
@@ -139,7 +264,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 | 3 | yes module loader present; yes ritual calc tests present; yes cycle calc tests present | COMPLETE |
 | 4 | yes schema spec present; yes import spec present; yes integration project declared | COMPLETE |
 | 5 | yes tool present; yes baseline report committed; yes tool has its own tests | COMPLETE |
-| 6 | no pages present; no components present; no fixtures present; no strings present | NONE |
+| 6 | yes pages present; yes components present; yes fixtures present; yes strings present | COMPLETE |
 | 7 | no offline spec present; no keyboard spec present; no aria contract present; no pixel baselines retired | NONE |
 | 8 | no architecture doc carries the four levels | NONE |
 
@@ -378,6 +503,69 @@ diff. A separate rename-only commit across twenty specs cannot be reviewed.
 
 Re-run the mutation audit afterwards and compare against the phase 5 baseline. A mutation that was
 caught before and is not caught after means the refactor swallowed an assertion.
+
+**What the first two migrations changed about this plan.**
+
+1. **The strict-mode failure is not latent. It fires on the first migration.** Phase 0 recorded that
+   an unscoped `Profile` resolves to two elements on the Profile screen and that no test presses
+   Profile while already on Profile, so nothing failed. The migrated profile spec does exactly that,
+   through `ProfilePage.openOverview`. Removing the scoping from the page object reproduces
+   `strict mode violation: resolved to 2 elements` on demand, which is how it was confirmed rather
+   than assumed. The scoping in `AppPage.bottomBar` and `ProfilePage.segments` is what closes it, and
+   it is load-bearing today rather than a precaution.
+2. **"A page object never asserts" is now a lint rule.** It was an invariant with no command behind
+   it, which by this repository's own standard makes it a preference. `eslint.config.mjs` refuses a
+   call to `expect` under `pages/` and `components/`, with the reason in the message. Broken on
+   purpose and watched to fail.
+3. **The fixture does not launch the app.** Nearly every test seeds different storage before the
+   page loads, and an auto-launching fixture would have to take that data through `test.use`, which
+   is per file or per describe. Tests would then be grouped by what they seed rather than by what
+   they are about. `await app.launch({...})` is one line and keeps the seed beside the test.
+4. **The theme glyphs moved into the strings module because the commit gate refuses one of them.**
+   `U+2600` is an emoji to `.githooks/check-emoji.mjs`, and the gate is a ratchet, so the character
+   survived in the theme spec only while nobody edited those lines. Migrating them makes an
+   inherited character a new one. They are now `quality/e2e/strings/en.js`, written as escapes, so
+   the assertion stays byte-exact and every source file stays ASCII. Nothing is committed with
+   `--no-verify`. If the literal glyph is wanted in source, that is an amendment to the emoji rule
+   rather than a bypass, and it should be decided rather than assumed.
+5. **There is no garden component on this branch.** The file list above names one, and the spec it
+   would serve exists only on `staging`:
+
+   ```
+   quality/e2e/tests/garden.spec.js
+   ```
+
+   Only `rituals` and `onboarding` apply here. Written as a block rather than as an inline path on
+   purpose, and the gate is the reason it had to be: rule 1 rejected the first draft of this
+   sentence, because an inline path is a claim that a file is there and this one says the opposite.
+6. **The component list was a sketch rather than a census.** The focus timer overlay is a fourth
+   component, found while migrating the spec that drives it. Expect more: anything raised over a
+   view without changing `data-view` is one.
+7. **Where a control lives is measured, not reasoned about.** The theme toggle was put on the Day
+   page object because it sits in the hero and the hero looked like part of that screen. Measured
+   across Day, Profile and Calendar it is visible on all three, so it is chrome and it moved to
+   `AppPage`. The same probe settled the language switcher, which is also chrome, and confirmed that
+   the flower and the focus button really are Day only. A page object that says a control belongs to
+   one screen is a claim every later reader inherits, and it costs two minutes to check.
+
+   Five short probes settled the rest: the quick-add control is in the bottom bar and the intention
+   button is in the flower; `Body` sits in `#calmMode` and the direction toggle in `#calmDir`;
+   `Month` and `Year` sit in `#calMode` and the ranges in `#rangeBtns`. Each was written down in the
+   page object beside the locator it justifies.
+8. **There were six ways to reach the settings screen, not five.** Phase 0 counted by accessible
+   name and found five. The onboarding spec had a sixth that went by `data-` attributes, which the
+   count could not see. A census by one method finds what that method can find.
+9. **The screenshot spec is deliberately not migrated.** Phase 7 replaces it with an accessibility
+   snapshot and retires the pixel baselines, so migrating it now is work that gets deleted. It is
+   the one file in `quality/e2e/tests/` still importing Playwright directly, which makes the
+   exception visible rather than quiet.
+10. **"Suite green after each" was run as "the touched specs after each, the whole suite after each
+    group".** The plan asks for a full run per spec. That is about six minutes each and eighteen
+    specs, and the only failure a full run catches that a targeted one does not is a shared page
+    object breaking a spec migrated earlier, which every targeted run in a group also covers because
+    it includes the specs already migrated against that object. Three full runs were made across the
+    batch and all three were green. Recorded rather than glossed: if a regression ever does slip
+    through this way, this paragraph is where the reason it could have will be found.
 
 ### Phase 7. New coverage
 

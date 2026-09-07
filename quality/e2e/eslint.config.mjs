@@ -15,7 +15,7 @@ export default defineConfig([
     // Every directory that holds tests, including the ones that gate nothing. A rule that stops at
     // the reviewed suite would have let the integration level land unlinted, which is how a folder
     // acquires its own habits and then argues it always had them.
-    files: ['tests/**/*.js', 'tests-prod/**/*.js', 'tests-generated/**/*.js', 'tests-integration/**/*.js'],
+    files: ['tests/**/*.js', 'tests-prod/**/*.js', 'tests-generated/**/*.js', 'tests-integration/**/*.js', 'pages/**/*.js', 'components/**/*.js', 'fixtures/**/*.js', 'strings/**/*.js'],
     plugins: { playwright },
     languageOptions: {
       ecmaVersion: 2023,
@@ -49,6 +49,26 @@ export default defineConfig([
       // Single letters are free to write and expensive to read. The loop index is the one name a
       // reader never has to look up.
       'id-length': ['error', { min: 2, exceptions: ['i'] }],
+    },
+  },
+  {
+    // The page object layer. Its one invariant is that it never asserts, and an invariant with no
+    // command behind it is a preference. This is the command.
+    //
+    // A helper that asserts moves the failure message from the behaviour that broke to the helper
+    // that noticed, and it hides which of the caller's steps was the one that mattered. The Profile
+    // spec carried exactly that shape before this layer existed: its local openProfile asserted the
+    // view had changed, so a routing regression was reported against a two-line helper used by
+    // three tests.
+    //
+    // no-restricted-syntax rather than a ban on importing '@playwright/test', because a page object
+    // can reach `expect` through any binding it likes and the import is not the thing that is wrong.
+    files: ['pages/**/*.js', 'components/**/*.js'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.name='expect']",
+        message: 'A page object never asserts. Return a locator and let the spec assert on it, so the failure names the behaviour and keeps its auto-waiting.',
+      }],
     },
   },
 ]);

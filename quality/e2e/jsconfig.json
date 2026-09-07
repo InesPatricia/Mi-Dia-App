@@ -1,0 +1,41 @@
+{
+  "//": [
+    "Type-check the JavaScript, without migrating anything to TypeScript.",
+    "",
+    "WHY THIS EXISTS",
+    "  The page object layer added in phase 6 moved risk out of the specs and into a layer of",
+    "  objects whose every locator is a property reached by name. A typo there is not a syntax",
+    "  error: app.day.tickk('x') evaluates to undefined, and undefined.click() then fails deep",
+    "  inside a test with a message about the test rather than about the typo. Nothing in the",
+    "  repository could see that class of defect before the layer existed, and nothing moved in",
+    "  with it to guard it.",
+    "",
+    "  checkJs turns Playwright's own shipped types into a check over the harness. It reads the",
+    "  same files eslint already reads and needs no annotation in them.",
+    "",
+    "SCOPE",
+    "  The harness only. Not public/, not src/: the application is a single inlined build written",
+    "  in another style, and pointing a type checker at it would produce noise nobody asked for.",
+    "",
+    "STRICTNESS",
+    "  Deliberately short of strict. strictNullChecks would flag every locator chain that Playwright",
+    "  types as possibly null, which is most of them, and the answer would be assertions written to",
+    "  satisfy the checker rather than to describe the app. The setting that earns its place here is",
+    "  the one that catches a name that does not exist."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "node18",
+    "lib": ["ES2022", "DOM"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "strict": false,
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
+    "types": ["node"]
+  },
+  "include": ["pages/**/*.js", "components/**/*.js", "fixtures/**/*.js", "strings/**/*.js", "tests/**/*.js", "tests-integration/**/*.js"],
+  "exclude": ["node_modules", "playwright-report", "test-results", "tests-generated"]
+}
