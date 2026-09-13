@@ -45,14 +45,16 @@ module.exports = defineConfig({
   // On CI each shard emits a 'blob' report; the merge job combines them into one HTML report
   // (`playwright merge-reports`). Locally we keep the human-friendly html + list reporters.
   reporter: process.env.CI ? [['blob']] : [['html', { open: 'never' }], ['list']],
-  // @visual (screenshot regression) runs ONLY where the environment is pinned. Pixel baselines are
-  // a function of OS, browser build and font stack, so a baseline captured on a developer laptop
-  // asserts nothing about anyone else's machine — and the previous ones proved it: generated on
-  // Windows, excluded from CI, they went ~30 builds unchecked and were silently invalidated by a
+  // NO TAG FILTER. There used to be one here: `grepInvert` hid the @visual screenshot tests unless
+  // PW_VISUAL was set, because pixel baselines are a function of OS, browser build and font stack
+  // and the ones this repository had were generated on a Windows laptop. They were therefore
+  // excluded from CI, went about thirty builds unchecked, and were silently invalidated by a
   // routine Playwright bump. Nothing noticed, because nothing was running them.
-  // The switch is an explicit env var rather than `CI`, so the same rule covers both the e2e job
-  // that ASSERTS the baselines and the visual-baselines workflow that REGENERATES them.
-  grepInvert: process.env.PW_VISUAL ? undefined : /@visual/,
+  //
+  // Phase 7 retired them for tests/aria-contract.spec.js, which pins the same two design-locked
+  // components as a tree of roles and accessible names. That tree does not depend on fonts or on
+  // how anything is painted, so it runs everywhere and the filter, the env var and the workflow
+  // that regenerated the PNGs are all gone with it. Every test in this config now runs in CI.
   use: {
     baseURL: `http://localhost:${PORT}`,
     // CI: capture a screenshot of EVERY test (pass or fail) so the merged HTML report

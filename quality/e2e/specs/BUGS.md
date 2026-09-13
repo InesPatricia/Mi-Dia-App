@@ -580,8 +580,31 @@ message that says the opposite of what happened.
 
 ## TD-004. The first run has no end-to-end coverage, and the mutation audit is what found it
 
-**Status** CONFIRMED. Reproduced on demand by the phase 5 mutation audit, and reproducible with one
-command.
+**Status** CLOSED in phase 7 by `quality/e2e/tests/first-run.spec.js`. Kept here in full, because
+the reasoning is what the next person needs and a deleted entry teaches nobody.
+
+### How it was closed, and the proof
+
+Two tests in a file of its own, deliberately not in `ritual.spec.js`, whose header says every test
+there seeds rituals and which is right to: a test that must NOT seed cannot live in a file whose
+convention is seeding, because the next `beforeEach` added there would delete the coverage silently.
+
+The mutant was applied by hand to `public/index.html` and both tests went red:
+
+```
+  async function seedDefaults(){          ->  async function seedDefaults(){ return;
+```
+
+The build was restored from a copy taken before the edit, never with `git checkout --`.
+
+One locator problem surfaced while writing it, and it is worth knowing: `Rituals.card(name)`
+anchors on a card's whole text, and the second default ritual is habit-stacked on the first, so its
+cue reads "after Morning breathing" and asking for the card that says "Morning breathing" resolved
+to two elements. The component gained a `names` locator for the name line; `card(name)` is
+unchanged and still right for a spec that types its own distinct names.
+
+**Status before it was closed** CONFIRMED. Reproduced on demand by the phase 5 mutation audit, and
+reproducible with one command.
 
 **Found by** `node quality/tools/mutate.mjs`, mutant `seed-writes-nothing`. Full result in
 `quality/tools/MUTATION-REPORT.md`.
@@ -632,7 +655,27 @@ The second is the better fit for the arc, which is why this is recorded rather t
 
 ## TD-005. The cycle phase is on screen and only the unit level would notice if it were wrong
 
-**Status** CONFIRMED. Reproduced on demand by the phase 5 mutation audit.
+**Status** CLOSED in phase 7 by `quality/e2e/tests/cycle-phase.spec.js`. Kept here in full for the
+same reason as TD-004.
+
+### How it was closed, and the proof
+
+Two tests, one on each side of the boundary. The seed is chosen so that today lands exactly ON the
+comparison: a period that started four days ago makes today day five, and a bleed of five days makes
+five the last menstrual day. A seed one day either side would stay green under the mutant, which is
+the difference between covering the line and covering the decision.
+
+The mutant was applied by hand to `public/index.html`:
+
+```
+    if (d <= avgBleed(cfg)) return 'menstruala';   ->   if (d < avgBleed(cfg)) ...
+```
+
+The boundary test went red and the day-after test stayed green, which is correct: that day is on the
+other side of the comparison and the mutation does not move it. A pair where both went red would
+have meant the seed was not on the boundary at all.
+
+**Status before it was closed** CONFIRMED. Reproduced on demand by the phase 5 mutation audit.
 
 **Found by** `node quality/tools/mutate.mjs`, mutant `cycle-phase-off-by-one`. Full result in
 `quality/tools/MUTATION-REPORT.md`.
@@ -797,3 +840,311 @@ values above should be re-measured on the current staging build before anything 
   background colour to compare against. Anything unreadable there is invisible to this check.
 - Ancestor opacity is not accounted for. An element whose parent is half transparent will measure
   better than it looks.
+
+---
+
+## BUG-006. Not one of the four overlays traps Tab, so focus walks out behind every dialog
+
+**Status** CONFIRMED. Measured on all four dialogs, reproducible with one command.
+
+**Found by** `quality/e2e/tests/keyboard-a11y.spec.js` on its first run, which is the first thing in
+this repository to drive the application with a keyboard rather than a pointer.
+
+### What it is
+
+A dialog is open. Press Tab past its last control and focus leaves it: it lands on the page
+underneath, which is still scrollable, still clickable and still in the tab order. A sighted mouse
+user never notices. A keyboard user is operating controls they cannot see, behind a scrim, with no
+way to tell they have left the dialog. A screen reader user is read a page that is visually covered.
+
+All four dialogs behave this way. None of them is more broken than the others.
+
+| Dialog | Element | Opened by |
+|---|---|---|
+| quick-add bloom menu | `#bloomMenu` | the plus control in the bottom bar |
+| daily intention modal | `#intentModal` | the centre of the flower |
+| ritual sheet | `#ritSheet` | the add control in the rituals block |
+| onboarding carousel | `#onbOverlay` | automatically on first run, or Settings |
+
+### Root cause
+
+There is no focus trap anywhere in the build. `grep` for a keydown handler that reads `Tab`, for
+`inert`, or for a loop that cycles focus between a first and last element, and nothing matches. The
+overlays hide what is behind them with `display:none` on themselves only; the page behind stays in
+the document and therefore stays in the tab order.
+
+### Evidence
+
+```
+cd quality/e2e
+npx playwright test keyboard-a11y.spec.js --project=mobile-chromium
+```
+
+Four tests named "Tab does not escape to the page behind it" are annotated `test.fail`. They RUN,
+they fail, and Playwright reports the run green because the failure is the declared one. Flip
+`trapsTab` to true for any overlay in that spec and the test goes red instead, which is the signal
+that the application has been fixed and the annotation should come off.
+
+The number of Tab presses is derived from the dialog rather than written down. A first version used
+a fixed ten, and the ritual sheet passed it: that sheet has more than ten controls, so ten presses
+never reached its last one. The test proved nothing until the count came from the DOM.
+
+### Not fixed here, and where it belongs
+
+This is `qa/test-architecture`, which is for tests, gates and tooling. A focus trap is application
+code, which means a new build on `staging`. The build measured here is v172 and staging is well
+ahead of it, so re-measure there before writing anything.
+
+### Not checked
+
+- Shift+Tab. Only forward tabbing was driven. Backward tabbing out of the top of a dialog is the
+  same defect by symmetry and was not measured, so it is not claimed.
+- Whether the page behind is reachable by pointer as well while a dialog is up. The scrims suggest
+  not, and that was not tested.
+- One browser, one viewport: headless mobile Chromium. Tab order differs on iOS Safari, where
+  full keyboard access is off by default, and nothing here says anything about that.
+
+---
+
+## BUG-007. Three of the four overlays drop focus on close instead of returning it
+
+**Status** CONFIRMED. Measured per dialog, reproducible with one command.
+
+**Found by** `quality/e2e/tests/keyboard-a11y.spec.js` on its first run.
+
+### What it is
+
+Close a dialog with Escape and focus should go back to the control that opened it. In three of the
+four it goes to the document body instead, which sends a keyboard user back to the top of the page
+and makes them tab through the whole interface to get back to where they were.
+
+| Dialog | Focus after close | Why |
+|---|---|---|
+| daily intention modal | `body` | `closeIntent()` hides the modal and says nothing about focus |
+| onboarding carousel | `body` | `finish()` marks it done and closes it, with no focus handling |
+| quick-add bloom menu | never left the trigger | covered by BUG-008, not by this entry |
+| ritual sheet | the add control | correct: `closeSheet()` restores the `_lastFocus` it recorded |
+
+The ritual sheet is the reference implementation and it is already in the build. It records
+`document.activeElement` into `_lastFocus` when it opens and calls `.focus()` on it when it closes.
+Whatever fixes the other two should look like that rather than being invented again.
+
+### Evidence
+
+```
+cd quality/e2e
+npx playwright test keyboard-a11y.spec.js --project=mobile-chromium
+```
+
+Three tests named "focus returns to the trigger when it closes" are annotated `test.fail` through
+the `returnsFocus` flag on each overlay. Setting the intention modal's flag to true, which is the
+claim that it has been fixed, turns that test red with `expect(locator).toBeFocused() failed` and
+`Received: inactive`. That was run rather than reasoned about.
+
+### Not fixed here, and where it belongs
+
+Application code, so a new build on `staging`. Same as BUG-006, and the two are the same change if
+anyone wants them to be: both are about what an overlay does with focus.
+
+### Not checked
+
+- Closing by any route other than Escape. The scrim tap, the cancel control and the save control
+  are separate paths through the same close function in some of these dialogs and separate
+  functions in others. Only the Escape path was driven.
+- What happens when the trigger is no longer in the document at close time. The onboarding carousel
+  can be opened from Settings and then navigate away, and nothing here covers that.
+
+---
+
+## BUG-008. The quick-add bloom menu opens without taking focus
+
+**Status** CONFIRMED. Reproducible with one command.
+
+**Found by** `quality/e2e/tests/keyboard-a11y.spec.js` on its first run.
+
+### What it is
+
+Press Enter on the plus control in the bottom bar. The bloom menu appears, and focus stays on the
+plus control behind it. A keyboard user has opened a dialog and is still standing outside it; a
+screen reader announces nothing, because nothing moved.
+
+The other three dialogs all move focus into themselves. This one is alone.
+
+### Root cause
+
+`openBloom()` adds a class to the menu and a class to the control, sets `aria-hidden` and
+`aria-expanded`, and stops there. The other three each call `.focus()` on a control inside
+themselves, two of them after a short timer.
+
+### Evidence
+
+```
+cd quality/e2e
+npx playwright test keyboard-a11y.spec.js --project=mobile-chromium
+```
+
+The test named "opens with Enter on its trigger, and focus moves into it" is annotated `test.fail`
+for this overlay only, through its `takesFocus` flag, and it reports
+`outside (button#addFab)`, which names both where focus is and where it should not be.
+
+### Why it is its own entry rather than part of BUG-007
+
+Because it is the reason the focus-return question cannot be asked of this dialog at all. Focus
+never leaves the trigger, so "focus returns to the trigger" is trivially true and would report green
+while the dialog is unusable from a keyboard. One defect was hiding another until the tests were
+split, which is why they are split.
+
+### Not fixed here, and where it belongs
+
+Application code, so a new build on `staging`.
+
+### Not checked
+
+- Whether Escape closing the menu is reachable for a screen reader user who never received focus.
+  The Escape handler is on `document` rather than on the menu, so it fires from anywhere, which is
+  why "Escape closes it" passes for this dialog. Whether that is discoverable is a different
+  question and was not measured.
+
+---
+
+## TD-006. The aria contract cannot see a control that is added, only one that is removed
+
+**Status** CLOSED in phase 8 by the count assertion beside each tree in
+`quality/e2e/tests/aria-contract.spec.js`. The entry stays, because the reasoning below is what
+stops somebody removing the count later on the grounds that the tree already covers it.
+
+### How it was closed, and the proof
+
+`expect(component.getByRole('button')).toHaveCount(n)` after each `toMatchAriaSnapshot`. The tree
+says the right controls are present and named; the count says nothing else appeared beside them.
+
+The break that used to pass was re-run: a bare `<button type="button">Extra control</button>`
+inserted before `#addFab` in `public/index.html`. The bottom bar contract now goes red and the
+flower contract stays green, which is the attribution working. The build was restored from a copy.
+
+Why this rather than a strict equality against `locator.ariaSnapshot()`: an equality would also
+forbid omitting a line, and the flower's tree carries a text node ending in a non-ASCII ellipsis
+that the commit gate would then pull into the source. The pair keeps the source ASCII and still
+closes the hole.
+
+**Status before it was closed** CONFIRMED. Both directions were driven against the promoted build.
+
+**Found by** writing `quality/e2e/tests/aria-contract.spec.js` and then breaking it on purpose,
+which is how every check in this arc is accepted.
+
+### What it is
+
+`toMatchAriaSnapshot` with an inline tree is a containment match, not an equality. The expected tree
+has to be present in the actual one; anything else in the actual tree is ignored.
+
+So the contract catches the defect it was written for and misses its mirror image:
+
+| Change to the application | Result |
+|---|---|
+| the Journal petal loses its `aria-label` | RED, naming the flower contract |
+| an extra unnamed button is added to the bottom bar | GREEN |
+
+### Evidence
+
+Both were measured, not reasoned about. The name was removed by replacing
+`data-i18n-aria="tab_journal" aria-label="Jurnal"` in `public/index.html`, and the extra control was
+a bare `<button type="button">Extra control</button>` inserted before `#addFab`. The build was
+restored from a copy afterwards, never with `git checkout --`.
+
+```
+cd quality/e2e
+npx playwright test aria-contract.spec.js --project=mobile-chromium
+```
+
+### Why this is recorded rather than fixed
+
+The defect class this replaced the pixel baselines for is a control LOSING its name or its role,
+which is what shipped in v126 and v128. That half is covered. A control gaining a name is not a
+regression, and a control appearing where nobody expected one is a different question that a
+containment match is the wrong shape for.
+
+Writing it down matters because the obvious reading of "contract" is equality, and a later reader
+who assumes that would believe the bottom bar is pinned when it is only anchored.
+
+### Candidate fixes, none applied
+
+- Assert a count beside the tree, for example that `.bottombar` holds exactly three buttons. Cheap,
+  and it closes the specific hole for the two components that are pinned.
+- Compare against `locator.ariaSnapshot()` as a string equality instead. Exact, and it gives up the
+  ability to omit a line, which is currently what keeps a non-ASCII ellipsis out of the source.
+
+### Not checked
+
+- Whether the containment match is order-sensitive. The trees here are written in document order
+  and were never shuffled, so nothing is claimed about a reordered tree.
+- Whether a changed role with an unchanged name is caught. Only a removed name was driven.
+
+---
+
+## BUG-009. The required build gate cannot see a script tag that carries an attribute
+
+**Status** CONFIRMED. Reproduced on demand against a copy of the promoted build.
+
+**Found by** answering the question of what the three untested checkers actually risk. The hole was
+demonstrated rather than argued, which is the only reason it is written as CONFIRMED.
+
+### What it is
+
+`quality/e2e/validate-build.js` is the checker behind the required status check named
+`validate build`, and the whole `e2e` workflow declares `needs: validate`, so it is the gate every
+other gate waits on. It finds the code it checks with:
+
+```
+/<script>([\s\S]*?)<\/script>/g
+```
+
+That pattern matches an opening tag with NO attributes. A block written as `<script type="module">`
+or `<script defer>` is invisible to it, twice over: its contents are never handed to `node --check`,
+and it is not stripped before the div-balance count either, so any markup inside a template literal
+in that block is counted as page markup.
+
+### Evidence
+
+A copy of `public/index.html` with a syntax error appended inside an attributed block:
+
+```
+<script type="module">
+const x = ;
+</script>
+```
+
+```
+node quality/e2e/validate-build.js <that copy>
+
+Script blocks: 3
+  script 2: OK
+> index.html valid          exit 0
+```
+
+Three blocks counted, the fourth not seen at all, and the build declared valid. The real build was
+never modified; the probe was a separate file.
+
+### Why it matters even though the build is clean today
+
+The promoted build currently has zero script tags with attributes, so the hole is latent. It stops
+being latent the first time anybody writes one, and the failure is silent: the gate reports a
+smaller number of blocks and a green verdict, and nothing anywhere compares that number to
+anything. This is the same shape as the dead gate in finding 1 of the arc, one layer down.
+
+### Candidate fixes, none applied
+
+- Widen the pattern to `/<script\b[^>]*>([\s\S]*?)<\/script>/g` for both the strip and the check,
+  and skip any block whose type is not JavaScript, since `node --check` cannot parse JSON or a
+  template held in a script tag.
+- Assert the number of blocks found against the number of `<script` occurrences in the file, so a
+  pattern that stops matching cannot report a quiet success. That is the half that would have made
+  this defect loud rather than silent, and it generalises past this one regex.
+
+Both belong in the same change as the test file `validate-build.js` does not yet have. It is one of
+the three merge-blocking checkers still without one, which is how this survived.
+
+### Not checked
+
+- Whether the div-balance half has its own hole. Only the script half was driven.
+- Whether any historical build in `src/` carries an attributed script tag that was therefore never
+  syntax-checked before promotion. That is a question about the archive and it was not asked.

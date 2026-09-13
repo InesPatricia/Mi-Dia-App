@@ -352,13 +352,14 @@ function checkTestCounts() {
   }
 
   const f = counts.functional.tests;
-  const v = counts.visual.tests;
   const p = counts.prod.tests;
+  // Two numbers, not four. There used to be a `visual` bucket here and a `functional + visual`
+  // sum beside it, because the screenshot tests were counted separately and a document was
+  // allowed to state either the gated figure or the total. Phase 7 retired those tests, so the
+  // sum is gone with them and the only counts a document may state are the ones a run produces.
   const allowed = new Map([
     [f, 'functional'],
-    [v, 'visual'],
     [p, 'prod smoke'],
-    [f + v, 'functional + visual'],
   ]);
 
   // A count with no word beside it. Every other pattern below demands "end-to-end", "Playwright",
@@ -384,13 +385,13 @@ function checkTestCounts() {
     for (const re of PATTERNS) {
       for (const [whole, num] of text.matchAll(re)) {
         const n = Number(num);
-        if (!allowed.has(n)) bad.push(`${doc}: "${whole.trim()}" — runner reports ${f}/${v}/${p}`);
+        if (!allowed.has(n)) bad.push(`${doc}: "${whole.trim()}" -- runner reports ${f}/${p}`);
       }
     }
   }
   bad.length
     ? fail(4, `test counts drifted:\n      ${bad.join('\n      ')}`)
-    : pass(4, `badge verified by count-tests --check; prose matches the runner (${f} functional · ${v} visual · ${p} prod smoke)`);
+    : pass(4, `badge verified by count-tests --check; prose matches the runner (${f} functional · ${p} prod smoke)`);
 }
 
 // ---------------------------------------------------------------- [5] history is complete

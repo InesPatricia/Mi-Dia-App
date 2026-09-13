@@ -33,18 +33,44 @@
 //   This is a guard, not a prison: the escape hatch is deliberate, it just has to be legible in a
 //   diff and attributable to a human.
 //
+// EXPECTED FAILURES ARE THE SAME HATCH BY A DIFFERENT NAME
+//   `test.fail` is not a skip. Playwright runs the test and requires it to fail, so the day the
+//   application is fixed the test goes red and asks for the annotation to be removed. That makes it
+//   the right way to record a defect the suite can already see and the branch cannot fix, which is
+//   how the four overlays in tests/keyboard-a11y.spec.js are carried.
+//
+//   It is still an escape hatch, and it is one word away from the four this file already refuses.
+//   Left unguarded it is the cheaper route to a green suite over a known defect: nothing forces the
+//   author to say what is broken, and a test.fail that starts failing for an unrelated reason goes
+//   on reporting as expected. So it needs the same justification, with its own keyword since
+//   "DISABLED" would be a lie about a test that runs:
+//
+//       // KNOWN FAILURE: no overlay traps Tab, see specs/BUGS.md BUG-006
+//       test.fail('Tab does not escape to the page behind it', async ({ app, page }) => {
+//
+//   The rule was added in the same change that first used it. A gate written after its first
+//   exception is a gate that starts with one.
+//
 // WHY NOT IN THE PRE-COMMIT HOOK
 //   .githooks/pre-commit answers one question fast: is anything staged that must not be published?
 //   This is a correctness check, and its own comment says correctness belongs in CI. So this runs
 //   in the e2e workflow, next to the test-count check.
 //
 // USAGE
-//   node quality/tools/check-skips.mjs        exit 0 clean, exit 1 with file:line on a violation
+//   node quality/tools/check-skips.mjs                exit 0 clean, exit 1 with file:line
+//   node quality/tools/check-skips.mjs --root <dir>   run against another tree, which is how its
+//                                                     own tests hand it a deliberately broken one
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+// --root exists for the tests. A checker that can only ever read this repository cannot be handed a
+// fixture that is broken in exactly one way, and a gate nobody can watch fail is a gate on trust.
+const args = process.argv.slice(2);
+const rootFlag = args.indexOf('--root');
+const ROOT = rootFlag === -1
+  ? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+  : path.resolve(args[rootFlag + 1]);
 
 // The gated zone. Anything a merge depends on, and nothing else.
 const GATED_DIRS = [
@@ -67,11 +93,29 @@ const DISABLERS = /\b(?:test|describe|it)\.(skip|fixme|only|todo)\s*\(/;
 // pattern above cannot see. Anything but `false` counts, since `{ skip: 'reason' }` is the common
 // form. Kept narrow, to one object with no nesting, because a broad version starts matching
 // ordinary fixtures.
-const DISABLING_OPTION = /\{[^{}]*\b(skip|todo|only)\s*:\s*(?!false\b)[^,}]+/;
+//
+// The negative lookahead sits immediately after the colon and swallows the gap itself. It used
+// to sit after a separate whitespace quantifier, and that version refused `{ skip: false }`:
+// the quantifier backtracked to zero width, which put the lookahead in front of the space,
+// where `false` does not match and the guard passed for free. A merge-blocking check that
+// refuses correct code is the same class of defect as one that allows wrong code, and it was
+// found by this file's own tests on their first run, which is the whole argument for them.
+const DISABLING_OPTION = /\{[^{}]*\b(skip|todo|only)\s*:(?!\s*false\b)\s*[^,}]+/;
+
+// An expected failure. Kept apart from DISABLERS so the report can say which of the two it found:
+// a skipped test has lost its coverage, an expected failure has kept it and pinned it to a defect,
+// and calling them the same thing would make this tool's own message wrong.
+const EXPECTED_FAILURE = /\b(?:test|describe|it)\.fail\s*\(/;
 
 // A justification is a comment naming a reason. It may sit on the marker's own line or the one
 // above it, which is where a person writing prose naturally puts it.
-const JUSTIFIED = /(?:\/\/|\/\*|\*)\s*DISABLED:\s*(.+)/;
+//
+// Two keywords, one for each kind, and the kinds are NOT interchangeable. A `// DISABLED:` above a
+// test that still runs would misdescribe it to every later reader, and the reader is the whole
+// point of requiring the comment. The first version of this accepted either word for either marker,
+// which meant the paragraph above was a claim the tool did not enforce.
+const JUSTIFIED_SKIP = /(?:\/\/|\/\*|\*)\s*DISABLED:\s*(.+)/;
+const JUSTIFIED_FAILURE = /(?:\/\/|\/\*|\*)\s*KNOWN FAILURE:\s*(.+)/;
 const MIN_REASON = 25;
 
 function specFiles(dir) {
@@ -93,42 +137,53 @@ for (const dir of GATED_DIRS) {
   for (const rel of specFiles(dir)) {
     const lines = fs.readFileSync(path.join(ROOT, rel), 'utf8').split(/\r?\n/);
     lines.forEach((line, i) => {
-      const found = line.match(DISABLERS) ?? line.match(DISABLING_OPTION);
+      const expected = line.match(EXPECTED_FAILURE);
+      const found = line.match(DISABLERS) ?? line.match(DISABLING_OPTION) ?? expected;
       if (!found) return;
 
       // `test.skip(condition, reason)` called INSIDE a test body is Playwright's conditional-skip
       // API and is a legitimate pattern (skip on a browser that cannot do the thing). It is
       // indistinguishable from the annotation form by regex alone, so treat a justified comment as
       // the answer for both: if you meant it, say why. That keeps one rule instead of two.
-      const reason = (lines[i - 1] ?? '').match(JUSTIFIED) ?? line.match(JUSTIFIED);
+      const wanted = expected ? JUSTIFIED_FAILURE : JUSTIFIED_SKIP;
+      const reason = (lines[i - 1] ?? '').match(wanted) ?? line.match(wanted);
       if (reason && reason[1].trim().length >= MIN_REASON) return;
 
       violations.push({
         file: rel.replace(/\\/g, '/'),
         line: i + 1,
         marker: found[0].replace(/\s*\($/, '').trim(),
-        why: reason ? `justification too short (${reason[1].trim().length}/${MIN_REASON} chars)` : 'no justification comment',
+        kind: expected ? 'expected failure' : 'disabled test',
+        keyword: expected ? 'KNOWN FAILURE' : 'DISABLED',
+        why: reason
+          ? `justification too short (${reason[1].trim().length}/${MIN_REASON} chars)`
+          : `no ${expected ? 'KNOWN FAILURE' : 'DISABLED'} justification comment`,
       });
     });
   }
 }
 
 if (violations.length === 0) {
-  console.log(`check-skips: no disabled tests in the gated suite. OK`);
+  console.log(`check-skips: no unexplained disabled test or expected failure in the gated suite. OK`);
   process.exit(0);
 }
 
-console.error(`\ncheck-skips: ${violations.length} disabled test(s) in the gated suite.\n`);
+console.error(`\ncheck-skips: ${violations.length} unexplained annotation(s) in the gated suite.\n`);
 for (const v of violations) {
-  console.error(`  ${v.file}:${v.line}  ${v.marker}  -- ${v.why}`);
+  console.error(`  ${v.file}:${v.line}  ${v.marker}  (${v.kind})  -- ${v.why}`);
 }
 console.error(`
 A skipped test still lists, so the badge does not move and the suite still reports green.
 Coverage leaves without a single red signal. That is why this is a gate and not a warning.
 
-If disabling it is the right call, say so on the line above, with at least ${MIN_REASON} characters:
+An expected failure keeps its coverage, but it is still a green report over a known defect, and one
+that goes on reporting green if it later fails for an entirely different reason. It has to name what
+it is waiting for.
+
+Say so on the line above, with at least ${MIN_REASON} characters, using the keyword for what it is:
 
     // DISABLED: <what is broken, and the decision or issue that covers it>
+    // KNOWN FAILURE: <the defect it pins, and where that defect is written down>
 
 If an agent wrote this, do not accept it. Read the failure instead:
 quality/e2e/.claude/agents/playwright-test-healer.md forbids skipping on its own authority.

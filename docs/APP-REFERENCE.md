@@ -65,7 +65,7 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   `npm run test:report`); raw PNGs land in `quality/e2e/test-results/<test>/test-finished-*.png`. Identical
   frames are content-deduped (e.g. several nav tests end on the Day view → one shared image). Trace +
   video are retained on failure. All of `playwright-report/`, `test-results/` are gitignored.
-- Current coverage (**89 tests across 21 specs**, 87 functional plus 2 `@visual`): **rituals** (`ritual.spec.js`,
+- Current coverage (**112 tests across 25 specs**, all of them gated): **rituals** (`ritual.spec.js`,
   v155/v156 — the Home section + check/streak, "check marks TODAY not the viewed day", the creation sheet
   suggestion-chip / written + habit-stacking `cue.type`, never-miss-twice, the Progress history block +
   tappable-cell backfill, backup export/import roundtrip incl. `rituals`, RO relabel, **v156: Edit-mode
@@ -109,9 +109,18 @@ For what the app *is*, read the [README](../README.md). For where data lives, re
   downloaded backup file via `#importFile.setInputFiles`)
   + **accessibility** (`a11y.spec.js` — axe-core scan of all 6 views on a CURATED rule set: accessible
   names/roles/labels/valid-ARIA; guards the v126/v128 work. Color-contrast etc. intentionally out of scope)
-  + **visual regression** (`visual.spec.js`, tagged `@visual` — `toHaveScreenshot()` of the design-locked
-  flower nav + bottom bar; NOT full screens, to dodge the daily date/phrase. Baselines are OS-specific
-  (`*-win32.png`, dev machine) so CI skips `@visual` via `--grep-invert`; run locally with `npm run test:visual`).
+  + **aria contract** (`aria-contract.spec.js` - a tree of roles and accessible names for the same two
+  design-locked components the retired screenshot spec covered, the flower nav + bottom bar. Unlike a
+  PNG it does not depend on OS or fonts, so it runs in CI)
+  + **offline** (`offline.spec.js` - the service worker registers and controls the page, the app starts
+  with the network cut, and a cache left under a previous build name is evicted on activate)
+  + **keyboard and focus** (`keyboard-a11y.spec.js` - the four overlays driven from the keyboard:
+  opening, focus entering, Tab containment, Escape, focus return. Eight of its sixteen cases are
+  annotated expected failures pinned to BUG-006, BUG-007 and BUG-008 in `quality/e2e/specs/BUGS.md`)
+  + **first run** (`first-run.spec.js` - the two default rituals the application gives a brand new
+  user, on screen and in storage, seeded exactly once. Closes TD-004)
+  + **cycle phase** (`cycle-phase.spec.js` - the phase label on the day the bleed boundary decides,
+  and the day after it. Closes TD-005).
 - **Automation / quality gates:** `npm run validate` (= `validate-build.js`: div-balance + `node --check`
   on the build — the CLAUDE.md manual rule, now scriptable + a fast CI `validate` job that gates the test
   shards). **Test-independence (anti-bias):** `quality/e2e/SPEC-TEMPLATE.md` drives a 2-isolated-agent flow — an

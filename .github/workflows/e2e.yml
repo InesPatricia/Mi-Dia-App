@@ -170,12 +170,19 @@ jobs:
       # A disabled test is invisible to every other check here: it still appears in `--list`, so the
       # count above does not move and the run below still goes green. This is the only thing that
       # notices. It matters most now that an agent can edit the suite (see the healer's local policy).
+      # Negative cases first, the way the docs workflow does it: prove the checker still refuses
+      # what it is supposed to refuse, and only then believe it when it says the suite is clean.
+      # Its first run found a defect in the checker, which is the argument in one sentence.
+      - name: Test the disabled-test checker
+        if: matrix.shard == 1
+        run: node --test ../../quality/tools/check-skips.test.mjs
       - name: Check no test has been silently disabled
         if: matrix.shard == 1
         run: node ../../quality/tools/check-skips.mjs
-      # @visual is filtered by the config (grepInvert), not by a flag here, so the same rule holds
-      # for every entry point. It stays off until Linux baselines exist; the visual-baselines
-      # workflow generates them, and enabling this gate is the commit that adds them.
+      # No tag filter any more. The config used to hide the @visual screenshot tests unless
+      # PW_VISUAL was set, because their baselines only meant anything on the machine that made
+      # them. Phase 7 retired them for tests/aria-contract.spec.js, which pins the same two
+      # components as roles and names and therefore runs here like everything else.
       # --project is load-bearing. The config declares a project named `generated`, which is the
       # authoring zone for agent-drafted tests. Those gate nothing and nobody has reviewed them, so
       # a red one must never block a merge and a green one must never be mistaken for coverage.

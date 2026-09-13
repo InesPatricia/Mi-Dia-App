@@ -23,7 +23,7 @@ const CHECKER = join(dirname(fileURLToPath(import.meta.url)), 'check-docs.mjs');
 const COUNT_STUB = `// Mirrors the real e2e/count-tests.js, including its --check mode: the README badge must
 // equal the functional count exactly. Rule 4 delegates the badge to this, so the stub behaves like it.
 const fs = require('node:fs'), path = require('node:path');
-const counts = { functional: { tests: 83, files: 19 }, visual: { tests: 2 }, prod: { tests: 7, files: 1 } };
+const counts = { functional: { tests: 83, files: 19 }, prod: { tests: 7, files: 1 } };
 if (process.argv.includes('--check')) {
   const readme = fs.readFileSync(path.join(__dirname, '..', '..', 'README.md'), 'utf8');
   // no regex on purpose: this lives inside a template literal, and one lost backslash turns the
@@ -290,8 +290,11 @@ test('rule 4 defers the badge to count-tests --check', () => {
   expectRuleFails(4, (root, write) =>
     write(
       'README.md',
-      // 85 = 83 functional + 2 visual: a number the runner can produce, but not the badge's number
-      '# App\n\n![Tests](https://img.shields.io/badge/e2e-85%20Playwright%20tests-2EAD33)\n\n' +
+      // The fixture used to be 85, the sum of 83 functional and 2 visual. Phase 7 retired
+      // the visual tests, so that sum is no longer a number anything can produce and this
+      // test would have started failing for the wrong reason. 7 is the prod smoke count:
+      // producible, allowed by the patterns, still not what the badge is permitted to say.
+      '# App\n\n![Tests](https://img.shields.io/badge/e2e-7%20Playwright%20tests-2EAD33)\n\n' +
         '83 end-to-end tests, plus 7 smoke tests.\n',
     ),
   );
@@ -634,7 +637,7 @@ test('rule 4 leaves a bare count alone when the runner can produce it', () => {
       join(root, 'README.md'),
       '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n\n' +
         '83 end-to-end tests, plus 7 smoke tests.\n\n' +
-        'The pre-merge layer (83 tests) covers the flows, 85 tests counting the visual pair.\n',
+        'The pre-merge layer (83 tests) covers the flows, and 7 tests run against production.\n',
       'utf8',
     );
     const { byRule, results } = run(root);
