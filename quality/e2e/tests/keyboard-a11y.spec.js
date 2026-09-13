@@ -84,6 +84,22 @@ function focusableCount(page, selector) {
 // to fail: it is the ratchet, and it is what stops a fix from landing without the suite noticing.
 //
 // Every entry is false-by-defect rather than false-by-default. Nothing here was assumed.
+/**
+ * Whether the overlay has finished opening, as a string a failing poll can print.
+ *
+ * Three of the four move focus into themselves on a 60ms timer, and all three attach their Escape
+ * handler to an element that only hears the key once focus is there. "Visible" is therefore not
+ * "ready" for them, and pressing Escape in that gap does nothing. That gap is invisible on a fast
+ * machine and reliably open on a CI runner, which is where it was found, on the first push, exactly
+ * the way finding 1 of this arc says such defects are found.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} selector
+ */
+function focusHasArrived(page, selector) {
+  return focusReport(page, selector).then((report) => (report.startsWith('inside') ? 'ready' : report));
+}
+
 const OVERLAYS = [
   {
     name: 'the quick-add bloom menu',
@@ -99,6 +115,12 @@ const OVERLAYS = [
     // focus at all, so it fails at the precondition. Naming BUG-007 here would file one defect
     // under another, which is precisely what an expected failure must not be allowed to do.
     returnsFocusBlockedBy: 'BUG-008: focus never entered the dialog, so it cannot be returned',
+    // Nothing in openBloom is asynchronous: it toggles two classes and sets aria-expanded in the
+    // same tick. So this is ready as soon as it is visible, and the attribute is the honest way to
+    // say so rather than asserting nothing. Its Escape handler is on `document`, which is why this
+    // is the one dialog the race below never touched.
+    settled: (page) => page.locator('#addFab').getAttribute('aria-expanded')
+      .then((value) => (value === 'true' ? 'ready' : `aria-expanded=${value}`)),
   },
   {
     name: 'the daily intention modal',
@@ -111,6 +133,8 @@ const OVERLAYS = [
     // closeIntent() hides the modal and says nothing about focus, which lands on the body
     returnsFocus: false,
     returnsFocusBlockedBy: 'BUG-007: closing the dialog leaves focus on the document body',
+    // openIntent focuses #intentInput on a timer, and the Escape handler is on that input
+    settled: (page) => focusHasArrived(page, '#intentModal'),
   },
   {
     name: 'the ritual sheet',
@@ -123,6 +147,8 @@ const OVERLAYS = [
     // the only one of the four that does it: closeSheet() restores the _lastFocus it recorded
     returnsFocus: true,
     returnsFocusBlockedBy: null,
+    // openCreate focuses #rsName on a timer, and the Escape handler is on the #ritSheet wrap
+    settled: (page) => focusHasArrived(page, '#ritSheet'),
   },
   {
     name: 'the onboarding carousel',
@@ -135,6 +161,8 @@ const OVERLAYS = [
     // finish() marks the carousel done and closes it, with no focus handling
     returnsFocus: false,
     returnsFocusBlockedBy: 'BUG-007: closing the dialog leaves focus on the document body',
+    // open() focuses #onbNext on a timer, and the Escape handler is on the overlay itself
+    settled: (page) => focusHasArrived(page, '#onbOverlay'),
   },
 ];
 
@@ -189,9 +217,16 @@ for (const entry of OVERLAYS) {
       await openFromKeyboard(app, entry);
       await expect(page.locator(entry.overlay)).toBeVisible();
 
-      // pressed from wherever the application left focus, which is what a user actually does. No
-      // precondition on focus here on purpose: this test asks only whether the dialog is
-      // dismissable, and bundling it with focus would report one defect as two.
+      // Wait until the dialog has finished opening, which is not the same as being visible. Each
+      // overlay says what that means for itself, because for three of them it is focus arriving on
+      // a timer and for the fourth there is nothing to wait for.
+      //
+      // This is still not a precondition on focus. The bloom menu never takes focus and is checked
+      // here exactly as it is, which is the point of keeping this test separate from the one about
+      // focus returning.
+      await expect.poll(() => entry.settled(page)).toBe('ready');
+
+      // pressed from wherever the application left focus, which is what a user actually does
       await page.keyboard.press('Escape');
       await expect(page.locator(entry.overlay)).toBeHidden();
     });

@@ -102,6 +102,26 @@ minimum length, with its own keyword because "DISABLED" would misdescribe a test
 Written down because it is a departure: nobody asked for it, and the alternative was to be the first
 user of an unguarded hatch. The tool was broken on purpose four ways before it was kept.
 
+**The first push found a defect in this work, which is the arc behaving as designed.** Two of the
+sixteen keyboard cases failed in CI and a third was flaky, all of them the same test: it pressed
+Escape as soon as the dialog was visible, and three of the four dialogs only hear that key once the
+application has moved focus into them on a timer. The gap never opened on this laptop. It is
+finding 11 now, each overlay declares how you can tell it has finished opening, and the fix was
+proved by stretching those timers in the build rather than by rerunning until it went green.
+
+**A second defect surfaced while fixing the first, and it is the application's.** BUG-010: the day
+of the cycle shown in the Calendar strip advances at midday rather than at midnight, because
+`dayOfCycle` rounds a difference that carries the time of day. The cycle spec was written in the
+morning and passed; re-run at 12:20 the same day, both of its assertions failed by exactly one day.
+A user on day 5 at 11:59 is on day 6 at 12:01, every day.
+
+**That forced a narrow departure from "Left out on purpose", written down here rather than taken
+quietly.** That list rules out clock control for streak arithmetic. The two boundary tests now pin
+the hour with `page.clock.setFixedTime`, because without it they measure what time the suite ran
+rather than where the phase boundary sits. The DATE is still today's and the seeds are still
+relative, so nothing is frozen except the hour. The defect itself is carried as a third test that
+fails on purpose, so it is a signal rather than a paragraph.
+
 **Blocked on:** nothing.
 
 **Three decisions taken after phase 6, in the order they were recommended.** They are not phase 7
@@ -273,6 +293,20 @@ Each of these cost a session to learn, and each applies to work that has not bee
     lost its text and a template literal lost its argument, because the content went through a
     double-quoted bash string. Anything with quotes or backticks goes through a file edit, not
     through `node -e` inside a shell.
+11. **Visible is not ready, and the gap between them only opens on a slower machine.** Three of the
+    four overlay specs pressed Escape as soon as the dialog was visible. Three of the four dialogs
+    attach their Escape handler to an element that only receives the key once the application has
+    moved focus into it, on a 60ms timer. Locally that gap closed before the key landed, on every
+    run. On the first push, two of those tests failed in CI and a third was flaky, and the one that
+    passed is the one whose handler is on `document`.
+
+    The fix is not a wait. Each overlay now declares how you can tell it has finished opening, and
+    for three of them that is focus arriving. Proved by stretching those timers to 1500ms in the
+    build, which turns an intermittent gap into one that is open on every run: sixteen of sixteen
+    pass with the readiness poll, and exactly the three CI named fail without it.
+
+    This is finding 1 again, one level down. A test can only be trusted on the machine it has run
+    on, and the useful response is to push before it feels necessary rather than to tune a timeout.
 
 ---
 

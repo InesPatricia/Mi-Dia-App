@@ -1148,3 +1148,61 @@ the three merge-blocking checkers still without one, which is how this survived.
 - Whether the div-balance half has its own hole. Only the script half was driven.
 - Whether any historical build in `src/` carries an attributed script tag that was therefore never
   syntax-checked before promotion. That is a question about the archive and it was not asked.
+
+---
+
+## BUG-010. The cycle day shown to the user advances at midday, not at midnight
+
+**Status** CONFIRMED. Reproduced on demand, and it has a test that fails on purpose.
+
+**Found by** the same spec running twice on one day. It was written and passed in the morning, and
+both of its assertions failed by exactly one day when the suite was re-run at 12:20.
+
+### What it is
+
+The Calendar strip reads `Day N` beside the phase. `N` comes from `dayOfCycle`, which is
+
+```
+daysBetween(parseYMD(lastPeriodStart), new Date()) + 1
+```
+
+and `daysBetween` is `Math.round((b - a) / 86400000)`.
+
+`a` is local midnight of the start day. `b` is **now, carrying the time of day**. So the quotient is
+a whole number of days plus a fraction equal to how far through today it is, and `Math.round` tips
+that fraction upwards from 12:00 onwards.
+
+A user who opens the app at 11:59 is on day 5. The same user at 12:01, having done nothing, is on
+day 6. It rolls back to 5 at midnight. Every day, for every user with the cycle feature on.
+
+### What it affects
+
+Everything downstream of `dayOfCycle`, which is the day number in the strip, the phase label beside
+it, the moon illustration, and the educational panel the strip opens. A phase boundary is crossed
+half a day early. `nextPeriodStart` uses a different path and was not examined.
+
+### Evidence
+
+`quality/e2e/tests/cycle-phase.spec.js` carries it as a declared expected failure: the same seed
+that reads as day 5 with the clock pinned to 09:00 is asserted to still read as day 5 at 15:00, and
+it does not. The test runs, it fails for the stated reason, and it goes red the day the application
+is fixed.
+
+The two boundary tests beside it pin the clock to 09:00 so they ask about the phase rather than
+about the wall clock.
+
+### Candidate fixes, none applied
+
+- Compare dates rather than instants: `daysBetween(startOfDay(a), startOfDay(b))`, or floor the
+  difference instead of rounding. Smallest, and it is the actual defect.
+- Check whether `Math.round` was there to absorb daylight-saving transitions, where a local day is
+  23 or 25 hours long. Flooring a 23-hour day gives 0, which is why this needs reading rather than a
+  reflex. Normalising both ends to local midnight first handles both concerns.
+
+### Not checked
+
+- Whether the streak arithmetic in the ritual module shares this shape. It has its own date helpers
+  and they were not read.
+- Daylight-saving behaviour at either end. Only the hour of a normal day was driven.
+- Whether anything persisted is wrong, or only what is displayed. The cycle config stores dates as
+  strings, so this is likely display-only, and likely is not measured.
