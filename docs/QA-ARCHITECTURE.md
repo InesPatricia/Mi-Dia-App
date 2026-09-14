@@ -83,6 +83,78 @@ flowchart TD
   not a code change, and it is the one thing that would make the documentation genuinely gated
   rather than merely checked.
 
+## Four levels
+
+Gates and nets is one axis: **when** a check runs and whether it can stop a merge. The four levels
+are the other axis: **what a check holds still** while it varies one thing. A suite that only thinks
+about the first axis ends up with every question asked in a browser, because a browser can answer
+all of them, slowly and with the most moving parts.
+
+They are named here because the arc that built them found the naming was doing work. Two of these
+levels did not exist before it, and the pull that created them was not "we should have more tests"
+but "this question is being asked at the wrong height".
+
+| Level | Where it lives | What it holds still | How to run it |
+|---|---|---|---|
+| Unit | `quality/unit/` | no browser, no storage, no interface: one pure function and its arithmetic | `cd quality/unit && node --test` |
+| Integration | `quality/e2e/tests-integration/` | a real browser, but no navigation and no clicks: what the application writes to `localStorage`, and what a backup file does to it | `npx playwright test --project=integration` |
+| End to end | `quality/e2e/tests/` | the whole application, driven the way a person drives it, through the page object layer | `npx playwright test --project=mobile-chromium` |
+| Delivery | `quality/e2e/tests-prod/` | not the code at all: whether the thing that got published is the thing that was tested | `npx playwright test --config=playwright.prod.config.js` |
+
+### What each one is actually for
+
+**Unit** is the only level where a calculation can be checked at every boundary cheaply. It runs a
+module from `src/modules/` in a `vm` sandbox whose global object starts empty, which is the part
+worth knowing: those files are not standalone, they are inlined into the application's own closure
+and read host globals from it. Running the calc surface in a context that holds none of those is
+what turns "this block is pure" from a comment into a fact. If a block ever reaches for `Store` or
+`document`, the load throws instead of quietly resolving against whatever Node happens to have.
+
+**Integration** is a browser with nothing above the storage boundary. No view changes, no assertions
+about appearance. The contract it checks is the one between the application's own code and
+`localStorage`, and a browser is still the right host for it, because running that code anywhere
+else would be checking a copy of it rather than the thing that ships. `storage-schema.spec.js`
+parses the key table out of [`DATA_SCHEMA.md`](DATA_SCHEMA.md), so a key written without a documented
+row turns the suite red: the document is the assertion, not a description of one.
+
+**End to end** is where the questions live that only have an answer in a whole application: does
+this flow work, does the data survive a reload, can a keyboard get out of this dialog. It is the
+most expensive level and the one that grows without limit if nobody holds a line on it.
+
+**Delivery** is the one that gets folded into end to end by mistake, and the decisions table refused
+that fold on purpose. It is not asking whether the code is correct. It is asking whether the
+artifact that reached production is the artifact that was checked, which is a different failure with
+different causes: a promotion that copied the wrong file, a service worker naming a cache that no
+longer matches, a CDN still serving something that was withdrawn. `validate-build.js` and
+`serve-build.js` are at this level even though neither drives a browser, because both answer that
+same question before a build is promoted rather than after.
+
+### The rule that keeps this from being decoration
+
+**Every new case goes to the lowest level that can hold it.** That is what stops the end-to-end
+suite from absorbing everything, and it is the reason the arithmetic that used to be asserted in a
+browser now sits in `quality/unit/` where every boundary is cheap to check.
+
+The rule has an obvious failure mode, and it is worth naming: a case pushed down to a level that
+cannot see it is coverage that has left the building while every signal stays green. Two of those
+were found here, and not by reading the suite.
+
+### What tells you a level is actually catching anything
+
+`node quality/tools/mutate.mjs` breaks the application on purpose, one defect at a time, and records
+which levels go red. A level that stays green under a mutant that reached it is a level that is not
+doing its job, whatever its test count says.
+
+That audit is what found both holes this arc closed last. The write that gives a new user their two
+default rituals could be deleted entirely and the whole functional suite still passed, because every
+ritual spec seeded its own data and the application's seed path was therefore never taken. The cycle
+phase boundary could move by a day and only the unit level noticed, although the phase is on screen.
+Neither is visible by reading a suite and counting what it covers, because both look covered.
+
+Both are closed now, at the level where a user would meet them, and both were accepted the same way
+every check in this pipeline is: the mutant was applied to the build by hand, the new test went red,
+and the build was restored from a copy taken before the edit.
+
 ## Why the shapes are what they are
 
 This document says which check runs where. The reasoning behind the shape of each one, why the

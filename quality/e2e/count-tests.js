@@ -12,14 +12,12 @@
 //   ADDS false positives (`/favicon/i.test(path)` is a regex method call, not a test). The only
 //   authority on what will run is the runner: `playwright test --list`.
 //
-// WHY FIVE NUMBERS, NOT ONE
+// WHY FOUR NUMBERS, NOT ONE
 //   They are five different suites and none of them ever run together:
 //     functional - the deterministic suite, what runs on a dev machine and in CI.
 //     integration- the persistence boundary: what the app writes, and what a backup file does to
 //                  it. Its own project, so it can be run alone, and reported here because a level
 //                  this file cannot see is a level its own opening sentence lies about.
-//     visual     - screenshot regression, gated behind PW_VISUAL because pixel baselines are only
-//                  meaningful in a pinned environment (see the note in playwright.config.js).
 //     prod       - the post-deploy smoke, which runs against a live URL under a different config.
 //     quarantine - the `generated` project: agent-drafted tests awaiting review. Reported so the
 //                  backlog is visible, never asserted, and deliberately excluded from the badge.
@@ -34,12 +32,11 @@ const path = require('path');
 const README = path.join(__dirname, '..', '..', 'README.md');
 
 // Ask the runner, then read the count off its "Total: N tests in M files" summary line.
-function count(args, env = {}) {
+function count(args) {
   const out = cp.execSync(`npx playwright test --list ${args}`, {
     cwd: __dirname,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, ...env },
   });
   const m = out.match(/Total:\s+(\d+)\s+tests?\s+in\s+(\d+)\s+files?/);
   if (!m) throw new Error(`could not parse a total from --list ${args}`);
@@ -53,14 +50,12 @@ function count(args, env = {}) {
 const GATED = '--project=mobile-chromium';
 
 const functional = count(GATED);
-const withVisual = count(GATED, { PW_VISUAL: '1' });
 
 const counts = {
   functional,
   // Its own project, so it is counted the same way the gated suite is and cannot be folded into it
   // by accident. Not in the badge: the badge publishes the end-to-end suite and always has.
   integration: count('--project=integration'),
-  visual: { tests: withVisual.tests - functional.tests },
   prod: count('--config=playwright.prod.config.js'),
   // Reported, never asserted. This is the size of the unreviewed backlog waiting for promotion,
   // and it is useful precisely because it is allowed to be non-zero.
@@ -91,7 +86,6 @@ if (process.argv.includes('--check')) {
 
 console.log(`functional (dev + CI)   ${counts.functional.tests} tests in ${counts.functional.files} files`);
 console.log(`integration(storage)    ${counts.integration.tests} tests in ${counts.integration.files} files`);
-console.log(`visual     (PW_VISUAL)  ${counts.visual.tests} tests`);
 console.log(`prod       (smoke)      ${counts.prod.tests} tests in ${counts.prod.files} files`);
 console.log(`quarantine (generated)  ${counts.quarantine.tests} tests in ${counts.quarantine.files} files  [not coverage]`);
 console.log(JSON.stringify(counts));

@@ -61,14 +61,15 @@ tests failed. Lesson: **always exercise the app, not just parse it.**
 - Then the safety net: `npm test` from `quality/e2e/`, which runs the same pair of projects the merge gate runs.
   For a small visual slice, at least run the specs your change could touch (add-flow / slot-interactions /
   the view you edited) — a full run is ~4–7 min.
-- If the design-locked flower/bottom-bar changed, the `@visual` baselines WILL change — regenerate, don't
-  treat as failure: `npx playwright test --project=mobile-chromium visual.spec.js --update-snapshots`.
+- If the design-locked flower/bottom-bar changed, check `aria-contract.spec.js`. It pins those two as
+  roles and accessible names, so a restyle leaves it green and a control that loses its name turns it
+  red. There are no screenshot baselines to regenerate any more; that spec replaced them.
 - **Per-slice, not just at the end:** run the relevant e2e subset as part of EACH visual slice's gate. The
   `esc` bug would have been caught the same slice instead of after five more.
 
 ## 4. Sign-off
 
 Only call a theme change done when: grid reviewed in BOTH themes (checklist clean), div-balance +
-`node --check` OK, e2e green (or the touched subset), `@visual` regenerated if the locked shots moved, and
-you've stated the honest headless≠device limit. Then it's ready to promote (`index.html` + bump `sw.js`
+`node --check` OK, e2e green (or the touched subset), the aria contract still green for the locked
+components, and you've stated the honest headless≠device limit. Then it's ready to promote (`index.html` + bump `sw.js`
 CACHE) — but promoting/deploying stays Ines's call (`/ship`).

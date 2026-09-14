@@ -35,12 +35,30 @@ API-key secret and the write permission are never reachable by a hostile PR that
 Principle: **untrusted input (the PR) is processed by trusted code (from `main`)** — a form of
 privilege separation. Getting this wrong is a real, documented way secrets get stolen from CI.
 
-**Fail-safe by design.** No `ANTHROPIC_API_KEY` secret → the script logs "no key" and exits 0. Any
-error is caught and the run still succeeds. A broken *helper* must never turn a PR red — only the
-real gates do that.
+**Which model answers.** Either `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY`, whichever the
+repository has, resolved in `quality/tools/ai-triage-lib.mjs` the same way the eval harness resolves
+its own. Anthropic wins when both are set. The OpenRouter default is `openrouter/free`, which names
+a router rather than a model, because two named free slugs have already been retired under the eval
+harness and a default that can be retired is a dead gate with a delay fuse.
 
-**To enable it:** add an `ANTHROPIC_API_KEY` secret in *Settings → Secrets and variables → Actions*.
-Until then the workflow runs and cleanly no-ops.
+**Fail-safe by design.** No key at all → the script logs "no key" and exits 0. Any error is caught
+and the run still succeeds. A broken *helper* must never turn a PR red, only the real gates do that.
+
+**And the cost of that, which this repo has now paid.** The agent shipped on 2026-07-28 asking for
+`ANTHROPIC_API_KEY`. The repository only ever had `OPENROUTER_API_KEY`. For six weeks the workflow
+ran, found no key, and exited 0, so every run was green and the agent produced nothing. It was found
+on 2026-09-14 by reading the run log rather than by anything that watches. Two changes came out of
+it: the reason for skipping is now written to `GITHUB_STEP_SUMMARY`, where a person looking at the
+run can see it without opening the log, and the provider logic is under test, including a case named
+after the incident. *A green run is not evidence that an agent ran.*
+
+**To enable it:** add either secret in *Settings → Secrets and variables → Actions*. With neither,
+the workflow runs and cleanly no-ops.
+
+**Seeing its output without publishing it.** `node quality/tools/ai-triage.mjs --dry-run` prints the
+comment it would post and writes nothing, given `GITHUB_TOKEN`, `GITHUB_REPOSITORY` and a
+`GITHUB_EVENT_PATH` file naming a failed run. Without it, the only way to answer "does this work"
+is to let the agent comment on a public repository.
 
 ### 1b. The native Playwright agents (`quality/e2e/.claude/agents/`)
 

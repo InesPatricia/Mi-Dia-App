@@ -195,7 +195,7 @@ full procedure, including the conflict table and the traps, is the `reconcile` s
 ```bash
 node .claude/skills/ship/validate.mjs        # version sync, syntax, div balance
 node quality/tools/check-docs.mjs            # documentation gate
-cd quality/e2e && npx playwright test --project=mobile-chromium --grep-invert @visual
+cd quality/e2e && npx playwright test --project=mobile-chromium
 ```
 
 Zero failures on all three, then promote. The device pass on a real Android phone is still a manual

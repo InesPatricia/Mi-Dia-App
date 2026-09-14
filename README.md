@@ -7,7 +7,7 @@ nothing to a server.
 **Live:** https://mi-dia-app.pages.dev
 
 [![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
-![Tests](https://img.shields.io/badge/e2e-87%20Playwright%20tests-2EAD33)
+![Tests](https://img.shields.io/badge/e2e-113%20Playwright%20tests-2EAD33)
 ![Stack](https://img.shields.io/badge/Playwright%201.62-Node%2020-blue)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
@@ -57,7 +57,7 @@ and storage.
 
 ## How it is tested
 
-**87 end-to-end tests across 20 specs**, Playwright on mobile Chromium, because the app is
+**113 end-to-end tests across 25 specs**, Playwright on mobile Chromium, because the app is
 phone-first. A desktop viewport tests a layout nobody uses. Plus 7 smoke tests against the live
 site.
 
@@ -66,6 +66,30 @@ above disagrees. Published numbers go stale; this one cannot. It asks the runner
 counting `test(` in the source, because that goes wrong in both directions at once: it misses tests
 generated at runtime, and it counts things that were never tests (`/favicon/i.test(path)` is a regex
 call having a bad day).
+
+### Four levels, and why the number above is only one of them
+
+That count is the end-to-end level. There are four. Building them was mostly a matter of noticing
+that questions were being asked at the wrong height, and moving them down.
+
+| Level | What it holds still | Run it |
+|---|---|---|
+| Unit | no browser, no storage, one pure function and its arithmetic | `cd quality/unit && node --test` |
+| Integration | a browser, but nothing above the storage boundary | `npx playwright test --project=integration` |
+| End to end | the whole app, driven the way a person drives it | `npx playwright test --project=mobile-chromium` |
+| Delivery | whether the artifact that got published is the one that was tested | `npx playwright test --config=playwright.prod.config.js` |
+
+Every new case goes to the lowest level that can hold it. That is what stops the end-to-end suite
+absorbing everything, and it is why the streak arithmetic that used to be asserted through a browser
+is now checked against a pure function, with the whole unit level finishing in about a second. That
+level loads those functions in a sandbox whose global object starts empty, which turns "this block
+is pure" from a comment into a fact.
+
+Delivery is a separate level on purpose. Folding it into end to end is the most common way the two
+get confused. End to end asks whether the code is right. Delivery asks whether the thing that
+reached production is the thing that was checked, and that fails for its own reasons: a promotion
+that copied the wrong file, a service worker naming a cache that no longer matches, a CDN still
+serving something that was withdrawn.
 
 Tests check the DOM **and** the data the app persisted to localStorage, because a slot can look
 perfect on screen and still have been saved with the wrong duration. `getByRole` and `getByLabel`
@@ -82,6 +106,55 @@ behaviour instead of the shipped implementation.
 
 What the suite cannot reach gets its own list: [`docs/DEVICE-PASS.md`](docs/DEVICE-PASS.md),
 organised by the reason each check exists rather than by screen.
+
+---
+
+## Do the tests actually catch anything?
+
+A test count is a claim about effort. It says nothing about whether a defect would be noticed, and
+the two come apart more often than is comfortable.
+
+**Every check here was accepted the same way.** Break the thing it watches, on purpose, watch the
+check go red, and only then keep it. Every tool written for this repository was found to have a
+defect that way, including the one that generates the status document. A check that has never failed
+is not yet a check, it is an intention.
+
+The most recent example is the plainest. The checker that refuses a silently disabled test had been
+relied on for five phases and had no tests of its own, so I wrote them. They found that it refused
+`{ skip: false }`, which is code it exists to allow: a whitespace quantifier could backtrack to zero
+width, leaving the guard standing in front of the space where it passed for free. A merge-blocking
+check that refuses correct code is the same class of defect as one that allows wrong code, and
+nothing would have found it except pointing the check at a case it was supposed to be fine with.
+
+**And the suite gets the same treatment, automatically.** `quality/tools/mutate.mjs` introduces a
+real defect into the application, one at a time, runs every level, and records which ones go red. A
+level that stays green under a mutant that reached it is not doing its job, whatever its test count
+says.
+
+That audit found two blind spots no amount of reading the suite would have shown, because both
+looked thoroughly covered:
+
+- The write that gives a new user their two starting rituals could be **deleted entirely** and the
+  whole functional suite still passed. Every ritual spec seeded its own data, so the application's
+  own first-run path was never taken by anything.
+- A cycle phase boundary could move by a day and only the unit level noticed, although the phase is
+  on screen in front of the user.
+
+Both are closed now, at the height a user would meet them, and both closures were proved by
+re-applying the mutant and watching the new test fail.
+
+**The most recent specs found three real defects on their first run.** A keyboard spec drives the
+four dialogs the way somebody without a mouse does, and none of them traps Tab, three drop focus
+when they close, and one never takes focus at all. I did not fix them in that change. It was the QA
+branch, the fix is application code, and a repair folded into the diff that found it is a repair
+nobody can review against the defect it closes. They are written up with their evidence in
+[`quality/e2e/specs/BUGS.md`](quality/e2e/specs/BUGS.md), and the failing cases run as declared
+expected failures. They still execute, they fail for the reason written beside them, and the day
+someone fixes the app they go red for passing, which is the signal to delete the annotation.
+
+That last decision needed a gate widened in the same change that first used the exemption, because
+an expected failure is one word away from a silently skipped test and the checker only refused the
+second one.
 
 ---
 
@@ -277,17 +350,19 @@ a build number without being wrong on two of them.
 **Mandatory per-session context went from 170,934 bytes to 6,184**, a 96% reduction, with no history
 lost. The archive is complete and a rule proves it.
 
-`quality/tools/check-docs.mjs` runs on every pull request and goes red on eight things: a dead path,
+`quality/tools/check-docs.mjs` runs on every pull request and goes red on ten things: a dead path,
 a build number in the router, a router that outgrew its limit, a test count that disagrees with the
 runner, an archived section that went missing, a router that has forked between branches, HTML
-inside a diagram label that GitHub will strip, and a filename whose spelling is off by a capital.
+inside a diagram label that GitHub will strip, a filename whose spelling is off by a capital, a
+documented test command that does not say which project it runs, and a path configured in a
+workflow or in Dependabot that no longer exists.
 
 Two of those exist because the checker was blind to them for weeks. Links were compared with a
 filesystem that folds case, so a link 404ing on GitHub passed here on every run; and a file tracked
 twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
 now have tests that fail without the fix.
 
-It has **its own tests, including negative cases**, 24 of them, for the reason in the first
+It has **its own tests, including negative cases**, 38 of them, for the reason in the first
 incident below. This repository has already shipped a gate that ran green without checking anything,
 and a checker nobody checks is the same mistake wearing a different filename. It is not on the
 required-checks list yet, which by the standard set two sections above makes it a reporter rather
@@ -326,17 +401,24 @@ policy delivered **on the `sw.js` response**, not on the page. My first draft us
 `connect-src 'self'`, which would have silently killed font loading for everyone. The branch preview
 caught it before production did. That is the entire case for isolated previews, in one sentence.
 
-**4. Screenshot baselines I let turn into fossils.** The two visual-regression tests are excluded
+**4. Screenshot baselines I let turn into fossils.** The two visual-regression tests were excluded
 from CI because their baselines are OS-specific, so they only ever ran on my laptop. I last
 regenerated them at build v143. The current build is v172: thirty versions and a full design-token
 refactor later, with nothing checking them in between, until a Playwright upgrade invalidated the
 lot without a single signal firing. A test that runs on one machine is a hobby with good intentions.
 
-I am moving them to baselines generated on the CI runner, where the environment is pinned and the
-check actually blocks. Whether runner-generated baselines hold steady across Playwright upgrades I
-genuinely do not know yet, and I would rather say that than pretend the fix is finished. The
-reassuring part: after thirty builds the drift was a single pixel. The test was worth having. It
-just was not guarded by anything.
+They are gone now, and what replaced them is not another screenshot. The two design-locked
+components are pinned as a tree of roles and accessible names instead, which does not depend on the
+operating system or the font stack and therefore runs in CI on every pull request. It catches the
+defect class this app has actually shipped twice, a control losing its accessible name.
+
+Writing it turned up a limit worth recording. The tree assertion is a containment match, so a
+control that disappears fails it while a control that is **added** does not. I found that by adding
+one and watching the check stay green, which is the same move that found everything else on this
+page. Each tree now carries a count of the controls its component exposes, and the added button
+turns it red. The reassuring part of the old story stands: after thirty builds the pixel drift was a
+single pixel. The test was worth having. It just was not guarded by anything, and a check nothing
+runs is not a check.
 
 ---
 

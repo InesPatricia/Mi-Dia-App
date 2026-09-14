@@ -80,10 +80,18 @@ something is true, and a gate nobody has watched fail is an untested claim weari
 check.
 
 **The standard is not yet met, and saying so is the point of writing it down.** Measured rather than
-remembered: `check-docs.mjs` and `mutate.mjs` have test files. `qa-status.mjs`, `check-skips.mjs`,
+remembered: `check-docs.mjs`, `mutate.mjs` and `check-skips.mjs` have test files. `qa-status.mjs`,
 `ai-triage.mjs`, `verify-live.mjs` and the two summary scripts do not. This sentence used to claim
 all of them did, which is the kind of prose rot the documentation gate cannot see. The open items in
 `QA-STATUS.md` carry the fix, which is to write the missing tests rather than to narrow the claim.
+
+`check-skips.mjs` came off that list in phase 8, and it is worth saying what the tests cost and
+bought. They needed a `--root` flag first, because a checker that can only read its own repository
+cannot be handed a fixture broken in one way. Their first run then found a defect: the pattern that
+recognises node:test's options object refused `{ skip: false }`, which it is written to allow,
+because a whitespace quantifier could backtrack to zero width and leave the negative lookahead
+standing in front of the space where it passed for free. A merge-blocking check that refuses correct
+code is the same class of defect as one that allows wrong code.
 
 Inside `quality/e2e/`, the same idea applies one level down:
 

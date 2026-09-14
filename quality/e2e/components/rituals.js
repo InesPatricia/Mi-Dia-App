@@ -40,6 +40,19 @@ class Rituals {
     return this.mount.locator('.r-card');
   }
 
+  /**
+   * The name line of every card, in render order.
+   *
+   * Added because `card(name)` anchors on the card's whole text, and one ritual's text can contain
+   * another ritual's name: a habit-stacked cue reads "after Morning breathing", so asking for the
+   * card that says "Morning breathing" resolves to two elements and throws. That is fine for a spec
+   * that types its own distinct names and wrong for the first-run spec, where the names are the
+   * application's and one of them is stacked on the other.
+   */
+  get names() {
+    return this.mount.locator('.r-card .r-name');
+  }
+
   /** The check on one card. */
   tick(name) {
     return this.card(name).locator('.r-tick');

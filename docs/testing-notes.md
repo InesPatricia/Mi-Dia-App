@@ -92,3 +92,27 @@
 - **Rare / optional / heavy → regression**, pre-merge.
 - The most useful red line: **"does the test write data?"** If yes → it is not a prod smoke; push it
   down into sanity on a test environment.
+
+## 10. The four levels in this repository
+Section 9 says where a case belongs in the abstract. These are the four heights it can actually land
+at here, and the one question each of them holds still. Full reasoning, and what each level is for,
+is in [`QA-ARCHITECTURE.md`](QA-ARCHITECTURE.md) under "Four levels".
+
+| Level | Where | Holds still | Run it |
+|---|---|---|---|
+| Unit | `quality/unit/` | no browser, no storage: one pure function and its arithmetic | `cd quality/unit && node --test` |
+| Integration | `quality/e2e/tests-integration/` | a browser, but nothing above the storage boundary | `npx playwright test --project=integration` |
+| End to end | `quality/e2e/tests/` | the whole app, driven as a person drives it | `npx playwright test --project=mobile-chromium` |
+| Delivery | `quality/e2e/tests-prod/` | not the code: whether what got published is what was tested | `npx playwright test --config=playwright.prod.config.js` |
+
+- **The placement rule:** every new case goes to the **lowest** level that can hold it. That is the
+  same red line as section 9, measured downwards instead of sideways.
+- **Delivery is not end to end.** Folding the two together is the most common way they get confused.
+  End to end asks whether the code is right; delivery asks whether the artifact that reached
+  production is the one that was checked. Different failures, different causes, different fix.
+- **Smoke on prod is the delivery level**, which is why section 8's "smoke-only on prod is OK here"
+  is not a compromise. It is the right height for the question prod can answer.
+- **A level is only worth its name if something catches when it should.** `node quality/tools/mutate.mjs`
+  breaks the application on purpose and records which levels go red. A level that stays green under a
+  mutant that reached it is not doing its job, whatever its test count says. Two blind spots were
+  found that way and closed at the height a user would meet them.

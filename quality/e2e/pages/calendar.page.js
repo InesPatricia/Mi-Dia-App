@@ -85,6 +85,20 @@ class CalendarPage {
   get cycleSetup() {
     return this.page.locator('#cycleSetupBtn');
   }
+
+  /**
+   * The cycle strip: the moon, the day of the cycle, and the phase label.
+   *
+   * By id, because it is a container the cycle module renders into and it carries no role of its
+   * own. The control inside it has an accessible name, but the text a spec asserts on sits beside
+   * that control rather than in it.
+   *
+   * Present only when the feature is on and a period has been logged, so a spec that has not seeded
+   * one asserts it is absent rather than reading it.
+   */
+  get cycleStrip() {
+    return this.page.locator('#cycleCal');
+  }
 }
 
 module.exports = { CalendarPage };
