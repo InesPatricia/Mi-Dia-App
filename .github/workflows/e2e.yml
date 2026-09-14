@@ -47,6 +47,11 @@ jobs:
       # git, which means its tests need no browser and no key, and they belong with the fast
       # checks for the same reason the scorer self-test does.
       - run: node --test ../tools/check-emoji.test.mjs
+      # The triage agent decides which provider to use, how to read two different response shapes,
+      # and whether an answer is complete. It got the first of those wrong and nobody noticed for six
+      # weeks, because every failure path exits 0 by design. These fixtures need no key and no
+      # requests, so they belong here rather than in a workflow that spends the model allowance.
+      - run: node --test ../tools/ai-triage-lib.test.mjs
       # docs/QA-STATUS.md says what this arc has finished, and a status nobody re-checks drifts.
       # This refuses a phase claiming to be done whose files are not in the tree. It reads the
       # repository and nothing else, so it belongs with the checks that need no install.
