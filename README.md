@@ -23,7 +23,10 @@ The app is the subject. The interesting part is the system around it: what gates
 just watches it, what happens when something breaks, and how long it takes me to find out.
 
 I am a QA and AI engineer, so most of what follows is about how this thing is tested and shipped.
-If you came for the app, it is at the bottom, and it is quite pretty.
+The parts worth your time are the ones where it went wrong. A gate that ran green for weeks without
+ever firing. A checker that refused correct code. An agent whose workflow reported success for six
+weeks while it produced nothing at all. Each is written up below with how it was found. If you came
+for the app, it is at the bottom, and it is quite pretty.
 
 ---
 
@@ -47,11 +50,10 @@ them than pretend they are not there:
   calc, i18n, view, wiring) with pure calc functions, then inlined. An incremental migration, not a
   rewrite, because rewrites are how projects die.
 
-Deployment is Cloudflare Pages from `main`, with one-click rollback. The build output directory is
-declared in `wrangler.toml`, not in the dashboard, so the layout and the setting that serves it move
-together in one reviewable commit. Nobody can review a checkbox they cannot see. A permanent
-`staging` branch gets its own preview on a separate subdomain, with its own cache, service worker
-and storage.
+Deployment is Cloudflare Pages from `main`, with one-click rollback. The output directory is
+declared in `wrangler.toml` rather than in the dashboard, because nobody can review a checkbox they
+cannot see. A permanent `staging` branch gets its own preview on a separate subdomain, with its own
+cache, service worker and storage.
 
 ---
 
@@ -61,9 +63,9 @@ and storage.
 phone-first. A desktop viewport tests a layout nobody uses. Plus 7 smoke tests against the live
 site.
 
-I do not type that number. `quality/e2e/count-tests.js` asks the runner, and CI fails if the badge
-above disagrees. Published numbers go stale; this one cannot. It asks the runner rather than
-counting `test(` in the source, because that goes wrong in both directions at once: it misses tests
+I do not type that number. `quality/e2e/count-tests.js` asks the runner and CI fails if the badge
+disagrees, because published numbers go stale and this one cannot. Asking the runner also beats
+counting `test(` in the source, which goes wrong in both directions at once: it misses tests
 generated at runtime, and it counts things that were never tests (`/favicon/i.test(path)` is a regex
 call having a bad day).
 
@@ -80,16 +82,16 @@ that questions were being asked at the wrong height, and moving them down.
 | Delivery | whether the artifact that got published is the one that was tested | `npx playwright test --config=playwright.prod.config.js` |
 
 Every new case goes to the lowest level that can hold it. That is what stops the end-to-end suite
-absorbing everything, and it is why the streak arithmetic that used to be asserted through a browser
-is now checked against a pure function, with the whole unit level finishing in about a second. That
-level loads those functions in a sandbox whose global object starts empty, which turns "this block
-is pure" from a comment into a fact.
+absorbing everything, and it is why the streak arithmetic once asserted through a browser now runs
+against a pure function, with the whole unit level finishing in about a second. That level loads
+those functions in a sandbox whose global object starts empty, which turns "this block is pure" from
+a comment into a fact.
 
-Delivery is a separate level on purpose. Folding it into end to end is the most common way the two
-get confused. End to end asks whether the code is right. Delivery asks whether the thing that
-reached production is the thing that was checked, and that fails for its own reasons: a promotion
-that copied the wrong file, a service worker naming a cache that no longer matches, a CDN still
-serving something that was withdrawn.
+Delivery is separate on purpose, because folding it into end to end is the most common way the two
+get confused. End to end asks whether the code is right. Delivery asks whether what reached
+production is what was checked, and that fails for its own reasons: a promotion that copied the
+wrong file, a service worker naming a cache that no longer matches, a CDN still serving something
+that was withdrawn.
 
 Tests check the DOM **and** the data the app persisted to localStorage, because a slot can look
 perfect on screen and still have been saved with the wrong duration. `getByRole` and `getByLabel`
@@ -166,24 +168,21 @@ ignored, and an ignored check also costs you the illusion of safety. Full pictur
 in [`docs/QA-ARCHITECTURE.md`](docs/QA-ARCHITECTURE.md).
 
 **Gates.** A fast build-validation job (div balance, every inline script parses, no browser,
-seconds), then the suite across two shards with two workers each, merging into one report. In
-parallel, a smoke suite runs against the Cloudflare preview the pull request actually built.
-Sharding and workers are different things and the config says so out loud: workers parallelise
-across the cores of one machine, shards split the suite across machines. They multiply.
+seconds), then the suite across two shards with two workers each, merging into one report, and in
+parallel a smoke suite against the Cloudflare preview the pull request actually built.
 
 "Blocks the merge" is a claim about configuration, so here is the configuration. The required checks
 on `main` are exactly `validate build`, `test (shard 1/2)`, `test (shard 2/2)` and `preview smoke`.
 Anything else runs, reports, and stops precisely nothing, however gate-shaped it looks in a diagram.
-The preview smoke sat in that state for a while: repaired once after an audit found it had never
-fired, then left off the required list, so it ran green and enforced nothing. Repairing a check and
-arming it are two separate acts, and I now know that in my bones.
+The preview smoke spent weeks on the wrong side of that line, which is the first incident below.
+Repairing a check and arming it are two separate acts, and I now know that in my bones.
 
-**Nets.** After deploy, a smoke suite re-checks production once a small poller confirms the new
-build is genuinely live, by watching the service worker for the expected cache name. A passive
-security scan runs weekly. And `verify-live` opens the published README in a real browser and asks
-the live site which paths it actually serves, because the two failure modes it looks for are
-invisible locally: GitHub renders markdown client-side, and a static host answers 200 for paths it
-does not publish. It found something on its first run, which is in the runbook.
+**Nets.** After deploy, a smoke suite re-checks production once a poller confirms the new build is
+genuinely live, by watching the service worker for the expected cache name. A passive security scan
+runs weekly. And `verify-live` opens the published README in a real browser and asks the live site
+which paths it actually serves, because both failure modes it looks for are invisible locally:
+GitHub renders markdown client-side, and a static host answers 200 for paths it does not publish. It
+found something on its first run, which is in the runbook.
 
 The rule underneath all of it: **measure first, then set the threshold below the measurement.**
 
@@ -191,20 +190,22 @@ The rule underneath all of it: **measure first, then set the threshold below the
 
 ## Performance and security
 
-Lighthouse CI asserts budgets after every deploy and on every pull request preview, so a regression
-shows up before merge; the alternative is a bug report. Each threshold in
+Lighthouse CI asserts budgets on every pull request preview and after every deploy, so a regression
+shows up before merge rather than as a bug report. Each threshold in
 [`quality/perf/lighthouserc.cjs`](quality/perf/lighthouserc.cjs) carries the measured baseline it
-came from in a comment beside it. A small k6 smoke baselines CDN delivery with one budget overall
-and one per route, because a single slow file hides inside an aggregate when four fast ones average
-it away. It asserts p(95). The mean hides the tail, and the tail is the part users feel.
+came from, in a comment beside it. A k6 smoke baselines CDN delivery with one budget overall and one
+per route, because a single slow file hides inside an aggregate when four fast ones average it away.
+It asserts p(95), since the mean hides the tail and the tail is the part users feel.
 
-A passive OWASP ZAP scan runs weekly against production: response inspection with no attack
-payloads, the honest match for a static site with no backend to probe. Every finding becomes either
-a shipped fix or a written accepted risk, and the accepted ones are encoded with `fail_action: true`,
-which turns the scan into a tripwire: known findings stay quiet, any **new** one turns it red. The
-full triage with before-and-after deltas is in
-[`docs/SECURITY-NOTES.md`](docs/SECURITY-NOTES.md); the fixes ship through a hardened
+A passive OWASP ZAP scan runs weekly against production, which is the honest match for a static site
+with no backend to probe. Every finding becomes either a shipped fix or a written accepted risk, and
+the accepted ones are encoded so the scan works as a tripwire: known findings stay quiet, any **new**
+one turns it red. The triage with before-and-after deltas is in
+[`docs/SECURITY-NOTES.md`](docs/SECURITY-NOTES.md), and the fixes ship through a hardened
 [`public/_headers`](public/_headers).
+
+That tripwire spent seven weeks disconnected, and the fifth incident below is what it took to
+notice.
 
 ---
 
@@ -221,16 +222,22 @@ Two decisions in it matter more than the feature. It is triggered by `workflow_r
 cannot edit the agent into handing over the API key. And it fails safe: no key, log and exit zero. A
 broken helper must never turn a pull request red. Only real gates get to do that.
 
-**Testing a system that is itself agentic** is a different problem, and it lives in
-[`quality/evals/`](quality/evals/), where it really does run. A golden dataset gets scored twice.
-First by deterministic property assertions, which check the schema, keep the category inside the
-allowed set, and catch invented fields. Then by a second model, the **LLM-as-judge**, which reads the
-answer against the reference and says whether it means the right thing. The suite passes on an
-aggregate pass-rate floor, the same way the load layer asserts p(95). In a probabilistic system, one
-unlucky case is weather and a falling rate is climate.
+That fail-safe is also how the agent hid for six weeks. It shipped asking for `ANTHROPIC_API_KEY`,
+and this repository has only ever had `OPENROUTER_API_KEY`, so every run took the missing-key path,
+logged, and exited zero. The workflow stayed green and the agent produced nothing at all. I found it
+by reading a run log, not because anything was watching. Provider resolution now accepts either key,
+and the decisions that used to live inside the network call moved into a library with 24 fixtures
+that need no key and no requests, wired into the build-validation job. The first fixture is named
+after the incident and goes red when the bug is put back.
 
-The judge runs on a different model from the one under test, since a model grading its own homework
-tends to be generous. Here is a real verdict from
+**Testing a system that is itself agentic** is a different problem, and it lives in
+[`quality/evals/`](quality/evals/). A golden dataset is scored twice: first by deterministic property
+assertions that check the schema and catch invented fields, then by a second model reading the
+answer against the reference. That judge runs on a different model from the one under test, since a
+model grading its own homework tends to be generous. The suite passes on an aggregate pass-rate
+floor, because in a probabilistic system one unlucky case is weather and a falling rate is climate.
+
+A real verdict from
 [`quality/evals/sample-run.json`](quality/evals/sample-run.json), an actual captured run:
 
 ```json
@@ -278,18 +285,16 @@ work that never shows up in a test count and saves the most time.
 | `quality/tools/check-docs.mjs` | Gates the documentation: dead links, stale test counts, build numbers written into a file that lives on three branches. |
 | `quality/tools/verify-live.mjs` | Checks a page where it is actually served, because local rendering lies and a 200 proves nothing. |
 
-Repeatable QA procedures live as executable checklists in `.claude/skills/`: a ZAP triage loop, a
-performance run with a rule for when a threshold may be tightened, a pipeline audit, and the two
-habits that cost me most to learn, which are verifying a claim where it runs and keeping two
-branches from drifting apart. They exist so the reasoning survives me forgetting it, which it
-reliably does.
+Repeatable procedures live as executable checklists in `.claude/skills/`, including the two habits
+that cost me most to learn: verify a claim where it runs, and keep two branches from drifting apart.
+They exist so the reasoning survives me forgetting it, which it reliably does.
 
 ---
 
 ## Repository layout
 
-Six folders, each answering exactly one question. That rule is the whole design: if you cannot say
-which question a file answers, it does not have a home yet.
+Each folder answers exactly one question. If you cannot say which question a file answers, it does
+not have a home yet.
 
 | Folder | The question it answers |
 |---|---|
@@ -320,29 +325,6 @@ worktree was instructing agents to build a feature that had shipped fourteen com
 The fix was to split the file by audience, then treat the result the way the app is treated. As
 something a machine checks. People forget; scripts do not.
 
-```text
-                          quality/tools/check-docs.mjs
-                                       │
-                        ┌──────────────┴──────────────┐
-                        │        verifies each        │
-                        ▼                             ▼
-                   CLAUDE.md  ─────────────────►  CHANGELOG.md
-              how to work here                   what changed
-                        │                             │
-        ┌───────────────┼───────────────┐             ▼
-        ▼               ▼               ▼    docs/history/BUILD-LOG.md
-docs/DATA_SCHEMA  docs/DESIGN_SYSTEM  docs/APP-REFERENCE      the archive
-   what is stored   themes and tokens   how it behaves now
-```
-
-| File | Holds | Read by |
-|---|---|---|
-| `README.md` | why this exists and how it is engineered | people |
-| `CHANGELOG.md` | what changed, per arc | people reviewing the work |
-| `CLAUDE.md` | orientation, hard rules, where everything else is | agents, every session |
-| `docs/*.md` | the depth: storage, design system, current behaviour | whoever needs it |
-| `docs/history/BUILD-LOG.md` | every build since v23, verbatim | rarely anyone, but nothing was lost |
-
 **Nothing that varies by branch is written down.** The current build, the test count and the current
 arc are commands to run, not sentences to read, because a file shared by three branches cannot state
 a build number without being wrong on two of them.
@@ -350,23 +332,19 @@ a build number without being wrong on two of them.
 **Mandatory per-session context went from 170,934 bytes to 6,184**, a 96% reduction, with no history
 lost. The archive is complete and a rule proves it.
 
-`quality/tools/check-docs.mjs` runs on every pull request and goes red on ten things: a dead path,
-a build number in the router, a router that outgrew its limit, a test count that disagrees with the
-runner, an archived section that went missing, a router that has forked between branches, HTML
-inside a diagram label that GitHub will strip, a filename whose spelling is off by a capital, a
-documented test command that does not say which project it runs, and a path configured in a
-workflow or in Dependabot that no longer exists.
+`quality/tools/check-docs.mjs` runs on every pull request and goes red on ten things, among them a
+dead path, a test count that disagrees with the runner, a router that has forked between branches,
+and a filename whose spelling is off by a capital.
 
 Two of those exist because the checker was blind to them for weeks. Links were compared with a
 filesystem that folds case, so a link 404ing on GitHub passed here on every run; and a file tracked
 twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
 now have tests that fail without the fix.
 
-It has **its own tests, including negative cases**, 38 of them, for the reason in the first
-incident below. This repository has already shipped a gate that ran green without checking anything,
-and a checker nobody checks is the same mistake wearing a different filename. It is not on the
-required-checks list yet, which by the standard set two sections above makes it a reporter rather
-than a gate. That is a settings change, and it is on the list.
+It has **its own tests, including negative cases**, 38 of them, because a checker nobody checks is
+the first incident below wearing a different filename. It is not on the required-checks list yet,
+which by this repository's own standard makes it a reporter rather than a gate. That is a settings
+change, and it is on the list.
 
 ---
 
@@ -379,10 +357,10 @@ instance, or a Cloudflare 200 that is really a fallback page wearing a convincin
 
 ---
 
-## Four things I got wrong
+## Five things I got wrong
 
 I keep an incident list because I forget things, and because the failures taught me more than the
-features did.
+features did. Three of the five are the same shape, and it took me until the fifth to see it.
 
 **1. A gate that never ran.** I set up the pre-merge preview smoke, saw it go green, and moved on.
 It was not firing. For weeks I had a check that looked like coverage and provided none. That is
@@ -420,22 +398,52 @@ turns it red. The reassuring part of the old story stands: after thirty builds t
 single pixel. The test was worth having. It just was not guarded by anything, and a check nothing
 runs is not a check.
 
+**5. A security tripwire that had been disconnected for seven weeks.** The weekly ZAP scan is
+supposed to stay quiet on accepted risks and go red on anything new. It went red on 3 August and on
+every Monday after that, and I did not look, because a scheduled job that nobody watches is a job
+nobody watches. When I finally read the log, none of the seven failures was a security finding:
+
+```
+Failed to load config file /zap/wrk/quality/security/rules.tsv
+Unexpected number of tokens on line - there should be at least 3, tab separated: 10055  IGNORE
+```
+
+The scan had not found nothing. **It had never started.** ZAP's loader wants three tab-separated
+columns per rule and the file had two, so it raised before the first request went out. The file was
+byte-identical to the version that passed on 28 July. Nobody edited it. The workflow pulls
+`zaproxy:stable`, an unpinned tag, and a release moved under it.
+
+The trap inside the fix is worth the sentence it costs. An empty third column looks like the
+obvious answer and is wrong: the loader counts tabs on the raw line, then `rstrip`s it before
+unpacking, so a trailing tab passes the check and crashes one line later. The third column has to
+carry something, and for an `IGNORE` it is a note rather than a URL regex, so the per-rule notes
+moved out of the header comment and onto the rules they describe.
+
+**That is the third time an upstream moved under a check here**, after the Playwright bump that
+invalidated the pixel baselines and the Playwright bump that exposed a dead Node runtime. I had
+written those up as separate stories. They are one story, and the detail that stings is that I had
+already tried to defend against it. The ZAP action is pinned to a full commit SHA. The Docker image
+that action pulls, which is the part that does the work, is `zaproxy:stable`. I pinned the wrapper
+and left the engine floating, which bought me a version number in the diff and no protection at all.
+
 ---
 
 ## What this does not cover
 
 Knowing the limits of your own coverage is part of the job. The e2e suite covers logic, DOM,
-navigation, persistence, i18n and accessibility in headless Chromium. Native Android specifics are
-validated by a manual device pass. The k6 layer measures CDN delivery of a static PWA; there is no
-backend to load. The ZAP scan is passive and is not a penetration test. Visual regression is
-currently off, for the reason above.
+navigation, persistence, i18n and accessibility in headless Chromium, on one mobile project. There
+is no WebKit and no real device, so the Android pass stays manual. The k6 layer measures CDN
+delivery of a static PWA, since there is no backend to load. The ZAP scan is passive and is not a
+penetration test. Nothing looks at pixels any more: the accessibility contract that replaced the
+screenshots catches a control that loses its name, and says nothing about whether the app is
+beautiful.
 
 ---
 
 ## Running it
 
-The app is one file. Open [`public/index.html`](public/index.html) in a browser. Nothing to install,
-nothing to build, which is either refreshing or unsettling depending on your decade.
+The app is one file. Open [`public/index.html`](public/index.html) in a browser. Nothing to install
+and nothing to build, which is either refreshing or unsettling depending on your decade.
 
 ```bash
 cd quality/e2e
@@ -452,15 +460,10 @@ npm run test:report   # open the interactive HTML report
 
 ## The app itself
 
-Plan a day in time slots, with guided journaling, projects, a calendar, progress statistics, and
-breathing tools for calming down or waking up. Fully trilingual in English, Spanish and Romanian.
-All data stays in the browser.
-
-Two complete themes on a moon and sun toggle: Light-luxe (champagne, wine and gilt) and Dark-velvet
-(aubergine and gilt). Also: radial flower navigation, overlap-aware time slots, identity-based habit
-rituals with streaks and habit stacking, a guided onboarding carousel, mood and emotion-wheel
-journaling, calendar lenses, a consolidated progress view, optional cycle tracking, and Word, PDF
-and JSON export.
+Plan a day in time slots, with guided journaling, projects, a calendar, progress statistics,
+identity-based rituals with streaks, and breathing tools. Trilingual in English, Spanish and
+Romanian. Two complete themes on a moon and sun toggle: Light-luxe in champagne, wine and gilt, and
+Dark-velvet in aubergine and gilt. All data stays in the browser.
 
 <table>
   <tr><th width="50%">Light-luxe</th><th width="50%">Dark-velvet</th></tr>
@@ -482,10 +485,7 @@ and JSON export.
   </tr>
 </table>
 
-**Data model:** an **Area** (`cat`) is the life area an activity belongs to, one per slot, maximum
-eight. A **Tag** is cross-cutting context, several per slot. A **Slot** (`block`) is
-`{ id, title, cat, time, dur, tags[], done, date }`. Full contract in
-[`docs/DATA_SCHEMA.md`](docs/DATA_SCHEMA.md), design system in
+Storage contract in [`docs/DATA_SCHEMA.md`](docs/DATA_SCHEMA.md), design system in
 [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md), current behaviour in
 [`docs/APP-REFERENCE.md`](docs/APP-REFERENCE.md).
 
@@ -496,21 +496,17 @@ eight. A **Tag** is cross-cutting context, several per slot. A **Slot** (`block`
 <details>
 <summary><b>Español</b></summary>
 
-Un planificador y diario mediterráneo: planifica tu día en franjas horarias, diario guiado,
-proyectos, calendario, estadísticas y herramientas de calma. La aplicación es un único archivo,
-así que basta con abrir `index.html` en el navegador. Todos los datos se guardan localmente en el
-dispositivo. Copia de seguridad desde la pestaña Día, opción Backup, que exporta e importa un
-archivo `.json`.
+Un planificador y diario mediterráneo: franjas horarias, diario guiado, proyectos, calendario,
+estadísticas y herramientas de calma. Un único archivo, así que basta con abrir `index.html` en el
+navegador, y todos los datos se guardan en el dispositivo. Copia de seguridad desde la pestaña Día.
 </details>
 
 <details>
 <summary><b>Română</b></summary>
 
-Un planner și jurnal mediteranean: planificarea zilei pe sloturi orare, ritualuri (obiceiuri cu
-serie, în stil Atomic Habits), onboarding ghidat, jurnal ghidat, proiecte, calendar, statistici și
-unelte de calm. Aplicația e un singur fișier, deci e destul să deschizi `index.html` în browser.
-Toate datele se salvează local pe dispozitiv. Backup din tab-ul Zi, opțiunea Backup, care exportă
-și importă un fișier `.json`.
+Un planner și jurnal mediteranean: sloturi orare, ritualuri cu serie, onboarding ghidat, jurnal
+ghidat, proiecte, calendar, statistici și unelte de calm. Un singur fișier, deci e destul să
+deschizi `index.html` în browser, și toate datele rămân pe dispozitiv. Backup din tab-ul Zi.
 </details>
 
 ---
