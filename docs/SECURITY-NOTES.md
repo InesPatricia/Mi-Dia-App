@@ -92,3 +92,52 @@ logbook. A fresh scan (2026-07-28) confirmed the steady-state ignore-list is exa
 
 **Process rule:** to accept a *new* risk, add its plugin id to `quality/security/rules.tsv` **and** a note
 here. Never silence an alert in the rules file without a matching justification in this file.
+
+## The tripwire was disconnected, 2026-08-03 to 2026-09-15
+
+The section above was true when it was written and stopped being true six days later. It is left
+standing rather than edited, because a security document that quietly corrects itself teaches
+nothing.
+
+Every scheduled scan from 3 August onwards failed. Seven consecutive Mondays, and **not one of those
+failures was a security finding**. The scan never started:
+
+```
+Failed to load config file /zap/wrk/quality/security/rules.tsv
+Unexpected number of tokens on line - there should be at least 3, tab separated: 10055	IGNORE
+```
+
+ZAP's loader wants three tab-separated columns per rule and the file had two, so it raised before
+the first request left the container. The file had not been edited. It was byte-identical to the
+version that passed on 28 July, and only its path had changed. What moved was the scanner: the
+workflow pulls `ghcr.io/zaproxy/zaproxy:stable`, and a release between those two dates started
+enforcing the stricter parse.
+
+The action was pinned to a full commit SHA. The image that action pulls, which is the part that does
+the work, was not.
+
+### What this means for the risk record above
+
+For those seven weeks, **nothing was watching production for new passive findings**. The accepted
+risks below were not re-confirmed in that window, and a new one could have appeared without anything
+saying so. The first successful scan after the fix, on 15 September, reported:
+
+```
+FAIL-NEW: 0   FAIL-INPROG: 0   WARN-NEW: 0   WARN-INPROG: 0   INFO: 0   IGNORE: 7   PASS: 60
+```
+
+Sixty passive rules evaluated across four URLs, the seven accepted risks recognised and silenced,
+and no new finding. So the steady state above holds, and it is now confirmed rather than assumed.
+
+### What is still not solved
+
+A red weekly run does not distinguish **a new vulnerability** from **the tool is broken**. Both look
+identical in the Actions list, and that is the reason seven weeks passed rather than one. Until that
+is separated, the tripwire depends on somebody opening the log rather than on the colour.
+
+This repository already solved the same problem once, in `quality/evals/`, where an infrastructure
+failure exits `INCONCLUSIVE` instead of counting against the subject. The same shape applies here
+and is not built.
+
+The image is also still unpinned, deliberately. Freezing it would stop this recurring and would
+freeze the detections a scanner exists to gain, so it is a trade rather than an oversight.
