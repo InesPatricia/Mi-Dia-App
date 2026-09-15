@@ -12,115 +12,82 @@ floor that was never poured.
 
 ## Now
 
-**Phase:** the arc is complete. Phases 0 through 8 are done. Phases 0 through 6 are on `main`,
-through pull requests 54, 55 and 56. Phases 7 and 8 are on `qa/test-architecture`.
+**Phase:** the arc is complete. Phases 0 through 8 are done and all of them are on `main`, through
+pull requests 54, 55, 56, 58 and 61. Nothing from it is waiting for review.
+
+**What a session starting here should do first.** Read this block, then the two lists below it. The
+arc that built the four levels is finished; what remains is a short, specific backlog, and the three
+items in it are not equally valuable.
 
 **Next action, in order:**
 
-1. **Three application defects are measured and waiting for a build**, all found by the keyboard
-   spec phase 7 added: BUG-006, BUG-007 and BUG-008. They are keyboard accessibility, they are
-   application code, and they belong on `staging`, not here. BUG-001, BUG-004 and BUG-005 are
-   already queued there for the same reason.
-2. **Work through the open items below.** None of them blocks anything, and the largest is real:
-   four checks that can block a merge still have no test file of their own, and the sentence in
-   `docs/REPO-LAYOUT.md` that says every checker ships with one is not true until they do.
+1. **BUG-009, and the test file that would have caught it.** `quality/e2e/validate-build.js` is the
+   checker behind the required `validate build` status check, and the whole `e2e` workflow declares
+   `needs: validate`, so it is the gate every other gate waits on. It finds inline scripts with a
+   pattern that matches only an opening tag carrying no attributes, so a `<script type="module">`
+   block is never syntax-checked and never stripped before the div count. Demonstrated against a
+   copy of the build: three blocks counted, a fourth holding a syntax error not seen at all, verdict
+   valid, exit 0. Latent today, because the promoted build has no attributed script tag. Fix it and
+   give it the tests it has never had, in one change, since the second is why the first survived.
+2. **Separate "a new finding" from "the tool is broken" in the weekly scan.** The ZAP tripwire was
+   disconnected for seven weeks and nobody noticed, because a red scheduled run looks identical
+   whether it found a vulnerability or failed to start. That is written up in
+   `docs/SECURITY-NOTES.md` under the outage. This repository already solved the same problem in
+   `quality/evals/`, where an infrastructure failure exits `INCONCLUSIVE` rather than counting
+   against the subject. The shape transfers.
+3. **The last two merge-blocking checkers without tests**, `quality/tools/qa-status.mjs` and
+   `quality/e2e/count-tests.js`. After those and BUG-009, the sentence in `docs/REPO-LAYOUT.md` that
+   says every checker ships with a test file is finally true. Both earlier ones found a defect on
+   their first run, which is the argument for the remaining two.
 
-**Phase 8 delivered the documentation and the page.** `docs/QA-ARCHITECTURE.md` gained a "Four
-levels" section, which is the heading the status tool probes for; `docs/testing-notes.md` gained the
-same four as its section 10, beside the placement rules it already had; `README.md` gained the
-architecture note in its testing section, with what the newest specs found and why the fixes did not
-land in the same change.
+**Two changes only the repository owner can make**, both a single visit to Settings and neither of
+them code:
 
-**The published page is an artifact rather than a file in this repository**, at
-`https://claude.ai/code/artifact/671e8c3b-a7ae-4fdb-899d-5b2ebe200007`. It is PRIVATE until it is
-shared from its own share menu, which is why nothing in `README.md` links to it: a public document
-should not point at a page its readers cannot open. Linking it is a decision for after it is shared.
+- `enforce_admins` is **false** on `main`. An admin can merge past required checks that are not
+  green, and that has already happened once: pull request 58 was merged one second after a new
+  commit was pushed to its branch, so the checks that were green belonged to the commit before it
+  and the ones for the merged head were cancelled mid-flight. Main happened to be green afterwards.
+  That was the outcome, not the process.
+- `check docs` runs on every pull request and is **not** on the required list, which by this
+  repository's own standard makes it a reporter rather than a gate. The workflow is already shaped
+  for the promotion: it checks out with `fetch-depth: 0`, installs the runner, and rule 6 stands
+  down on a pull request by design, so nothing about it misfires as a blocker.
 
-**One deviation from the phase 8 brief, and it is a deviation about evidence.** The brief named four
-incidents for the page to lead with, one of them "the package install that hung for ninety-eight
-minutes on a required check". That incident is not written down anywhere in this repository: the
-only occurrence of the phrase is the brief itself. Writing a published account of it would have
-meant inventing the detail, so it was left out and replaced with an incident that is recorded, the
-status check that could not pass on a pull request by construction. If the install incident is real
-and worth telling, it needs its own write-up first, and then the page can be amended.
-
-**Two stale numbers in `README.md` were found and corrected in passing**, neither of them introduced
-by this arc. It claimed the documentation gate has eight rules when it has ten, and that the gate's
-own test file holds twenty-four tests when it holds thirty-eight. Both are the shape finding 3
-describes: prose is the one claim the documentation gate cannot check, and rule 4 only sees a number
-with the word "tests" beside it.
-
-**Waiting on a session that is not this branch:** BUG-005, four elements below 3:1 contrast in the
-light theme, and BUG-001 and BUG-004 before it, now joined by BUG-006, BUG-007 and BUG-008. All are
-application changes, which means a build on `staging`, and the build promoted here is v172 while
-staging is well ahead of it. Re-measure there before changing anything.
+**Seven application defects are waiting for a session on `staging`**, and none of them belongs on a
+`qa/*` branch: BUG-001, BUG-004, BUG-005, BUG-006, BUG-007, BUG-008 and BUG-010. All are recorded in
+`quality/e2e/specs/BUGS.md` with evidence and with what was not checked. The build promoted here is
+v172 and staging is well ahead of it, so re-measure there before changing anything.
 
 **Not resolved and not to be papered over:** FLAKE-001. One failure in 425 executions, in
 `respiro.spec.js`, not reproduced in 56 further runs including under three times the contention. A
 plausible mechanism is written down. It has not been acted on, because a defect that cannot be
 triggered on demand has not been found.
 
-**Phase 7 delivered five specs and retired one.** The suite went from 87 functional tests in 20
-files to 112 in 25. Every one of the five was accepted the same way: broken on purpose, watched
-going red, and only then kept.
+---
 
-| Spec | What it pins | Proved by breaking |
-|---|---|---|
-| `quality/e2e/tests/offline.spec.js` | the worker registers and controls the page, the app starts with the network cut, a cache under a previous build name is evicted on activate | three separate breaks in `public/sw.js`, each turning exactly its own test red |
-| `quality/e2e/tests/keyboard-a11y.spec.js` | the four overlays opened, entered, contained, dismissed and returned from, by keyboard only | two flags flipped to lie about the application, one in each direction, both red |
-| `quality/e2e/tests/aria-contract.spec.js` | the flower navigation and the bottom bar as roles and accessible names | a petal's `aria-label` removed from the build, red on the flower and green on the bar |
-| `quality/e2e/tests/first-run.spec.js` | the two default rituals a brand new user is given, on screen and in storage, seeded once | the `seed-writes-nothing` mutant, applied by hand to the build; both tests red |
-| `quality/e2e/tests/cycle-phase.spec.js` | the phase label on the day the boundary decides, and the day after it | the `cycle-phase-off-by-one` mutant; the boundary test red, the day-after test correctly still green |
+**What the arc delivered, for a reader who needs the shape rather than the history.**
 
-**The last two close TD-004 and TD-005**, the coverage holes the phase 5 mutation audit found. Both
-were listed as phase 7 work and both are now killed at the end-to-end level, not only at the unit
-one. The entries stay in `quality/e2e/specs/BUGS.md`, marked CLOSED with the evidence, because the
-reasoning is what a later reader needs.
+Four levels, each holding one thing still, with the rule that every new case goes to the lowest one
+that can hold it. A mutation audit that answers whether a level catches anything, rather than how
+many tests it contains. A page object layer that turned five ways of opening one screen into one. A
+documentation gate with eleven rules and forty-three tests of its own. And a backlog that records
+what is broken instead of quietly working around it.
 
-The screenshot spec, the `@visual` filter in the config and the workflow that regenerated the PNGs
-are gone. Nothing in the suite is hidden behind an environment variable any more, so every test the
-config declares runs in CI.
+The suite: 113 end to end, 14 integration, 87 unit, 7 delivery smoke. Every number derived by a
+command, none of them typed into this file.
 
-**Eight of the sixteen keyboard cases fail, and that was the expected outcome.** The phase detail
-said so in advance. They are carried as `test.fail`, which RUNS the test and requires it to fail, so
-the day the application is fixed the test goes red and asks for the annotation to be removed. Three
-defects, all recorded in `quality/e2e/specs/BUGS.md` with what was measured:
+**What the last stretch added after phase 8, none of it planned:**
 
-| Defect | What it is | How many of the four |
-|---|---|---|
-| BUG-006 | no dialog traps Tab, so focus walks out behind every one of them | four |
-| BUG-007 | closing a dialog drops focus on the body instead of returning it to the trigger | three; the ritual sheet is correct and is the reference implementation |
-| BUG-008 | the bloom menu opens without moving focus into itself | one |
-
-**A gate was widened in the same change that first needed it.** `check-skips.mjs` refused
-`test.skip`, `test.fixme`, `test.only` and `test.todo` without a written reason, and said nothing
-about `test.fail`. An expected failure is not a skip, since it keeps its coverage and turns red when
-the defect is fixed, but it is still a green report over a known defect and it was one word away
-from the four the tool already refused. It now needs a `// KNOWN FAILURE:` comment of the same
-minimum length, with its own keyword because "DISABLED" would misdescribe a test that runs.
-
-Written down because it is a departure: nobody asked for it, and the alternative was to be the first
-user of an unguarded hatch. The tool was broken on purpose four ways before it was kept.
-
-**The first push found a defect in this work, which is the arc behaving as designed.** Two of the
-sixteen keyboard cases failed in CI and a third was flaky, all of them the same test: it pressed
-Escape as soon as the dialog was visible, and three of the four dialogs only hear that key once the
-application has moved focus into them on a timer. The gap never opened on this laptop. It is
-finding 11 now, each overlay declares how you can tell it has finished opening, and the fix was
-proved by stretching those timers in the build rather than by rerunning until it went green.
-
-**A second defect surfaced while fixing the first, and it is the application's.** BUG-010: the day
-of the cycle shown in the Calendar strip advances at midday rather than at midnight, because
-`dayOfCycle` rounds a difference that carries the time of day. The cycle spec was written in the
-morning and passed; re-run at 12:20 the same day, both of its assertions failed by exactly one day.
-A user on day 5 at 11:59 is on day 6 at 12:01, every day.
-
-**That forced a narrow departure from "Left out on purpose", written down here rather than taken
-quietly.** That list rules out clock control for streak arithmetic. The two boundary tests now pin
-the hour with `page.clock.setFixedTime`, because without it they measure what time the suite ran
-rather than where the phase boundary sits. The DATE is still today's and the seeds are still
-relative, so nothing is frozen except the hour. The defect itself is carried as a third test that
-fails on purpose, so it is a signal rather than a paragraph.
+- `check-skips.mjs` refused `test.skip`, `fixme`, `only` and `todo` without a written reason and
+  said nothing about `test.fail`, which is one word away and is still a green report over a known
+  defect. It now requires a `// KNOWN FAILURE:` comment with its own keyword. It then got the test
+  file it had gone five phases without, and those tests found a defect in it on their first run: it
+  refused `{ skip: false }`, code it exists to allow.
+- Rule 11 of the documentation gate reads the stack badge against the lockfile and the workflows.
+  Dependabot moved Playwright from 1.62 to 1.63 and the badge went on claiming 1.62, because rule 4
+  derives the test count and every other published number was on trust.
+- The ZAP tripwire was found dead and reconnected. Seven weekly runs had failed and none was a
+  security finding; the scan never started. Full write-up in `docs/SECURITY-NOTES.md`.
 
 **Blocked on:** nothing.
 
@@ -217,9 +184,10 @@ The count and the reasoning are now written into the file so the next reader doe
   `quality/tools/qa-status.mjs`, `quality/e2e/count-tests.js` and `quality/e2e/validate-build.js`.
   It was four. `quality/tools/check-skips.mjs` came off the list in phase 8, and the tests found a
   defect in it on their first run, which is the argument for writing the other three rather than
-  narrowing the sentence in `docs/REPO-LAYOUT.md` that describes the standard.
-- Rule 9 of the documentation gate reads commands written in documents but not the npm scripts those
-  commands now point at.
+  narrowing the sentence in `docs/REPO-LAYOUT.md` that describes the standard. `validate-build.js`
+  is the urgent one, because BUG-009 is already sitting inside it.
+- **Rule 9 of the documentation gate** reads commands written in documents but not the npm scripts
+  those commands now point at. Unchanged, and still the smallest real gap in that checker.
 - **The two coverage holes the mutation audit found are CLOSED**, by `first-run.spec.js` and
   `cycle-phase.spec.js` in phase 7. Both entries stay in `quality/e2e/specs/BUGS.md` with the
   evidence, marked closed rather than deleted. Listed here because this section is where a reader
@@ -307,6 +275,22 @@ Each of these cost a session to learn, and each applies to work that has not bee
 
     This is finding 1 again, one level down. A test can only be trusted on the machine it has run
     on, and the useful response is to push before it feels necessary rather than to tune a timeout.
+12. **A red nobody reads costs exactly as much as a green nobody earns.** The weekly security scan
+    failed on seven consecutive Mondays and not one of those failures was a security finding. The
+    scan never started: its allow-list had two tab-separated columns and the scanner's loader wants
+    three, so it raised before the first request left the container. Nobody looked, because a red
+    scheduled job that nobody watches is a job nobody watches.
+
+    Three things in it are worth carrying forward. **The file had not been edited**; it was
+    byte-identical to the version that passed seven weeks earlier, and the scanner moved under it
+    through a floating `stable` Docker tag. **The action was pinned to a full commit SHA and the
+    image it pulls was not**, so the wrapper was pinned and the engine was left free, which bought a
+    version number in a diff and no protection. And **the failure was indistinguishable, in the
+    Actions list, from the scan doing its job and finding something**, which is the actual reason it
+    survived seven weeks rather than one.
+
+    The eleven findings above are all about a green that meant nothing. This is the same defect
+    wearing the other colour, and it was harder to see for exactly that reason.
 
 ---
 
@@ -335,7 +319,7 @@ it, never an opinion. Update this table by hand, then run `node quality/tools/qa
 
 > Generated by `node quality/tools/qa-status.mjs`. Do not edit this block by hand.
 
-- Worktree branch: `qa/test-architecture`
+- Worktree branch: `qa/close-the-arc`
 - Authoritative test count: `node quality/e2e/count-tests.js`. This file keeps no second copy.
 
 | Phase | Evidence found on disk | State |
