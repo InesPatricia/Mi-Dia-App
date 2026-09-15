@@ -332,16 +332,16 @@ a build number without being wrong on two of them.
 **Mandatory per-session context went from 170,934 bytes to 6,184**, a 96% reduction, with no history
 lost. The archive is complete and a rule proves it.
 
-`quality/tools/check-docs.mjs` runs on every pull request and goes red on ten things, among them a
-dead path, a test count that disagrees with the runner, a router that has forked between branches,
-and a filename whose spelling is off by a capital.
+`quality/tools/check-docs.mjs` runs on every pull request and goes red on eleven things, among them
+a dead path, a test count that disagrees with the runner, a router that has forked between
+branches, and a stack badge left behind by a dependency bump.
 
 Two of those exist because the checker was blind to them for weeks. Links were compared with a
 filesystem that folds case, so a link 404ing on GitHub passed here on every run; and a file tracked
 twice under two spellings looked like one file on this laptop and like two on a Linux runner. Both
 now have tests that fail without the fix.
 
-It has **its own tests, including negative cases**, 38 of them, because a checker nobody checks is
+It has **its own tests, including negative cases**, 43 of them, because a checker nobody checks is
 the first incident below wearing a different filename. It is not on the required-checks list yet,
 which by this repository's own standard makes it a reporter rather than a gate. That is a settings
 change, and it is on the list.
