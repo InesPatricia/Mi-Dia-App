@@ -646,3 +646,72 @@ test('rule 4 leaves a bare count alone when the runner can produce it', () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// ---------------------------------------------------------------- [11] the badge tells the truth
+
+// A fixture whose badge, lockfile and workflow agree. Written as a helper because all four tests
+// below need the same three files and differ only in which one is made to lie.
+function withStackBadge(write, { badgePlaywright = '1.63', badgeNode = '20', installed = '1.63.0', ciNode = '20' } = {}) {
+  write(
+    'README.md',
+    '# App\n\n![Tests](https://img.shields.io/badge/e2e-83%20Playwright%20tests-2EAD33)\n' +
+      `![Stack](https://img.shields.io/badge/Playwright%20${badgePlaywright}-Node%20${badgeNode}-blue)\n\n` +
+      '83 end-to-end tests, plus 7 smoke tests.\n',
+  );
+  write(
+    'quality/e2e/package-lock.json',
+    JSON.stringify({ packages: { 'node_modules/@playwright/test': { version: installed } } }),
+  );
+  write(
+    '.github/workflows/e2e.yml',
+    'name: e2e\njobs:\n  test:\n    defaults:\n      run:\n        working-directory: quality/e2e\n' +
+      '    steps:\n      - uses: actions/setup-node@v7\n        with:\n' +
+      `          node-version: ${ciNode}\n` +
+      '          cache-dependency-path: quality/e2e/package-lock.json\n',
+  );
+}
+
+test('rule 11 passes when the badge, the lockfile and the workflows agree', () => {
+  const root = makeFixture();
+  try {
+    withStackBadge((rel, body) => writeFileSync(join(root, rel), body, 'utf8'));
+    const { byRule, results } = run(root);
+    assert.equal(byRule[11], 'PASS', results.find((r) => r.rule === 11)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// The actual incident: Dependabot moved Playwright and the badge kept its old number.
+test('rule 11 catches a badge left behind by a dependency bump', () => {
+  expectRuleFails(11, (root, write) => withStackBadge(write, { badgePlaywright: '1.62', installed: '1.63.0' }));
+});
+
+test('rule 11 catches a badge naming a Node that no workflow runs', () => {
+  expectRuleFails(11, (root, write) => withStackBadge(write, { badgeNode: '18', ciNode: '20' }));
+});
+
+// The patch is deliberately not compared. A badge that tracked it would go stale on releases
+// nobody cares about, and a badge nobody can keep true gets deleted rather than fixed.
+test('rule 11 ignores the patch version, which is not what the badge claims', () => {
+  const root = makeFixture();
+  try {
+    withStackBadge((rel, body) => writeFileSync(join(root, rel), body, 'utf8'), { installed: '1.63.7' });
+    const { byRule, results } = run(root);
+    assert.equal(byRule[11], 'PASS', results.find((r) => r.rule === 11)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// A repository without the badge is not in breach of anything, so the rule stands down rather
+// than inventing a requirement. Reported as a skip, which does not fail the run.
+test('rule 11 stands down when there is no stack badge to check', () => {
+  const root = makeFixture();
+  try {
+    const { byRule, results } = run(root);
+    assert.equal(byRule[11], 'SKIP', results.find((r) => r.rule === 11)?.detail);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

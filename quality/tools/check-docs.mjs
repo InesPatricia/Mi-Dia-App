@@ -5,7 +5,7 @@
  * The repo's own argument is that a change should be gated by something that runs, not by a
  * convention someone remembers. This applies that to the docs themselves.
  *
- * Ten rules:
+ * Eleven rules:
  *   [1] no dead paths          — every file path mentioned in the docs exists on disk
  *   [2] no state in the router — CLAUDE.md must not hard-code build numbers or point at private/
  *   [3] router stays small     — CLAUDE.md under MAX_ROUTER_LINES
@@ -16,6 +16,7 @@
  *   [8] filenames are exact    — skill entry points are SKILL.md; no two tracked paths differ only by case
  *   [9] runs are pinned        — a documented `playwright test` names its project, not both of them
  *  [10] config paths resolve:    a path configured in dependabot, wrangler or a workflow still exists
+ *  [11] the badge tells the truth - the stack badge matches the installed Playwright and CI's Node
  *
  * A skipped check is reported loudly and counts as a failure unless it is explicitly allowed.
  * A gate that quietly stops checking is worse than no gate — this repo has already had one.
@@ -695,6 +696,63 @@ function checkConfigPaths() {
     : pass(10, `${seen} configured input path(s) resolve, across dependabot, wrangler and the workflows`);
 }
 
+// ---------------------------------------------------------------- [11] the badge tells the truth
+
+/**
+ * The stack badge is the one published number nothing derived.
+ *
+ * Rule 4 owns the test count and delegates it to the runner. The stack badge sat beside it as plain
+ * text, so when Dependabot moved Playwright from 1.62 to 1.63 the README went on claiming 1.62 with
+ * nothing to notice. The suite was green the whole time, which is the point: the code was right and
+ * the claim about it was wrong.
+ *
+ * Two sources of truth, both already in the repository. The lockfile says which Playwright is
+ * installed, because that is the file `npm ci` obeys. The workflows say which Node runs CI.
+ *
+ * Compared on major.minor. A badge that tracked the patch would go stale on releases nobody cares
+ * about, and a badge nobody can keep true gets deleted rather than fixed.
+ */
+function checkBadgeIsTrue() {
+  if (!has('README.md')) return skip(11, 'no README.md to read a badge from');
+  const readme = read('README.md');
+  const badge = readme.match(/badge\/Playwright%20([\d.]+)-Node%20(\d+)/);
+  if (!badge) return skip(11, 'no stack badge in README.md');
+
+  const claimedPlaywright = badge[1];
+  const claimedNode = badge[2];
+  const wrong = [];
+
+  const LOCKFILE = 'quality/e2e/package-lock.json';
+  if (has(LOCKFILE)) {
+    let installed = null;
+    try {
+      const lock = JSON.parse(read(LOCKFILE));
+      installed = lock.packages?.['node_modules/@playwright/test']?.version ?? null;
+    } catch (err) {
+      return fail(11, `could not read ${LOCKFILE}: ${err.message.split('\n')[0]}`);
+    }
+    if (!installed) return fail(11, `${LOCKFILE} does not pin @playwright/test, so the badge cannot be checked`);
+    const minor = (ver) => ver.split('.').slice(0, 2).join('.');
+    if (minor(installed) !== minor(claimedPlaywright)) {
+      wrong.push(`badge says Playwright ${claimedPlaywright}, ${LOCKFILE} installs ${installed}`);
+    }
+  }
+
+  // Every node-version in the workflows, so a badge cannot be true of one job and false of the rest.
+  const nodeVersions = new Set();
+  for (const file of workflowFiles()) {
+    if (!has(file)) continue;
+    for (const [, ver] of read(file).matchAll(/node-version\s*:\s*["']?(\d+)/g)) nodeVersions.add(ver);
+  }
+  if (nodeVersions.size && !nodeVersions.has(claimedNode)) {
+    wrong.push(`badge says Node ${claimedNode}, the workflows use ${[...nodeVersions].sort().join(' and ')}`);
+  }
+
+  wrong.length
+    ? fail(11, `the stack badge no longer matches the repository:\n      ${wrong.join('\n      ')}`)
+    : pass(11, `stack badge agrees with the lockfile and the workflows (Playwright ${claimedPlaywright}, Node ${claimedNode})`);
+}
+
 // ---------------------------------------------------------------- run
 
 const RULES = [
@@ -708,6 +766,7 @@ const RULES = [
   ['filenames are exact', checkSkillNaming],
   ['documented runs are pinned', checkDocumentedRunsArePinned],
   ['config paths resolve', checkConfigPaths],
+  ['the badge tells the truth', checkBadgeIsTrue],
 ];
 
 for (const [, fn] of RULES) {
