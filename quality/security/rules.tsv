@@ -1,24 +1,26 @@
 # ZAP baseline ignore-list - the tripwire allow-list.
-# Format: <pluginId><TAB>IGNORE   Lines starting with # are comments; blank lines ignored.
-# (Two columns only. A third column would be a URL regex, NOT a comment - keep notes here.)
 #
-# Each id is a DOCUMENTED ACCEPTED RISK in SECURITY-NOTES.md, confirmed present on production
-# by a fresh scan (2026-07-28). IGNORE = the scan stays silent about it. With fail_action:true
-# in zap-baseline.yml, ANY alert NOT listed here turns the run red. Known-accepted = quiet;
-# anything new = loud. To accept a NEW risk: add its id here AND a note in SECURITY-NOTES.md.
+# Format: <pluginId><TAB><LEVEL><TAB><note>
+# Lines starting with # are comments; blank lines are ignored.
 #
-#   10055 = CSP unsafe-inline (script/style)      -> accepted risk #1 (zero-build app, no nonces)
-#   90003 = Subresource Integrity missing         -> accepted risk #2 (Google Fonts UA-variant CSS)
-#   90004 = Cross-Origin-Embedder-Policy missing  -> accepted risk #3 (no cross-origin isolation)
-#   10027 = Information Disclosure: Suspicious Comments -> accepted risk #5 (public repo)
-#   10015 = Re-examine Cache-control              -> accepted risk #4 (single-file PWA strategy)
-#   10049 = Storable but Non-Cacheable            -> accepted risk #4 (same strategy)
-#   10109 = Modern Web Application                -> informational detection, not a vulnerability
+# THREE COLUMNS, AND THE THIRD IS NOT OPTIONAL IN PRACTICE.
+# ZAP's loader refuses a line carrying fewer than two tab characters, and it rstrips the line
+# before unpacking it into three, so a trailing tab passes the first check and fails the second.
+# For an IGNORE the third column is a user message rather than a URL regex; a regex there only
+# means anything when the level is OUTOFSCOPE. This file previously said otherwise and was written
+# with two columns, which is why every scheduled scan from 2026-08-03 onwards died before it
+# started. Seven weeks of red that said nothing about production.
+#
+# Each id below is a DOCUMENTED ACCEPTED RISK in docs/SECURITY-NOTES.md, confirmed present on
+# production by a fresh scan (2026-07-28). IGNORE = the scan stays silent about it. With
+# fail_action:true in zap-baseline.yml, ANY alert NOT listed here turns the run red. Known-accepted
+# stays quiet; anything new is loud. To accept a NEW risk: add its id here AND a note in
+# docs/SECURITY-NOTES.md.
 
-10055	IGNORE
-90003	IGNORE
-90004	IGNORE
-10027	IGNORE
-10015	IGNORE
-10049	IGNORE
-10109	IGNORE
+10055	IGNORE	CSP unsafe-inline script/style: accepted risk 1, a zero-build app has no nonces
+90003	IGNORE	Subresource Integrity missing: accepted risk 2, Google Fonts serves UA-variant CSS
+90004	IGNORE	Cross-Origin-Embedder-Policy missing: accepted risk 3, no cross-origin isolation
+10027	IGNORE	Information Disclosure, suspicious comments: accepted risk 5, the repository is public
+10015	IGNORE	Re-examine Cache-control: accepted risk 4, single-file PWA caching strategy
+10049	IGNORE	Storable but Non-Cacheable: accepted risk 4, the same strategy
+10109	IGNORE	Modern Web Application: an informational detection, not a vulnerability
