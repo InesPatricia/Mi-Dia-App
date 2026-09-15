@@ -8,7 +8,7 @@ nothing to a server.
 
 [![e2e](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml/badge.svg)](https://github.com/InesPatricia/Mi-Dia-App/actions/workflows/e2e.yml)
 ![Tests](https://img.shields.io/badge/e2e-113%20Playwright%20tests-2EAD33)
-![Stack](https://img.shields.io/badge/Playwright%201.62-Node%2020-blue)
+![Stack](https://img.shields.io/badge/Playwright%201.63-Node%2020-blue)
 ![Build](https://img.shields.io/badge/build-none%20(zero%20tooling)-lightgrey)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-orange)
 
