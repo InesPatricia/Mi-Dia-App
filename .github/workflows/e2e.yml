@@ -42,6 +42,11 @@ jobs:
       # while the eval itself stays a manual run. A broken scorer makes every pass-rate it ever
       # printed fiction, so this belongs with the fast checks rather than in the paid workflow.
       - run: node ../evals/run.mjs --self-test
+      # The self-test scores answers invented for it. This scores the REAL answers captured in
+      # sample-run.json, and fails if they would be scored differently today than when they were
+      # recorded. It is the difference between "the scorer behaves as its fixtures expect" and "the
+      # scorer still agrees with itself about real model output". No key, no network, one second.
+      - run: node ../evals/run.mjs --replay
       # The commit gate refuses emoji and em dashes at the git boundary, so a defect in it is a
       # defect in every commit that passed since it landed. It reads the index and HEAD through
       # git, which means its tests need no browser and no key, and they belong with the fast
