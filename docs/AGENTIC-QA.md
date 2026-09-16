@@ -92,6 +92,18 @@ fixed, not written down.
 > (golden dataset + property assertions + LLM-as-judge + pass-rate floor) over a representative
 > extraction task. Trigger the `evals` workflow or run `node quality/evals/run.mjs`.
 >
+> **Run it without a key:** `node quality/evals/run.mjs --replay --show` scores a recorded run
+> through the real checks in about a second, printing every case, every property check and the
+> judge's own words. The live path is not dependable enough to demonstrate on request: on
+> 2026-09-15 three consecutive live runs ended `INCONCLUSIVE`, one because a free slug had been
+> retired overnight and returned 404 on every case. The scoring is deterministic, so it should not
+> be hostage to the network.
+>
+> **The judge is tested too**, with `--judge-check`: fabricated answers whose verdict is not in
+> doubt, including one correct answer it must not reject, since a judge that rejects everything
+> would pass a test made only of wrong answers. It also defaults to a different model from the one
+> under test, which it did not always; a run that ends up self-graded now says so.
+>
 > **And it has been run,** which is a different claim. Scored against free models through OpenRouter
 > it returned a 90% pass-rate over ten cases against an 80% floor, and it surfaced three defects.
 > All three were in the harness rather than in the models. An em dash in an HTTP header made `fetch`
